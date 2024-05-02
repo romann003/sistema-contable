@@ -1,0 +1,25 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+
+// primereact
+import { LayoutProvider } from "./layout/context/layoutcontext";
+import { PrimeReactProvider } from 'primereact/api'
+
+import 'primereact/resources/themes/lara-light-indigo/theme.css'; //theme
+import 'primereact/resources/primereact.min.css'; //core css
+import 'primeicons/primeicons.css'; //icons
+import 'primeflex/primeflex.css'; // flex
+
+import './styles/layout/layout.scss';
+import './styles/demo/Demos.scss';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <PrimeReactProvider>
+      <LayoutProvider>
+      <App />
+      </LayoutProvider>
+    </PrimeReactProvider>
+  </React.StrictMode>,
+)

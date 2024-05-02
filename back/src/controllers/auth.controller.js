@@ -1,6 +1,6 @@
 import { UserSchema, comparePassword } from "../models/User.js";
-// import config from '../config.js'
-// import jwt from 'jsonwebtoken'
+import config from '../config.js'
+import jwt from 'jsonwebtoken'
 import { createAccessToken } from "../libs/jwt.js";
 
 export const login = async (req, res) => {
@@ -29,4 +29,23 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
     res.cookie("token", "", { expires: new Date(0)});
     return res.status(200).json({ message: "Sesión finalizada" });
+}
+
+export const verifyToken = async (req, res) => {
+    try {
+        const {token} = req.cookies
+
+        if (!token) return res.status(401).json({ message: "No hay token, autorizacion denegada" })
+
+        jwt.verify(token, config.SECRET, async (err, decoded) => {
+            if (err) return res.status(403).json({ message: "Token invalido" })
+            req.userId = decoded.id
+        })
+
+        const user = await UserSchema.findByPk(req.userId);
+        if (!user) return res.status(404).json({ message: "Usuario no encontrado" })
+        return res.json({ username: user.username, email: user.email })
+    } catch (error) {
+        return res.status(401).json({ message: "No autorizado" })
+    }
 }

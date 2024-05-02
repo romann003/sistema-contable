@@ -8,5 +8,6 @@ const router = Router();
 
 router.post('/login', validateSchema(loginSchema), authController.login);
 router.post('/logout', [authJwt.verifyToken], authController.logout);
+router.get('/verify', authController.verifyToken);
 
 export default router;

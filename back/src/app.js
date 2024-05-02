@@ -1,12 +1,14 @@
 import express from 'express'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
-import companyRoutes from './routes/company.routes.js'
+import cors from 'cors'
+
 import authRoutes from './routes/auth.routes.js'
+import companyRoutes from './routes/company.routes.js'
 import userRoutes from './routes/user.routes.js'
-import employeeRoutes from './routes/employee.routes.js'
 import departmentRoutes from './routes/department.routes.js'
 import areaRoutes from './routes/area.routes.js'
+import employeeRoutes from './routes/employee.routes.js'
 import { createRoles, createCompany, createArea, createDepartment, createUser } from './libs/initialSetup.js'
 
 //Initial setup
@@ -18,13 +20,17 @@ createDepartment()
 createArea()
 
 //Middlewares
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+})); 
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(cookieParser())
 
 //Routes
-app.use('/api/company', companyRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/company', companyRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/departments', departmentRoutes)
 app.use('/api/areas', areaRoutes)
