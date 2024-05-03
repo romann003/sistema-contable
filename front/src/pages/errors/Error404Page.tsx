@@ -1,4 +1,3 @@
-// 'use client';
 import { Link } from "react-router-dom";
 import { Button } from "primereact/button";
 
@@ -6,11 +5,7 @@ const Error404Page = () => {
   return (
     <div className="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
       <div className="flex flex-column align-items-center justify-content-center">
-        <img
-          src="/images/logos/sistema-contable-logo.svg"
-          alt="Logo"
-          className="my-5 w-4rem flex-shrink-0"
-        />
+        <img src="/images/logos/sistema-contable-logo.svg" alt="Logo" className="my-5 w-4rem flex-shrink-0" />
         <div
           style={{
             borderRadius: "56px",
@@ -37,7 +32,7 @@ const Error404Page = () => {
               className="mb-5"
               width="70%"
             />
-            <Link to="/dashboard">
+            <Link to="/login">
               <Button icon="pi pi-arrow-left" label="Volver a Inicio" text />
             </Link>
           </div>

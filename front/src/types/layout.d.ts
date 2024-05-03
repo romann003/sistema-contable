@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React, { ReactElement, Dispatch, SetStateAction, HTMLAttributeAnchorTarget, ReactNode } from 'react';
 // import { NextPage } from 'next';
-import { Demo } from './demo';
+import { Demo } from './demo.d.ts';
 import { Toast } from 'primereact/toast';
 
 /* Breadcrumb Types */

@@ -51,11 +51,6 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  
-  
-  
-  
-
   useEffect(() => {
     if (errors.length > 0) {
       const timer = setTimeout(() => {
@@ -65,12 +60,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [errors]);
   
-
-
-
-
-
-
   useEffect(() => {
     async function checkLogin() {
       const cookies = Cookies.get();

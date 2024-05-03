@@ -1,7 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-// 'use client';
-
-// import { useRouter } from 'next/navigation';
 import { useEventListener, useMountEffect, useUnmountEffect } from 'primereact/hooks';
 import React, { useContext, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
@@ -12,12 +8,11 @@ import AppConfig from './AppConfig';
 import { LayoutContext } from './context/layoutcontext';
 import { PrimeReactContext } from 'primereact/api';
 import { ChildContainerProps, LayoutState, AppTopbarRef } from '../types';
-// import { usePathname, useSearchParams } from 'next/navigation';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 
 // const LayoutDashboard = ({ children }: ChildContainerProps) => {
-
 const LayoutDashboard = () => {
+    // console.clear();
     const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
     const { setRipple } = useContext(PrimeReactContext);
     const topbarRef = useRef<AppTopbarRef>(null);
@@ -40,8 +35,6 @@ const LayoutDashboard = () => {
 
     const { pathname, search } = useLocation();
 
-    // const pathname = usePathname();
-    // const searchParams = useSearchParams();
     useEffect(() => {
         hideMenu();
         hideProfileMenu();
@@ -137,6 +130,7 @@ const LayoutDashboard = () => {
                 <div className="layout-main-container">
                     <div className="layout-main">
                     <Outlet/>
+                    {/* {children} */}
                     </div>
                     <AppFooter />
                 </div>

@@ -15,7 +15,7 @@ import UsersPage from "./pages/admin/UsersPage";
 import CompanyPage from "./pages/admin/CompanyPage";
 import EmployeesPage from "./pages/admin/EmployeesPage";
 import NominaPage from "./pages/admin/NominaPage";
-
+import ErrorAccessPage from "./pages/errors/ErrorAccessPage";
 
 
 export default function App() {
@@ -36,8 +36,9 @@ export default function App() {
               <Route path="employees" element={<EmployeesPage />} />
               <Route path="nomina" element={<NominaPage />} />
             </Route>
-            <Route path="*" element={<Error404Page />} />
           </Route>
+          <Route path="/access-denied" element={<ErrorAccessPage />} />
+          <Route path="*" element={<Error404Page />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
