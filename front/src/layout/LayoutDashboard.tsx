@@ -12,7 +12,11 @@ import { Outlet, useLocation, Link } from 'react-router-dom';
 
 // const LayoutDashboard = ({ children }: ChildContainerProps) => {
 const LayoutDashboard = () => {
+<<<<<<< HEAD
     // console.clear();
+=======
+    console.clear();
+>>>>>>> 5d90c9105fc109d3157a9dae14a537a3275e29d6
     const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
     const { setRipple } = useContext(PrimeReactContext);
     const topbarRef = useRef<AppTopbarRef>(null);
