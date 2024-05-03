@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /* FullCalendar Types */
 import { EventApi, EventInput } from '@fullcalendar/core';
 

@@ -12,11 +12,6 @@ import { LayoutContext } from '../../layout/context/layoutcontext';
 import { classNames } from 'primereact/utils';
 
 export default function LoginPage() {
-    // const toast = useRef<Toast>(null);
-    // const show = (severity, summary, detail) => {
-    //     toast.current?.show({ severity, summary, detail, life: 3000 });
-    // };
-
     const { layoutConfig } = useContext(LayoutContext);
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
 
@@ -30,38 +25,38 @@ export default function LoginPage() {
 
     const onSubmit = handleSubmit(async (data) => {
         signin(data);
+        console.clear();
     });
 
     useEffect(() => {
         if (isAuthenticated) navigate("/dashboard");
-    }, [isAuthenticated]);
+    }, [isAuthenticated, navigate]);
 
 
 
     const toast = useRef<Toast>(null);
     const showInfo = (severity, summary, detail) => {
-        toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
+        toast.current?.show({ severity, summary, detail, life: 3000 });
+        toast.current?.clear;
     }
 
-    const clear = () => {
-        toast.current.clear();
-    }
+    // const clear = () => {
+    //     toast.current?.clear();
+    // };
 
     return (
         <>
             <form onSubmit={onSubmit} className="p-fluid">
 
                 {/* ERRORES */}
-
                 <Toast ref={toast} />
 
                 {signinErrors.map((error, i) => (
                     <div key={i}>
                         {showInfo('error', 'Error', error)}
-                        {clear}
-                        {/* {error} */}
                     </div>
                 ))}
+
                 <div className={containerClassName}>
 
                     <div className="flex flex-column align-items-center justify-content-center">
@@ -95,7 +90,8 @@ export default function LoginPage() {
                                             {...register('email', { required: true })}
                                         />
 
-                                        {errors.email && (<p className="text-red-500">Correo electrónico es requerido</p>)}
+                                        {errors.email && (<div>{showInfo('warn', 'Error', 'Email requerido')}
+                                        </div>)}
 
                                     </div>
 
@@ -115,7 +111,9 @@ export default function LoginPage() {
                                             style={{ padding: '1rem' }}
                                             {...register('password', { required: true })}
                                         />
-                                        {errors.password && (<p className="text-red-500">Contraseña requerido</p>)}
+                                        {/* {errors.password && (<p className="text-red-500">Contraseña requerido</p>)} */}
+                                        {errors.password && (<div>{showInfo('warn', 'Error', 'Contraseña requerida')}</div>)}
+
                                     </div>
                                     <div className="flex align-items-center justify-content-between mb-5 gap-5"></div>
                                     <Button type="submit" label="Iniciar Sesión" className="w-full p-3 text-xl"></Button>

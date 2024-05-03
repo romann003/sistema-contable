@@ -1,8 +1,10 @@
 import { Button } from 'primereact/button';
 import {Link} from 'react-router-dom';
 
+
 export default function LandingPage() {
     return (
+        <>
         <div className="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
             <div className="flex flex-column align-items-center justify-content-center">
                 <img src="/images/logos/sistema-contable-logo.svg" alt="logo" className="my-5 w-4rem flex-shrink-0" />
@@ -24,6 +26,7 @@ export default function LandingPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 
 }
