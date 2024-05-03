@@ -3,14 +3,19 @@ import { AuthProvider } from "./api/context/AuthContext";
 
 //PAGES
 import LandingPage from "./pages/LandingPage";
-import Error404Page from "./pages/errors/Error404Page"; 
+import Error404Page from "./pages/errors/Error404Page";
 
 import LoginPage from "./pages/auth/LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
 import LayoutDashboard from "./layout/LayoutDashboard";
 import Dashboard from "./pages/admin/DashboardPage";
+import DepartmentsPage from "./pages/admin/DepartmentsPage";
+import AreasPage from "./pages/admin/AreasPage";
+import UsersPage from "./pages/admin/UsersPage";
+import CompanyPage from "./pages/admin/CompanyPage";
+import EmployeesPage from "./pages/admin/EmployeesPage";
+import NominaPage from "./pages/admin/NominaPage";
 
-import InputDemo from "./pages/admin/uikit/input/page";
 
 
 export default function App() {
@@ -24,11 +29,14 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<LayoutDashboard />} >
               <Route index element={<Dashboard />} />
-              <Route path="about" element={<LandingPage />} />
-              <Route path="uikit/input" element={<InputDemo />} />
+              <Route path="departments" element={<DepartmentsPage />} />
+              <Route path="areas" element={<AreasPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="company" element={<CompanyPage />} />
+              <Route path="employees" element={<EmployeesPage />} />
+              <Route path="nomina" element={<NominaPage />} />
             </Route>
             <Route path="*" element={<Error404Page />} />
-
           </Route>
         </Routes>
       </BrowserRouter>

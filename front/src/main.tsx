@@ -15,11 +15,11 @@ import './styles/layout/layout.scss';
 import './styles/demo/Demos.scss';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <PrimeReactProvider>
       <LayoutProvider>
       <App />
       </LayoutProvider>
     </PrimeReactProvider>
-  </React.StrictMode>,
+  // </React.StrictMode>
 )

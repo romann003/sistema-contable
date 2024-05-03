@@ -1,17 +1,23 @@
-import { useEffect, useContext } from 'react';
+import { useEffect, useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../api/context/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { Toast } from 'primereact/toast';
+
 
 import { LayoutContext } from '../../layout/context/layoutcontext';
 import { classNames } from 'primereact/utils';
 
 export default function LoginPage() {
-    const { layoutConfig } = useContext(LayoutContext);
+    // const toast = useRef<Toast>(null);
+    // const show = (severity, summary, detail) => {
+    //     toast.current?.show({ severity, summary, detail, life: 3000 });
+    // };
 
+    const { layoutConfig } = useContext(LayoutContext);
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
 
     const {
@@ -29,18 +35,33 @@ export default function LoginPage() {
     useEffect(() => {
         if (isAuthenticated) navigate("/dashboard");
     }, [isAuthenticated]);
+
+
+
+    const toast = useRef<Toast>(null);
+    const showInfo = (severity, summary, detail) => {
+        toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
+    }
+
+    const clear = () => {
+        toast.current.clear();
+    }
+
     return (
         <>
             <form onSubmit={onSubmit} className="p-fluid">
-                    {/* ERRORES */}
-                    {signinErrors.map((error, i) => (
-                        <div
-                            className="bg-red-500 text-white font-bold text-center my-2 p-2"
-                            key={i}
-                        >
-                            {error}
-                        </div>
-                    ))}
+
+                {/* ERRORES */}
+
+                <Toast ref={toast} />
+
+                {signinErrors.map((error, i) => (
+                    <div key={i}>
+                        {showInfo('error', 'Error', error)}
+                        {clear}
+                        {/* {error} */}
+                    </div>
+                ))}
                 <div className={containerClassName}>
 
                     <div className="flex flex-column align-items-center justify-content-center">

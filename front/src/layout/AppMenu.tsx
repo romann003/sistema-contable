@@ -15,10 +15,10 @@ const AppMenu = () => {
         {
             label: 'Mi Empresa',
             items: [
-                { label: 'Departamentos', icon: 'pi pi-fw pi-clone', to: '/dashboard/departaments' },
+                { label: 'Departamentos', icon: 'pi pi-fw pi-clone', to: '/dashboard/departments' },
                 { label: 'Areas (Cargos)', icon: 'pi pi-fw pi-table', to: '/dashboard/areas' },
                 { label: 'Usuarios', icon: 'pi pi-verified pi-fw', to: '/dashboard/users' },
-                { label: 'Mi empresa', icon: 'pi pi-fw pi-tablet', to: '/dashboard/company' },
+                { label: 'Mi empresa', icon: 'pi pi-fw pi-cog', to: '/dashboard/company' },
                 // { label: 'Input', icon: 'pi pi-fw pi-check-square', to: '/dashboard/uikit/input' },
                 // { label: 'Float Label', icon: 'pi pi-fw pi-bookmark', to: '/dashboard/uikit/floatlabel' },
                 // { label: 'Invalid State', icon: 'pi pi-fw pi-exclamation-circle', to: '/uikit/invalidstate' },
@@ -36,8 +36,8 @@ const AppMenu = () => {
         {
             label: 'Otras Acciones',
             items: [
-                { label: 'Empleados', icon: 'pi pi-fw pi-user', to: '/dashboard/employees' },
-                { label: 'Nomina', icon: 'pi pi-inbox', to: '/blocks', badge: 'NEW' },
+                { label: 'Empleados', icon: 'pi pi-fw pi-user', to: '/dashboard/employees'},
+                { label: 'Nomina', icon: 'pi pi-inbox', to: '/dashboard/nomina'},
                 // { label: 'All Blocks', icon: 'pi pi-fw pi-globe', url: 'https://blocks.primereact.org', target: '_blank' }
             ]
         },
