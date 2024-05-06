@@ -1,15 +1,18 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useHref, useNavigate } from 'react-router-dom';
 import { classNames } from 'primereact/utils';
-import React, { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
 import { AppTopbarRef } from '../types';
 import { LayoutContext } from './context/layoutcontext';
 import { useAuth } from "../api/context/AuthContext";
 
+import { ConfirmDialog ,confirmDialog } from 'primereact/confirmdialog';
+import { Toast } from 'primereact/toast';
+
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { logout } = useAuth();
-    const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
+    const { layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
     const menubuttonRef = useRef(null);
     const topbarmenuRef = useRef(null);
     const topbarmenubuttonRef = useRef(null);
@@ -20,9 +23,29 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         topbarmenubutton: topbarmenubuttonRef.current
     }));
 
+
+    const navigate = useNavigate();
+    const toast = useRef<Toast>(null);
+    const accept = () => {
+        logout();
+        navigate('/', { replace: true });
+    }
+
+    const confirm1 = () => {
+        confirmDialog({
+            message: 'Realmente quieres cerrar sesión?',
+            header: 'Confirmación',
+            icon: 'pi pi-exclamation-triangle',
+            defaultFocus: 'accept',
+            accept,
+        });
+    };
+
+
     return (
         <div className="layout-topbar">
-
+            <ConfirmDialog />
+            <Toast ref={toast} />
             <Link to="/dashboard" className="layout-topbar-logo">
                 <img src='/images/logos/sistema-contable-logo.svg' width="47.22px" height={'35px'} alt="logo" />
                 <span>SISTEMA CONTABLE</span>
@@ -46,12 +69,12 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         <span>Settings</span>
                     </button>
                 </Link>
-                <Link to="/" onClick={() => { logout(); }}>
-                    <button type="button" className="p-link layout-topbar-button">
+                {/* <Link to="/" onClick={() => { logout(); }}> */}
+                    <button onClick={confirm1} type="button" className="p-link layout-topbar-button">
                         <i className="pi pi-power-off"></i>
                         <span>Cerrar Sesión</span>
                     </button>
-                </Link>
+                {/* </Link> */}
             </div>
         </div>
     );

@@ -1,21 +1,13 @@
-'use client';
-// import { useRouter } from 'next/navigation';
-import { Link } from 'react-router-dom';
 import { Ripple } from 'primereact/ripple';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useContext } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import { MenuContext } from './context/menucontext';
 import { AppMenuItemProps } from '../types';
-// import { usePathname, useSearchParams } from 'next/navigation';
-import { useLocation } from 'react-router-dom';
-
+import { Link, useLocation } from 'react-router-dom';
 
 const AppMenuitem = (props: AppMenuItemProps) => {
-    // const pathname = usePathname();
-    // const searchParams = useSearchParams();
     const { pathname, search } = useLocation();
-
     const { activeMenu, setActiveMenu } = useContext(MenuContext);
     const item = props.item;
     const key = props.parentKey ? props.parentKey + '-' + props.index : String(props.index);

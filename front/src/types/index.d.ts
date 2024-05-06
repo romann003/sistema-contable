@@ -1,4 +1,6 @@
-import { ReactNode } from 'react';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+import React, { ReactNode } from 'react';
 import {
     Page,
     AppBreadcrumbProps,
