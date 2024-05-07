@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -32,7 +31,7 @@ interface Product {
 }
 
 export default function DepartmentsPage() {
-    const emptyProduct: Product = {
+    let emptyProduct: Product = {
         id: null,
         code: '',
         name: '',
@@ -52,7 +51,7 @@ export default function DepartmentsPage() {
     const [product, setProduct] = useState<Product>(emptyProduct);
     const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
     const [submitted, setSubmitted] = useState<boolean>(false);
-    const [globalFilter, setGlobalFilter] = useState(null);
+    const [globalFilter, setGlobalFilter] = useState<string>('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<Product[]>>(null);
 
@@ -87,8 +86,8 @@ export default function DepartmentsPage() {
         setSubmitted(true);
 
         if (product.name.trim()) {
-            const _products = [...products];
-            const _product = { ...product };
+            let _products = [...products];
+            let _product = { ...product };
 
             if (product.id) {
                 const index = findIndexById(product.id);
@@ -119,7 +118,7 @@ export default function DepartmentsPage() {
     };
 
     const deleteProduct = () => {
-        const _products = products.filter((val) => val.id !== product.id);
+        let _products = products.filter((val) => val.id !== product.id);
 
         setProducts(_products);
         setDeleteProductDialog(false);
@@ -142,7 +141,7 @@ export default function DepartmentsPage() {
 
     const createId = (): string => {
         let id = '';
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
         for (let i = 0; i < 5; i++) {
             id += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -160,7 +159,7 @@ export default function DepartmentsPage() {
     };
 
     const deleteSelectedProducts = () => {
-        const _products = products.filter((val) => !selectedProducts.includes(val));
+        let _products = products.filter((val) => !selectedProducts.includes(val));
 
         setProducts(_products);
         setDeleteProductsDialog(false);
@@ -169,7 +168,7 @@ export default function DepartmentsPage() {
     };
 
     const onCategoryChange = (e: RadioButtonChangeEvent) => {
-        const _product = { ...product };
+        let _product = { ...product };
 
         _product['category'] = e.value;
         setProduct(_product);
@@ -177,7 +176,7 @@ export default function DepartmentsPage() {
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
-        const _product = { ...product };
+        let _product = { ...product };
 
         // @ts-ignore
         _product[name] = val;
@@ -187,7 +186,7 @@ export default function DepartmentsPage() {
 
     const onInputTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
-        const _product = { ...product };
+        let _product = { ...product };
 
         // @ts-ignore
         _product[name] = val;
@@ -197,7 +196,7 @@ export default function DepartmentsPage() {
 
     const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
         const val = e.value ?? 0;
-        const _product = { ...product };
+        let _product = { ...product };
 
         // @ts-ignore
         _product[name] = val;
@@ -220,7 +219,7 @@ export default function DepartmentsPage() {
 
     const imageBodyTemplate = (rowData: Product) => {
         return <img src={`https://primefaces.org/cdn/primereact/images/product/${rowData.image}`} alt={rowData.image!} className="shadow-2 border-round" style={{ width: '64px' }} />;
-    };
+      };
 
     const priceBodyTemplate = (rowData: Product) => {
         return formatCurrency(rowData.price);
@@ -264,8 +263,7 @@ export default function DepartmentsPage() {
             <h4 className="m-0">Manage Products</h4>
             <IconField iconPosition="left">
                 <InputIcon className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
-                {/* <InputText type="search" placeholder="Search..." onInput={(e) => { const target = e.target as HTMLInputElement; setGlobalFilter(target.value); }} /> */}
+                <InputText type="search" placeholder="Search..." onInput={(e) => { const target = e.target as HTMLInputElement; setGlobalFilter(target.value); }} />
             </IconField>
         </div>
     );
@@ -289,18 +287,25 @@ export default function DepartmentsPage() {
     );
 
     return (
+
         <div>
             <Toast ref={toast} />
             <div className="card">
                 <h3>Departamentos</h3>
                 <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-                <DataTable ref={dt} value={products} selection={selectedProducts} onSelectionChange={(e) => setSelectedProducts(e.value)}
-                    dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products" globalFilter={globalFilter} header={header}
-                    selectionMode="multiple" >
-                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} exportable={false}></Column>
+                <DataTable ref={dt} value={products} selection={selectedProducts} 
+                        onSelectionChange={(e) => {
+                            if (Array.isArray(e.value)) {
+                                setSelectedProducts(e.value);
+                            }
+                        }}
+                        dataKey="id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products" globalFilter={globalFilter} header={header}
+                        selectionMode="multiple"
+                >
+                    <Column selectionMode="multiple" exportable={false}></Column>
                     <Column field="code" header="Code" sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="name" header="Name" sortable style={{ minWidth: '16rem' }}></Column>
                     <Column field="image" header="Image" body={imageBodyTemplate}></Column>
@@ -308,7 +313,7 @@ export default function DepartmentsPage() {
                     <Column field="category" header="Category" sortable style={{ minWidth: '10rem' }}></Column>
                     <Column field="rating" header="Reviews" body={ratingBodyTemplate} sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="inventoryStatus" header="Status" body={statusBodyTemplate} sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }}></Column>
+                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
                 </DataTable>
             </div>
 
@@ -325,7 +330,7 @@ export default function DepartmentsPage() {
                     <label htmlFor="description" className="font-bold">
                         Description
                     </label>
-                    <InputTextarea id="description" value={product.description} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onInputTextAreaChange(e, 'description')} required rows={3} cols={20} />
+                    <InputTextarea id="description" value={product.description} onChange={(e:ChangeEvent<HTMLTextAreaElement>) => onInputTextAreaChange(e, 'description')} required rows={3} cols={20} />
                 </div>
 
                 <div className="field">
@@ -384,9 +389,6 @@ export default function DepartmentsPage() {
                 </div>
             </Dialog>
         </div>
+            
     );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 5d90c9105fc109d3157a9dae14a537a3275e29d6
