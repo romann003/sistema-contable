@@ -31,6 +31,7 @@ interface Product {
 }
 
 export default function DepartmentsPage() {
+    console.log('hola')
     let emptyProduct: Product = {
         id: null,
         code: '',
