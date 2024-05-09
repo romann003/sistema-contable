@@ -1,8 +1,22 @@
 import AppMenuitem from './AppMenuitem.tsx';
 import { MenuProvider } from './context/menucontext.tsx';
 import { AppMenuItem } from '../types';
+import { useCompany } from '../api/context/CompanyContext.tsx';
+import { useEffect } from 'react';
+
 
 const AppMenu = () => {
+    // const {getUsers, getCompany, companies} = useCompany();
+
+    // useEffect(() => {
+    //     getUsers();
+    // }, []);
+
+    // companies.map((company) => {
+    //     // getCompany(company.id);
+    //     console.log(company.id);
+    // })
+    // console.log(companies[1]);
 
     const model: AppMenuItem[] = [
         {

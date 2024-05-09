@@ -27,15 +27,7 @@ export const createUser = async (req, res) => {
         }
 
         const savedUser = await newUser.save();
-        res.status(200).json({
-            name: savedUser.name,
-            last_name: savedUser.last_name,
-            username: savedUser.username,
-            email: savedUser.email,
-            status: savedUser.status,
-            createdAt: savedUser.createdAt,
-            updatedAt: savedUser.updatedAt
-        });
+        res.status(204);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -43,7 +35,7 @@ export const createUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
     try {
-        const users = await UserSchema.findAll();
+        const users = await UserSchema.findAll( { attributes: { exclude: ['password'] }, include: [{ association: 'rol' }] } );
         if (users.length === 0) return res.status(404).json({ message: "No hay usuarios registrados" });
         res.status(200).json(users);
     } catch (error) {
@@ -83,7 +75,7 @@ export const updateUserById = async (req, res) => {
         if (password) updatedUser.password = await encryptPassword(password);
         await updatedUser.save();
 
-        res.status(200).json(updatedUser);
+        res.status(204);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -93,7 +85,7 @@ export const deleteUserById = async (req, res) => {
     try {
         const deleteUser = await UserSchema.destroy({ where: { id: req.params.userId } });
         if (!deleteUser) return res.status(404).json({ message: "Usuario no encontrado" });
-        res.status(200).json({ message: "Usuario eliminado correctamente" });
+        res.status(204);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

@@ -1,4 +1,4 @@
-import { useEffect, useContext, useRef } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../api/context/AuthContext.tsx';
@@ -6,43 +6,30 @@ import { useNavigate } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-
+import { classNames } from 'primereact/utils';
 
 import { LayoutContext } from '../../layout/context/layoutcontext';
-import { classNames } from 'primereact/utils';
 
 export default function LoginPage() {
     const { layoutConfig } = useContext(LayoutContext);
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm();
+    const {register, handleSubmit, formState: { errors } } = useForm();
     const { signin, errors: signinErrors, isAuthenticated } = useAuth();
+    const toast = useRef<Toast>(null);
     const navigate = useNavigate();
-
     const onSubmit = handleSubmit(async (data) => {
         signin(data);
-        // console.clear();
     });
 
     useEffect(() => {
         if (isAuthenticated) navigate("/dashboard");
     }, [isAuthenticated, navigate]);
 
-
-
-    const toast = useRef<Toast>(null);
     const showInfo = (severity, summary, detail) => {
         toast.current?.show({ severity, summary, detail, life: 3000 });
         toast.current?.clear;
     }
-
-    // const clear = () => {
-    //     toast.current?.clear();
-    // };
 
     return (
         <>

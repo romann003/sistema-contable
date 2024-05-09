@@ -16,31 +16,34 @@ import CompanyPage from "./pages/admin/CompanyPage";
 import EmployeesPage from "./pages/admin/EmployeesPage";
 import NominaPage from "./pages/admin/NominaPage";
 import ErrorAccessPage from "./pages/errors/ErrorAccessPage";
+import { GeneralProvider } from "./api/context/GeneralContext";
 
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route index element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
+      <GeneralProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route index element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<LayoutDashboard />} >
-              <Route index element={<Dashboard />} />
-              <Route path="departments" element={<DepartmentsPage />} />
-              <Route path="areas" element={<AreasPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="company" element={<CompanyPage />} />
-              <Route path="employees" element={<EmployeesPage />} />
-              <Route path="nomina" element={<NominaPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<LayoutDashboard />} >
+                <Route index element={<Dashboard />} />
+                <Route path="departments" element={<DepartmentsPage />} />
+                <Route path="areas" element={<AreasPage />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="company/:id" element={<CompanyPage />} />
+                <Route path="employees" element={<EmployeesPage />} />
+                <Route path="nomina" element={<NominaPage />} />
+              </Route>
             </Route>
-          </Route>
-          <Route path="/access-denied" element={<ErrorAccessPage />} />
-          <Route path="*" element={<Error404Page />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="/access-denied" element={<ErrorAccessPage />} />
+            <Route path="*" element={<Error404Page />} />
+          </Routes>
+        </BrowserRouter>
+      </GeneralProvider>
     </AuthProvider>
   )
 }

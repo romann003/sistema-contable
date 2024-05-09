@@ -6,12 +6,11 @@ import { AppTopbarRef } from '../types';
 import { LayoutContext } from './context/layoutcontext';
 import { useAuth } from "../api/context/AuthContext";
 
-import { ConfirmDialog ,confirmDialog } from 'primereact/confirmdialog';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 
-
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
-    const { logout } = useAuth();
+    const { logout, isAuthenticated, user } = useAuth();
     const { layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
     const menubuttonRef = useRef(null);
     const topbarmenuRef = useRef(null);
@@ -59,10 +58,13 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             </button>
 
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                {/* <button type="button" className="p-link layout-topbar-button">
-                    <i className="pi pi-user"></i>
-                    <span>Profile</span>
-                </button> */}
+                <div className='mt-auto -m-1'>
+                    {isAuthenticated ? (
+                        <h5 className='text-gray-700'>Bienvenido, {user?.username} 👋</h5>
+                    ) : (
+                        <h5></h5>
+                    )}
+                </div>
                 <Link to="/dashboard/company">
                     <button type="button" className="p-link layout-topbar-button">
                         <i className="pi pi-cog"></i>
@@ -70,10 +72,10 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     </button>
                 </Link>
                 {/* <Link to="/" onClick={() => { logout(); }}> */}
-                    <button onClick={confirm1} type="button" className="p-link layout-topbar-button">
-                        <i className="pi pi-power-off"></i>
-                        <span>Cerrar Sesión</span>
-                    </button>
+                <button onClick={confirm1} type="button" className="p-link layout-topbar-button">
+                    <i className="pi pi-power-off"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
                 {/* </Link> */}
             </div>
         </div>

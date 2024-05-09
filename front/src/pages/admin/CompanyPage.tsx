@@ -9,9 +9,11 @@ import { InputText } from 'primereact/inputtext';
 import { Chip } from 'primereact/chip';
 import { OrganizationChart } from 'primereact/organizationchart';
 import { TreeNode } from 'primereact/treenode';
+import { useForm } from 'react-hook-form';
+import { useCompany } from '../../api/context/CompanyContext';
 
 
-interface Product {
+interface Company {
     id: number | null;
     name: string;
     nit: number | null;
@@ -20,7 +22,7 @@ interface Product {
 }
 
 export default function CompanyPage() {
-    let emptyProduct: Product = {
+    let emptyCompany: Company = {
         id: null,
         name: '',
         nit: null,
@@ -28,97 +30,106 @@ export default function CompanyPage() {
         address: ''
     };
 
-    const [products, setProducts] = useState<Product[]>([]);
-    const [productDialog, setProductDialog] = useState<boolean>(false);
-    const [product, setProduct] = useState<Product>(emptyProduct);
-    const [submitted, setSubmitted] = useState<boolean>(false);
+    const { register, handleSubmit } = useForm();
+    // const { getCompany } = useCompany();
+    // const [companies, setCompanies] = useState<Company[]>([]);
+    const [companyDialog, setCompanyDialog] = useState<boolean>(false);
+    // const [company, setCompany] = useState<Company>(emptyCompany);
+    // const [submitted, setSubmitted] = useState<boolean>(false);
     const toast = useRef<Toast>(null);
 
-    useEffect(() => {
-        ProductService.getProducts().then((data) => setProducts(data));
-    }, []);
+    // useEffect(() => {
+    //     ProductService.getProducts().then((data) => setCompanies(data));
+    // }, []);
 
     const openNew = () => {
-        setProduct(emptyProduct);
-        setSubmitted(false);
-        setProductDialog(true);
+        // setCompany(emptyCompany);
+        // setSubmitted(false);
+        setCompanyDialog(true);
     };
 
     const hideDialog = () => {
-        setSubmitted(false);
-        setProductDialog(false);
+        // setSubmitted(false);
+        setCompanyDialog(false);
     };
 
-    const saveProduct = () => {
-        setSubmitted(true);
+    const onSubmit = handleSubmit((data) => {
+        console.log(data)
+        setCompanyDialog(false);
+    })
 
-        if (product.name.trim() && product.nit.trim() && product.phone.trim() && product.address.trim()) {
-            let _products = [...products];
-            let _product = { ...product };
+    // const saveCompany = () => {
+    //     setSubmitted(true);
 
-            if (product.id) {
-                const index = findIndexById(product.id);
+    //     if (company.name.trim() && company.nit.trim() && company.phone.trim() && company.address.trim()) {
+    //         let _companies = [...companies];
+    //         let _company = { ...company };
 
-                _products[index] = _product;
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-            } else {
-                _product.id = createId();
-                _product.image = 'product-placeholder.svg';
-                _products.push(_product);
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-            }
+    //         if (company.id) {
+    //             const index = findIndexById(company.id);
 
-            setProducts(_products);
-            setProductDialog(false);
-            setProduct(emptyProduct);
-        }
-    };
+    //             _companies[index] = _company;
+    //             toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Company Updated', life: 3000 });
+    //             console.log(companies)
+    //         } else {
+    //             _company.id = createId();
+    //             _company.image = 'company-placeholder.svg';
+    //             _companies.push(_company);
+    //             toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Company Created', life: 3000 });
+    //             console.log(companies)
+    //         }
 
-
-    const findIndexById = (id: string) => {
-        let index = -1;
-
-        for (let i = 0; i < products.length; i++) {
-            if (products[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    };
-
-    const createId = (): string => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-
-        return id;
-    };
+    //         setCompanies(_companies);
+    //         setCompanyDialog(false);
+    //         setCompany(emptyCompany);
+    //     }
+    // };
 
 
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
-        const val = (e.target && e.target.value) || '';
-        let _product = { ...product };
+    // const findIndexById = (id: string) => {
+    //     let index = -1;
 
-        // @ts-ignore
-        _product[name] = val;
+    //     for (let i = 0; i < companies.length; i++) {
+    //         if (companies[i].id === id) {
+    //             index = i;
+    //             break;
+    //         }
+    //     }
 
-        setProduct(_product);
-    };
+    //     return index;
+    // };
 
-    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-        const val = e.value ?? 0;
-        let _product = { ...product };
+    // const createId = (): string => {
+    //     let id = '';
+    //     let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-        // @ts-ignore
-        _product[name] = val;
+    //     for (let i = 0; i < 5; i++) {
+    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
+    //     }
 
-        setProduct(_product);
-    };
+    //     return id;
+    // };
+
+
+    // const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
+    //     const val = (e.target && e.target.value) || '';
+    //     let _company = { ...company };
+
+    //     // @ts-ignore
+    //     _company[name] = val;
+
+    //     setCompany(_company);
+    // };
+
+    // const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
+    //     const val = e.value ?? 0;
+    //     let _company = { ...company };
+
+    //     // @ts-ignore
+    //     _company[name] = val;
+
+    //     setCompany(_company);
+    // };
 
     const leftToolbarTemplate = () => {
         return (
@@ -136,7 +147,7 @@ export default function CompanyPage() {
     const productDialogFooter = (
         <React.Fragment>
             <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Actualizar" icon="pi pi-check" onClick={saveProduct} />
+            <Button label="Actualizar" icon="pi pi-check" onClick={onSubmit} />
         </React.Fragment>
     );
 
@@ -215,6 +226,8 @@ export default function CompanyPage() {
         }
     ]);
 
+    
+
     return (
         <div>
             <Toast ref={toast} />
@@ -227,48 +240,52 @@ export default function CompanyPage() {
                 </div>
             </div>
 
-            <Dialog visible={productDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Editar Datos" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
-                {/* {product.image && <img src={`https://primefaces.org/cdn/primereact/images/product/${product.image}`} alt={product.image} className="product-image block m-auto pb-3" />} */}
-                <div className="field">
-                    <label htmlFor="name" className="font-bold">
-                        Razón Social
-                    </label>
-                    <InputText id="name" value={product.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !product.name })} />
-                    {submitted && !product.name && <small className="p-error">Razón Social obligatoria.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="nit" className="font-bold">
-                        NIT
-                    </label>
-                    <InputText id="nit" type="number" value={product.nit} onChange={(e) => onInputChange(e, 'nit')} required autoFocus className={classNames({ 'p-invalid': submitted && !product.nit })} />
-                    {submitted && !product.nit && <small className="p-error">Nit obligatorio.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="phone" className="font-bold">
-                        Número de Teléfono
-                    </label>
-                    <InputText id="phone" type="number" value={product.phone} onChange={(e) => onInputChange(e, 'phone')} required autoFocus className={classNames({ 'p-invalid': submitted && !product.phone })} />
-                    {submitted && !product.phone && <small className="p-error">Número de Teléfono obligatorio.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="address" className="font-bold">
-                        Dirección
-                    </label>
-                    <InputText id="address" value={product.address} onChange={(e) => onInputChange(e, 'address')} required autoFocus className={classNames({ 'p-invalid': submitted && !product.address })} />
-                    {submitted && !product.address && <small className="p-error">Dirección obligatoria.</small>}
-                </div>
+            <Dialog visible={companyDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Editar Datos" modal className="p-fluid" onHide={hideDialog} footer={productDialogFooter}>
+                <form>
 
-                <div className="field">
-                    <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                    <div className="formgrid grid">
-                        <div className="col-12">
-                            <div className="card flex flex-wrap gap-2 justify-content-between">
-                                <Chip label="Creado el: 01/01/2021 - 00:00" />
-                                <Chip label="Ultima Actualización: 01/01/2021 - 00:00" />
+                    <div className="field">
+                        <label htmlFor="name" className="font-bold">
+                            Razón Social
+                        </label>
+                        <InputText id="name" autoFocus {...register('name', { required: true })}/>
+                        {/* {submitted && !company.name && <small className="p-error">Razón Social obligatoria.</small>} */}
+                    </div>
+                    <div className="field">
+                        <label htmlFor="nit" className="font-bold">
+                            NIT
+                        </label>
+                        <InputText id="nit" type="number" {...register('nit', { required: true })}/>
+                        {/* {submitted && !company.nit && <small className="p-error">Nit obligatorio.</small>} */}
+                    </div>
+                    <div className="field">
+                        <label htmlFor="phone" className="font-bold">
+                            Número de Teléfono
+                        </label>
+                        <InputText id="phone" type="number" {...register('phone', { required: true })}/>
+                        {/* {submitted && !company.phone && <small className="p-error">Número de Teléfono obligatorio.</small>} */}
+                    </div>
+                    <div className="field">
+                        <label htmlFor="address" className="font-bold">
+                            Dirección
+                        </label>
+                        <InputText id="address" {...register('address', { required: true })}/>
+                        {/* {submitted && !company.address && <small className="p-error">Dirección obligatoria.</small>} */}
+                    </div>
+
+                    <div className="field">
+                        <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                        <div className="formgrid grid">
+                            <div className="col-12">
+                                <div className="card flex flex-wrap gap-2 justify-content-between">
+                                    <Chip label="Creado el: 01/01/2021 - 00:00" />
+                                    <Chip label="Ultima Actualización: 01/01/2021 - 00:00" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    {/* <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} /> */}
+                    {/* <Button label="Actualizar" icon="pi pi-check"/> */}
+                </form>
             </Dialog>
         </div>
     )
