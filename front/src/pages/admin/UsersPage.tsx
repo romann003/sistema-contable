@@ -17,7 +17,6 @@ import { Checkbox } from "primereact/checkbox";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { useRoles } from '../../api/context/RolContext';
 import { useForm } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
 
 
 
@@ -36,7 +35,7 @@ interface User {
 
 interface Status {
     name: string;
-    code: string;
+    code: boolean;
 }
 
 // interface Rol {
@@ -56,8 +55,8 @@ export default function UsersPage() {
     };
 
     const typeStatus: Status[] = [
-        { name: 'Activo', code: "1" },
-        { name: 'Inactivo', code: "0" }
+        { name: 'Activo', code: true },
+        { name: 'Inactivo', code: false }
     ];
 
     // const typeRoles: Rol[] = [
@@ -69,9 +68,8 @@ export default function UsersPage() {
     const { roles, setRoles, getRoles } = useRoles();
     const { users, getUsers, createUser, deleteUser, updateUser, setUsers, errors: userErrors } = useUsers();
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
-    const [selectedRol, setSelectedRol] = useState<roles>(null);
+    const [selectedRol, setSelectedRol] = useState<string>('');
     const [userDialog, setUserDialog] = useState<boolean>(false);
-    const [updateUserDialog, setUpdateUserDialog] = useState<boolean>(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState<boolean>(false);
     const [user, setUser] = useState<User>(emptyUser);
     const [submitted, setSubmitted] = useState<boolean>(false);
@@ -97,54 +95,71 @@ export default function UsersPage() {
         setEstados(_estados);
     }
 
-    const openNewUserDialog = () => {
+    const openNew = () => {
+        setUser(emptyUser);
+        setSubmitted(false);
         setUserDialog(true);
     };
 
-    const hideNewUserDialog = () => {
-        setUserDialog(false);
-    };
-
-    const hideUpdateUserDialog = () => {
+    const hideDialog = () => {
         setEstados([]);
         setSelectedStatus(null);
         setSelectedRol(null);
-        setUpdateUserDialog(false);
+        setSubmitted(false);
+        setUserDialog(false);
     };
 
     const hideDeleteUserDialog = () => {
         setDeleteUserDialog(false);
     };
 
-    // const saveUser = () => {
-    //     setSubmitted(true);
+    const saveUser = () => {
+        console.log(userErrors)
+        if (userErrors.length > 0) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Revise los campos', life: 3000 });
+            return;
+        } else {
+            setSubmitted(true);
 
-    //     if (user.name.trim() && user.last_name.trim() && user.username.trim() && user.email.trim() && user.password.trim()) {
-    //         let _users = [...users];
-    //         let _user = { ...user };
+            if (user.id) {
+                if (user.name.trim() && user.last_name.trim() && user.username.trim() && user.email.trim()) {
+                    let _users = [...users];
+                    let _user = { ...user };
 
-    //         if (user.id) {
+                    const index = findIndexById(user.id);
+                    _users[index] = _user;
+                    if (selectedStatus?.code === true) {
+                        _user.status = true
+                    } else if (selectedStatus?.code === false) { _user.status = false } else { _user.status = user.status }
+                    if (selectedRol !== null) { _user.rolId = selectedRol.id} else { _user.rolId = user.rolId }
+                    updateUser(user.id, _user);
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
+                    setUserDialog(false);
+                    setUser(emptyUser);
+                }
+            } else {
+                if (user.name.trim() && user.last_name.trim() && user.username.trim() && user.email.trim() && user.password.trim()) {
+                    let _users = [...users];
+                    let _user = { ...user };
 
-    //             const index = findIndexById(user.id);
-    //             _users[index] = _user;
-    //             updateUser(user.id, _user);
-    //             toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
-    //         } else {
-    //             _users.push(_user);
-    //             createUser(_user);
-    //             toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
-    //         }
-    //         // window.location.reload();
-    //         // setUsers(_users);
-    //         setUserDialog(false);
-    //         setUser(emptyUser);
-    //     }
+                    _users.push(_user);
+                    createUser(_user);
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
 
-    // };
+                    setUserDialog(false);
+                    setUser(emptyUser);
+                }
+            }
+        }
+
+
+
+
+    };
 
     const editUser = (user: User) => {
         setUser({ ...user });
-        setUpdateUserDialog(true);
+        setUserDialog(true);
     };
 
     const confirmDeleteUser = (user: User) => {
@@ -175,10 +190,30 @@ export default function UsersPage() {
         return index;
     };
 
+    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
+        const val = (e.target && e.target.value) || '';
+        let _user = { ...user };
+
+        // @ts-ignore
+        _user[name] = val;
+
+        setUser(_user);
+    };
+
+    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
+        const val = e.value ?? 0;
+        let _user = { ...user };
+
+        // @ts-ignore
+        _user[name] = val;
+
+        setUser(_user);
+    };
+
     const leftToolbarTemplate = () => {
         return (
             <div className="flex flex-wrap gap-2">
-                <Button label="Agregar usuario" icon="pi pi-plus" severity="success" onClick={openNewUserDialog} />
+                <Button label="Agregar usuario" icon="pi pi-plus" severity="success" onClick={openNew} />
             </div>
         );
     };
@@ -231,7 +266,12 @@ export default function UsersPage() {
             </IconField>
         </div>
     );
-
+    const userDialogFooter = (
+        <React.Fragment>
+            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
+            <Button label="Agregar usuario" icon="pi pi-check" onClick={saveUser} />
+        </React.Fragment>
+    );
     const deleteUserDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
@@ -243,15 +283,6 @@ export default function UsersPage() {
         toast.current?.show({ severity, summary, detail, life: 3000 });
         toast.current?.clear;
     }
-
-    const onSubmit = handleSubmit(async (data) => {
-        await createUser(data);
-    });
-
-    const onUpdate = handleSubmit(async (data) => {
-        updateUser(user.id, data);
-        console.log(data)
-    });
 
     return (
         <div>
@@ -274,158 +305,184 @@ export default function UsersPage() {
                 >
                     <Column header="ID" body={(rowData) => <span>{users.indexOf(rowData) + 1}</span>} />
                     <Column header="NOMBRE COMPLETO" sortable style={{ minWidth: '8rem' }} body={(rowData) => <span>{`${rowData.name} ${rowData.last_name}`}</span>} />
-                    <Column field="username" header="USERNAME" sortable style={{ minWidth: '10rem' }} />
+                    <Column field="username" header="USERNAME" sortable style={{ minWidth: '10rem' }}></Column>
                     <Column field="email" header="EMAIL" sortable style={{ minWidth: '10rem' }}></Column>
-                    <Column sortable style={{ minWidth: '12rem' }} header="ROL" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.rol.name}`} />} />
                     <Column field="status" header="ESTATUS" body={statusBodyTemplate} sortable style={{ minWidth: '7rem' }}></Column>
+                    <Column sortable style={{ minWidth: '12rem' }} header="ROL" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.rol.name}`} />} />
                     <Column sortable style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
                     <Column sortable style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
                     <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
                 </DataTable>
             </div>
 
-            <Dialog visible={updateUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Usuario" modal className="p-fluid" onHide={hideUpdateUserDialog}>
-                <form onSubmit={onUpdate} className="p-fluid">
+            <Dialog visible={userDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Usuario" modal className="p-fluid" footer={userDialogFooter} onHide={hideDialog}>
+                <div className="field">
+                    <label htmlFor="name" className="font-bold">
+                        Nombres
+                    </label>
+
+                    <InputText id="name" value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.name })} />
+                    {submitted && !user.name && <small className="p-error">El nombres es requerido.</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="last_name" className="font-bold">
+                        Apellidos
+                    </label>
+                    <InputText id="last_name" value={user.last_name} onChange={(e) => onInputChange(e, 'last_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.last_name })} />
+                    {submitted && !user.last_name && <small className="p-error">El apellidos es requerido.</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="username" className="font-bold">
+                        Nombre de Usuario
+                    </label>
+                    <InputText id="username" value={user.username} onChange={(e) => onInputChange(e, 'username')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.username })} />
+                    {submitted && !user.username && <small className="p-error">El nombre de usuario es requerido.</small>}
+                </div>
+                <div className="field">
+                    <label htmlFor="email" className="font-bold">
+                        Correo Electrónico
+                    </label>
+                    <InputText id="email" type="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
+                    {submitted && !user.email && <small className="p-error">El correo es requerido.</small>}
+                </div>
+                <div className="field">
                     {user.id ? (
                         <>
-                            <div className="field">
-                                <label htmlFor="name" className="font-bold">Nombres</label>
-                                <InputText id="name" type='text' autoFocus className="mb-2" {...register('name', { required: false })} value={user.name} onChange={(e) => setUser({ ...user, name: e.target.value })} />
-                            </div>
-                            <div className="field">
-                                <label htmlFor="last_name" className="font-bold">Apellidos</label>
-                                <InputText id="last_name" type='text' className="mb-2" {...register('last_name', { required: false })} value={user.last_name} onChange={(e) => setUser({ ...user, last_name: e.target.value })} />
-                            </div>
-                            <div className="field">
-                                <label htmlFor="username" className="font-bold">Nombre de Usuario</label>
-                                <InputText id="username" type='text' className="mb-2" {...register('username', { required: false })} value={user.username} onChange={(e) => setUser({ ...user, username: e.target.value })} />
-                            </div>
-                            <div className="field">
-                                <label htmlFor="email" className="font-bold">Correo Electrónico</label>
-                                <InputText id="email" type="email" {...register('email', { required: false })} value={user.email} onChange={(e) => setUser({ ...user, email: e.target.value })} />
-                            </div>
-
-
-                            <div className="field">
-                                <label htmlFor="updates" className="font-bold mt-3">
-                                    Actualizaciones
-                                </label>
-                                <div className="flex mt-2 justify-content-evenly align-content-center">
-                                    <div className="flex align-items-center mb-3">
-                                        <Checkbox inputId="e1" name="e1" value="e1" onChange={onEstadosChange} checked={estados.includes('e1')} />
-                                        <label htmlFor="checkbox Password" className="ml-2">
-                                            Contraseña
-                                        </label>
-                                    </div>
-                                    <div className="flex align-items-center mb-3">
-                                        <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
-                                        <label htmlFor="checkbox Password" className="ml-2">
-                                            Estado&nbsp;&nbsp;&nbsp;&nbsp;
-                                        </label>
-                                    </div>
-                                    <div className="flex align-items-center mb-3">
-                                        <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
-                                        <label htmlFor="checkbox Password" className="ml-2">
-                                            Rol&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        </label>
-                                    </div>
+                            <label htmlFor="updates" className="font-bold mt-3">
+                                Actualizaciones
+                            </label>
+                            <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
+                                <div className="flex align-items-center mb-3">
+                                    <Checkbox inputId="e1" name="e1" value="e1" onChange={onEstadosChange} checked={estados.includes('e1')} />
+                                    <label htmlFor="checkbox Password" className="ml-2">
+                                        Contraseña
+                                    </label>
                                 </div>
-                                {estados.includes('e1') ? (
-                                    <>
-                                        <div className="field">
-                                            <label htmlFor="password" className="font-bold my-3">Contraseña</label>
-                                            <InputText id="password" type="password" className="mb-2" {...register('password', { required: false })} onChange={(e) => setUser({ ...user, password: e.target.value })} />
-                                        </div>
-                                    </>
-                                ) : (<></>)}
+                                <div className="flex align-items-center mb-3">
+                                    <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
+                                    <label htmlFor="checkbox Password" className="ml-2">
+                                        Estado
+                                    </label>
+                                </div>
+                                <div className="flex align-items-center mb-3">
+                                    <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
+                                    <label htmlFor="checkbox Password" className="ml-2">
+                                        Rol
+                                    </label>
+                                </div>
 
-                                {estados.includes('e2') ? (
-                                    <>
-                                        <label htmlFor="estado" className="font-bold my-3">
-                                            Estado
-                                        </label>
-                                        <Dropdown value={selectedStatus} {...register('status', { required: false })} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="code" placeholder="Selecciona un estado" className="w-full" />
-                                    </>
-                                ) : (<></>)}
 
-                                {estados.includes('e3') ? (
-                                    <>
-                                        <label htmlFor="rol" className="font-bold my-3">
-                                            Rol
-                                        </label>
-                                        <Dropdown value={selectedRol} {...register('rolId', { required: false })} onChange={(e1: DropdownChangeEvent) => setSelectedRol(e1.value)} options={roles} optionLabel="id" placeholder="Selecciona un rol" className="w-full" />
-                                        {/* {console.log(selectedRol?.id)} */}
-                                    </>
-                                ) : (<></>)}
-                                <div className="field">
-                                    <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                                    <div className="formgrid grid">
-                                        <div className="col-12">
-                                            <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                                <Chip label={`${user.rol?.name}`} className="text-lg font-bold uppercase" />
-                                                <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(user)}`} severity={getSeverity(user)}></Tag>
-                                                <Chip label={`Creado el: ${new Date(user.createdAt).toLocaleDateString()} - ${new Date(user.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                                <Chip label={`Ultima Actualización: ${new Date(user.updatedAt).toLocaleDateString()} - ${new Date(user.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                            </div>
+                            </div>
+                            {estados.includes('e1') ? (
+                                <>
+                                    <label htmlFor="password" className="font-bold my-3">
+                                        Contraseña
+                                    </label>
+                                    <InputText type="password" id="password" onChange={(e) => onInputChange(e, 'password')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.password })} />
+                                    {submitted && !user.password && <small className="p-error">La contraseña es requerida.</small>}
+                                </>
+                            ) : (<></>)}
+
+                            {estados.includes('e2') ? (
+                                <>
+                                    <label htmlFor="password" className="font-bold my-3">
+                                        Estado
+                                    </label>
+                                    <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" autoFocus />
+                                </>
+                            ) : (<></>)}
+
+                            {estados.includes('e3') ? (
+                                <>
+                                    <label htmlFor="password" className="font-bold my-3">
+                                        Rol
+                                    </label>
+                                    <Dropdown value={selectedRol} onChange={(e: DropdownChangeEvent) => setSelectedRol(e.value)} options={roles} optionLabel="name" placeholder="Selecciona un rol" className="w-full" />
+                                    {/* {console.log(selectedRol?.id)} */}
+                                </>
+                            ) : (<></>)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <div className="field">
+                                <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                <div className="formgrid grid">
+                                    <div className="col-12">
+                                        <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                            <Chip label={`${user.rol?.name}`} className="text-lg font-bold uppercase" />
+                                            <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(user)}`} severity={getSeverity(user)}></Tag>
+                                            <Chip label={`Creado el: ${new Date(user.createdAt).toLocaleDateString()} - ${new Date(user.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                            <Chip label={`Ultima Actualización: ${new Date(user.updatedAt).toLocaleDateString()} - ${new Date(user.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-content-around mt-7">
-                                <div className="flex align-items-center w-full mx-1">
-                                    <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideUpdateUserDialog} />
-                                </div>
-                                <div className="flex align-items-center w-full mx-1">
-                                    <Button type='submit' label="Modificar Usuario" icon="pi pi-check" />
                                 </div>
                             </div>
                         </>
-                    ) : (<></>)}
+                    ) : (
+                        <>
+                            <label htmlFor="password" className="font-bold">
+                                Password
+                            </label>
+                            <InputText id="password" type="password" onChange={(e) => onInputChange(e, 'password')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.password })} />
+                            {submitted && !user.password && <small className="p-error">Password is required.</small>}
+                        </>
+                    )}
 
-                </form>
-            </Dialog>
+                </div>
 
 
-
-
-            <Dialog visible={userDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Nuevo Usuario" modal className="p-fluid" onHide={hideNewUserDialog}>
-                <form onSubmit={onSubmit} className="p-fluid">
-                    <div className="field">
-                        <label htmlFor="name" className="font-bold">Nombres</label>
-                        <InputText id="create_name" type='text' autoFocus className="mb-2" {...register('name', { required: true })} />
-                        {errors.name && (<small className="p-error">El nombre es requerido.</small>)}
-                    </div>
-                    <div className="field">
-                        <label htmlFor="last_name" className="font-bold">Apellidos</label>
-                        <InputText id="create_last_name" type='text' className="mb-2" {...register('last_name', { required: true })} />
-                        {errors.last_name && (<small className="p-error">El apellido es requerido.</small>)}
-                    </div>
-                    <div className="field">
-                        <label htmlFor="username" className="font-bold">Nombre de Usuario</label>
-                        <InputText id="create_username" type='text' className="mb-2" {...register('username', { required: true })} />
-                        {errors.username && (<small className="p-error">El apellido es requerido.</small>)}
-                    </div>
-                    <div className="field">
-                        <label htmlFor="email" className="font-bold">Correo Electrónico</label>
-                        <InputText id="create_email" type="email" className="mb-2" {...register('email', { required: true })} />
-                        {errors.email && (<small className="p-error">El email es requerido.</small>)}
-                    </div>
-                    <div className="field">
-                        <label htmlFor="password" className="font-bold">Contraseña</label>
-                        <InputText id="create_password" type="password" className="mb-2" {...register('password', { required: true })} />
-                        {errors.password && (<small className="p-error">La contraseña es requerida.</small>)}
-                    </div>
-
-                    <div className="flex justify-content-around mt-7">
-                        <div className="flex align-items-center w-full mx-1">
-                            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideNewUserDialog} />
+                {/* <div className="field">
+                    <label htmlFor="description" className="font-bold">
+                        Description
+                    </label>
+                    <InputTextarea id="description" value={user.description} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onInputTextAreaChange(e, 'description')} required rows={3} cols={20} />
+                </div>
+                <div className="field">
+                    <label className="mb-3 font-bold">Category</label>
+                    <div className="formgrid grid">
+                        <div className="field-radiobutton col-6">
+                            <RadioButton inputId="category1" name="category" value="Accessories" onChange={onCategoryChange} checked={user.category === 'Accessories'} />
+                            <label htmlFor="category1">Accessories</label>
                         </div>
-                        <div className="flex align-items-center w-full mx-1">
-                            <Button type='submit' label="Agregar Usuario" icon="pi pi-check" />
+                        <div className="field-radiobutton col-6">
+                            <RadioButton inputId="category2" name="category" value="Clothing" onChange={onCategoryChange} checked={user.category === 'Clothing'} />
+                            <label htmlFor="category2">Clothing</label>
+                        </div>
+                        <div className="field-radiobutton col-6">
+                            <RadioButton inputId="category3" name="category" value="Electronics" onChange={onCategoryChange} checked={user.category === 'Electronics'} />
+                            <label htmlFor="category3">Electronics</label>
+                        </div>
+                        <div className="field-radiobutton col-6">
+                            <RadioButton inputId="category4" name="category" value="Fitness" onChange={onCategoryChange} checked={user.category === 'Fitness'} />
+                            <label htmlFor="category4">Fitness</label>
                         </div>
                     </div>
-                </form>
+                </div>
+
+                <div className="formgrid grid">
+                    <div className="field col">
+                        <label htmlFor="price" className="font-bold">
+                            Price
+                        </label>
+                        <InputNumber id="price" value={user.price} onValueChange={(e) => onInputNumberChange(e, 'price')} mode="currency" currency="USD" locale="en-US" />
+                    </div>
+                    <div className="field col">
+                        <label htmlFor="quantity" className="font-bold">
+                            Quantity
+                        </label>
+                        <InputNumber id="quantity" value={user.quantity} onValueChange={(e) => onInputNumberChange(e, 'quantity')} />
+                    </div>
+                </div> */}
             </Dialog>
 
             <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteUserDialog}>
@@ -438,6 +495,13 @@ export default function UsersPage() {
                     )}
                 </div>
             </Dialog>
+
+            {/* <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteUsersDialog}>
+                <div className="confirmation-content">
+                    <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                    {user && <span>Are you sure you want to delete the selected userss?</span>}
+                </div>
+            </Dialog> */}
         </div>
 
     );

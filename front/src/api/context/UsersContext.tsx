@@ -63,7 +63,6 @@ export function UserProvider({ children }) {
     const updateUser = async (id, user) => {
         try {
             const res = await updateCompanyRequest(id, user);
-            console.log(res.data)
             // setUsers(res.data);
             if(res.status === 200){
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Actualizado', life: 3000 });
