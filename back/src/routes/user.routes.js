@@ -14,7 +14,7 @@ const router = Router();
 // router.delete('/:userId', [authJwt.verifyToken, authJwt.isAdmin], userController.deleteUserById);
 
 
-router.post('/', [authJwt.verifyToken, authJwt.isAdmin], validateSchema(userSchema), userController.createUser);
+router.post('/', [authJwt.verifyToken, authJwt.isAdmin], validateSchema(userSchema), validateUser(1), userController.createUser);
 router.get('/', [authJwt.verifyToken, authJwt.isAdmin], userController.getUsers);
 router.get('/:userId', [authJwt.verifyToken, authJwt.isAdmin], userController.getUserById);
 router.put('/:userId', [authJwt.verifyToken, authJwt.isAdmin], validateUser(), userController.updateUserById);

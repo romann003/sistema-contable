@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getUsersRequest, getUserRequest, createUserRequest, updateCompanyRequest, deleteUserRequest } from "../user.js";
+import { Toast } from 'primereact/toast';
 
 
 const UserContext = createContext();
@@ -15,6 +16,7 @@ export const useUsers = () => {
 export function UserProvider({ children }) {
     const [errors, setErrors] = useState([]);
     const [users, setUsers] = useState([]);
+    const toast = useRef<Toast>(null);
 
     const getUsers = async () => {
         try {
@@ -43,7 +45,13 @@ export function UserProvider({ children }) {
     const createUser = async (user) => {
         try {
             const res = await createUserRequest(user);
-            setUsers(res.data);
+
+            if(res.status === 200){
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Creado', life: 3000 });
+                window.location.reload();
+            };
+
+
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -55,7 +63,12 @@ export function UserProvider({ children }) {
     const updateUser = async (id, user) => {
         try {
             const res = await updateCompanyRequest(id, user);
-            setUsers(res.data);
+            console.log(res.data)
+            // setUsers(res.data);
+            if(res.status === 200){
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Actualizado', life: 3000 });
+                window.location.reload();
+            };
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -89,9 +102,11 @@ export function UserProvider({ children }) {
 
 
     return (
+        
         <UserContext.Provider value={{
             users, setUsers, getUsers, getUser, createUser, deleteUser, updateUser, errors
         }}>
+            <Toast ref={toast} />
             {children}
         </UserContext.Provider>
     )

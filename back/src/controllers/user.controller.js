@@ -27,7 +27,7 @@ export const createUser = async (req, res) => {
         }
 
         const savedUser = await newUser.save();
-        res.status(204);
+        res.status(200).json({ savedUser });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -75,7 +75,7 @@ export const updateUserById = async (req, res) => {
         if (password) updatedUser.password = await encryptPassword(password);
         await updatedUser.save();
 
-        res.status(204);
+        res.status(200).json({ updatedUser });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
