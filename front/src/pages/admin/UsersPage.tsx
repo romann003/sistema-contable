@@ -16,8 +16,10 @@ import { Chip } from 'primereact/chip';
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { useRoles } from '../../api/context/RolContext';
-import { useForm } from 'react-hook-form';
 
+
+import { FilterMatchMode } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
 
 
 interface User {
@@ -64,8 +66,7 @@ export default function UsersPage() {
     //     { name: 'Moderador', code: 'moderador' }
     // ];
 
-    const { register, handleSubmit, formState: { errors } } = useForm();
-    const { roles, setRoles, getRoles } = useRoles();
+    const { roles, getRoles } = useRoles();
     const { users, getUsers, createUser, deleteUser, updateUser, setUsers, errors: userErrors } = useUsers();
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [selectedRol, setSelectedRol] = useState<string>('');
@@ -78,9 +79,57 @@ export default function UsersPage() {
     const dt = useRef<DataTable<User[]>>(null);
     const [estados, setEstados] = useState<string[]>([]);
 
+
+    const [loading, setLoading] = useState<boolean>(true);
+    const [filters, setFilters] = useState<DataTableFilterMeta>({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        last_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        username: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        email: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.EQUALS },
+        'rol.name': { value: null, matchMode: FilterMatchMode.EQUALS },
+    });
+    const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
+
+    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        let _filters = { ...filters };
+
+        // @ts-ignore
+        _filters['global'].value = value;
+
+        setFilters(_filters);
+        setGlobalFilterValue(value);
+    };
+
+    const renderHeader = () => {
+        return (
+            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
+                <h4 className="m-0">Lista de Usuarios</h4>
+                <IconField iconPosition="left">
+                    <InputIcon className="pi pi-search" />
+                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+                </IconField>
+            </div>
+        );
+    };
+
+    const last_nameBodyTemplate = (rowData: User) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span>{rowData.last_name}</span>
+            </div>
+        );
+    };
+
+    const header = renderHeader();
+
+
     useEffect(() => {
         getUsers()
         getRoles()
+        setLoading(false);
     }, []);
 
 
@@ -131,7 +180,7 @@ export default function UsersPage() {
                     if (selectedStatus?.code === true) {
                         _user.status = true
                     } else if (selectedStatus?.code === false) { _user.status = false } else { _user.status = user.status }
-                    if (selectedRol !== null) { _user.rolId = selectedRol.id} else { _user.rolId = user.rolId }
+                    if (selectedRol !== null) { _user.rolId = selectedRol.id } else { _user.rolId = user.rolId }
                     updateUser(user.id, _user);
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
                     setUserDialog(false);
@@ -178,7 +227,7 @@ export default function UsersPage() {
         toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
     };
 
-    const findIndexById = (id: string) => {
+    const findIndexById = (id: number) => {
         let index = -1;
 
         for (let i = 0; i < users.length; i++) {
@@ -213,7 +262,7 @@ export default function UsersPage() {
     const leftToolbarTemplate = () => {
         return (
             <div className="flex flex-wrap gap-2">
-                <Button label="Agregar usuario" icon="pi pi-plus" severity="success" onClick={openNew} />
+                <Button label="Agregar Usuario" icon="pi pi-plus" severity="success" onClick={openNew} />
             </div>
         );
     };
@@ -257,19 +306,10 @@ export default function UsersPage() {
         }
     };
 
-    const header = (
-        <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 className="m-0">Lista de Usuarios</h4>
-            <IconField iconPosition="left">
-                <InputIcon className="pi pi-search" />
-                <InputText type="search" placeholder="Buscar..." onInput={(e) => { const target = e.target as HTMLInputElement; setGlobalFilter(target.value); }} />
-            </IconField>
-        </div>
-    );
     const userDialogFooter = (
         <React.Fragment>
             <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Agregar usuario" icon="pi pi-check" onClick={saveUser} />
+            <Button label="Guardar Usuario" icon="pi pi-check" onClick={saveUser} />
         </React.Fragment>
     );
     const deleteUserDialogFooter = (
@@ -287,7 +327,6 @@ export default function UsersPage() {
     return (
         <div>
             <Toast ref={toast} />
-
             {userErrors.map((error, i) => (
                 <div key={i}>
                     {showInfo('error', 'Error', error)}
@@ -296,22 +335,23 @@ export default function UsersPage() {
             <div className="card">
                 <h3>Usuarios</h3>
                 <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
-                <DataTable ref={dt} value={users}
-                    dataKey="id"
-                    paginator rows={15}
+                <DataTable ref={dt} dataKey="id" value={users} filters={filters} loading={loading}
+                    paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} usuarios"
                     // rowsPerPageOptions={[5, 10, 25]}
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} usuarios" globalFilter={globalFilter} header={header}
+                    globalFilterFields={['name', 'last_name', 'username', 'email', 'status', 'rol.name']} header={header} emptyMessage="No se encontraron usuarios."
+                    filterDisplay="row"
                 >
                     <Column header="ID" body={(rowData) => <span>{users.indexOf(rowData) + 1}</span>} />
-                    <Column header="NOMBRE COMPLETO" sortable style={{ minWidth: '8rem' }} body={(rowData) => <span>{`${rowData.name} ${rowData.last_name}`}</span>} />
+                    {/* <Column header="NOMBRE COMPLETO" style={{ minWidth: '8rem' }} body={(rowData) => <span>{`${rowData.name} ${rowData.last_name}`}</span>} /> */}
+                    <Column field="name" header="NOMBRES" filter filterPlaceholder="Search by name" sortable style={{ minWidth: '12rem' }} />
+                    <Column header="APELLIDOS" filterField="description" body={last_nameBodyTemplate} filter filterPlaceholder="Search by last name" sortable style={{ minWidth: '12rem' }} />
                     <Column field="username" header="USERNAME" sortable style={{ minWidth: '10rem' }}></Column>
                     <Column field="email" header="EMAIL" sortable style={{ minWidth: '10rem' }}></Column>
-                    <Column field="status" header="ESTATUS" body={statusBodyTemplate} sortable style={{ minWidth: '7rem' }}></Column>
-                    <Column sortable style={{ minWidth: '12rem' }} header="ROL" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.rol.name}`} />} />
-                    <Column sortable style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
-                    <Column sortable style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
+                    <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
+                    <Column style={{ minWidth: '10rem' }} header="ROL" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.rol.name}`} />}/>
+                    <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
+                    <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
+                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }}></Column>
                 </DataTable>
             </div>
 
@@ -322,14 +362,14 @@ export default function UsersPage() {
                     </label>
 
                     <InputText id="name" value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.name })} />
-                    {submitted && !user.name && <small className="p-error">El nombres es requerido.</small>}
+                    {submitted && !user.name && <small className="p-error">Los nombres es requerido.</small>}
                 </div>
                 <div className="field">
                     <label htmlFor="last_name" className="font-bold">
                         Apellidos
                     </label>
                     <InputText id="last_name" value={user.last_name} onChange={(e) => onInputChange(e, 'last_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.last_name })} />
-                    {submitted && !user.last_name && <small className="p-error">El apellidos es requerido.</small>}
+                    {submitted && !user.last_name && <small className="p-error">Los apellidos es requerido.</small>}
                 </div>
                 <div className="field">
                     <label htmlFor="username" className="font-bold">
@@ -360,13 +400,13 @@ export default function UsersPage() {
                                 </div>
                                 <div className="flex align-items-center mb-3">
                                     <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
-                                    <label htmlFor="checkbox Password" className="ml-2">
+                                    <label htmlFor="checkbox Estado" className="ml-2">
                                         Estado
                                     </label>
                                 </div>
                                 <div className="flex align-items-center mb-3">
                                     <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
-                                    <label htmlFor="checkbox Password" className="ml-2">
+                                    <label htmlFor="checkbox Rol" className="ml-2">
                                         Rol
                                     </label>
                                 </div>
@@ -385,7 +425,7 @@ export default function UsersPage() {
 
                             {estados.includes('e2') ? (
                                 <>
-                                    <label htmlFor="password" className="font-bold my-3">
+                                    <label htmlFor="status" className="font-bold my-3">
                                         Estado
                                     </label>
                                     <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" autoFocus />
@@ -394,7 +434,7 @@ export default function UsersPage() {
 
                             {estados.includes('e3') ? (
                                 <>
-                                    <label htmlFor="password" className="font-bold my-3">
+                                    <label htmlFor="rol" className="font-bold my-3">
                                         Rol
                                     </label>
                                     <Dropdown value={selectedRol} onChange={(e: DropdownChangeEvent) => setSelectedRol(e.value)} options={roles} optionLabel="name" placeholder="Selecciona un rol" className="w-full" />

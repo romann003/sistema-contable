@@ -25,7 +25,8 @@ export const createDepartment = async (req, res) => {
 
 export const getDepartments = async (req, res) => {
     try {
-        const departments = await DepartmentSchema.findAll();
+        const departments = await DepartmentSchema.findAll({ include: [{ association: 'company' }] });
+        // const departments = await DepartmentSchema.findAll({where: { status: true } });
         if (departments.length === 0) return res.status(404).json({ message: "No hay departamentos registrados" });
         res.status(200).json(departments);
     } catch (error) {
@@ -62,7 +63,7 @@ export const deleteDepartmentById = async (req, res) => {
     try {
         const deleteDepartment = await DepartmentSchema.destroy({ where: { id: req.params.departmentId } });
         if (!deleteDepartment) return res.status(404).json({ message: "Departamento no encontrado" });
-        res.status(200).json({ message: "Departamento eliminado correctamente" });
+        res.status(204);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

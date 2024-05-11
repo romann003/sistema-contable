@@ -25,7 +25,7 @@ export const createArea = async (req, res) => {
 
 export const getAreas = async (req, res) => {
     try {
-        const areas = await AreaSchema.findAll();
+        const areas = await AreaSchema.findAll( { include: [{ association: 'department' }] } );
         if (areas.length === 0) return res.status(404).json({ message: "No hay areas registradas" });
         res.status(200).json(areas);
     } catch (error) {
@@ -62,7 +62,7 @@ export const deleteAreaById = async (req, res) => {
     try {
         const deleteArea = await AreaSchema.destroy({ where: { id: req.params.areaId } });
         if (!deleteArea) return res.status(404).json({ message: "Area del departamento no encontrado" });
-        res.status(200).json({ message: "El area o puesto del departamento ha sido eliminado correctamente" });
+        res.status(204);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

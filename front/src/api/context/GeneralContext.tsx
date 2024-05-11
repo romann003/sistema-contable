@@ -2,6 +2,8 @@ import { createContext, useContext } from "react";
 import { CompanyProvider } from "./CompanyContext";
 import { UserProvider } from "./UsersContext";
 import { RolesProvider } from "./RolContext";
+import { DepartmentProvider } from "./DepartmentContext";
+import { AreaProvider } from "./AreaContext";
 
 const GeneralContext = createContext();
 
@@ -19,7 +21,11 @@ export function GeneralProvider({ children }) {
             <CompanyProvider>
                 <UserProvider>
                     <RolesProvider>
-                        {children}
+                        <DepartmentProvider>
+                            <AreaProvider>
+                                {children}
+                            </AreaProvider>
+                        </DepartmentProvider>
                     </RolesProvider>
                 </UserProvider>
             </CompanyProvider>

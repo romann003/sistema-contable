@@ -1,27 +1,27 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { getUsersRequest, getUserRequest, createUserRequest, updateUserRequest, deleteUserRequest } from "../user.js";
+import { getDepartmentsRequest, getDepartmentRequest, createDepartmentRequest, updateDepartmentRequest, deleteDepartmentRequest } from "../department.js";
 import { Toast } from 'primereact/toast';
 
 
-const UserContext = createContext();
+const DepartmentContext = createContext();
 
-export const useUsers = () => {
-    const context = useContext(UserContext);
+export const useDepartments = () => {
+    const context = useContext(DepartmentContext);
     if (!context) {
-        throw new Error("useUser must be used within an UserProvider");
+        throw new Error("useDepartments must be used within an DepartmentProvider");
     }
     return context;
 }
 
-export function UserProvider({ children }) {
+export function DepartmentProvider({ children }) {
     const [errors, setErrors] = useState([]);
-    const [users, setUsers] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const toast = useRef<Toast>(null);
 
-    const getUsers = async () => {
+    const getDepartments = async () => {
         try {
-            const res = await getUsersRequest();
-            setUsers(res.data);
+            const res = await getDepartmentsRequest();
+            setDepartments(res.data);
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -30,10 +30,10 @@ export function UserProvider({ children }) {
         }
     }
 
-    const getUser = async (id) => {
+    const getDepartment = async (id) => {
         try {
-            const res = await getUserRequest(id);
-            setUsers(res.data);
+            const res = await getDepartmentRequest(id);
+            setDepartments(res.data);
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -42,12 +42,12 @@ export function UserProvider({ children }) {
         }
     }
 
-    const createUser = async (user) => {
+    const createDepartment = async (department) => {
         try {
-            const res = await createUserRequest(user);
+            const res = await createDepartmentRequest(department);
 
             if(res.status === 200){
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Creado', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Departamento Creado', life: 3000 });
                 window.location.reload();
             };
 
@@ -60,12 +60,12 @@ export function UserProvider({ children }) {
         }
     }
 
-    const updateUser = async (id, user) => {
+    const updateDepartment = async (id, department) => {
         try {
-            const res = await updateUserRequest(id, user);
-            // setUsers(res.data);
+            const res = await updateDepartmentRequest(id, department);
+            // setDepartments(res.data);
             if(res.status === 200){
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Actualizado', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Departamento Actualizado', life: 3000 });
                 window.location.reload();
             };
         } catch (error) {
@@ -76,10 +76,10 @@ export function UserProvider({ children }) {
         }
     }
 
-    const deleteUser = async (id) => {
+    const deleteDepartment = async (id) => {
         try {
-            const res = await deleteUserRequest(id);
-            // if(res.status === 204) setUsers(users.filter((u) => u.id !== id));
+            const res = await deleteDepartmentRequest(id);
+            // if(res.status === 204) setDepartments(departments.filter((u) => u.id !== id));
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -101,12 +101,12 @@ export function UserProvider({ children }) {
 
 
     return (
-        
-        <UserContext.Provider value={{
-            users, setUsers, getUsers, getUser, createUser, deleteUser, updateUser, errors
+
+        <DepartmentContext.Provider value={{
+            departments, setDepartments, getDepartments, getDepartment, createDepartment, deleteDepartment, updateDepartment, errors
         }}>
             <Toast ref={toast} />
             {children}
-        </UserContext.Provider>
+        </DepartmentContext.Provider>
     )
 }
