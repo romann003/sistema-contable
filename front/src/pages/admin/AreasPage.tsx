@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
@@ -18,15 +17,15 @@ import { Checkbox } from "primereact/checkbox";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-
-
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { InputTextarea } from 'primereact/inputtextarea';
 
 
 interface Area {
     id: number | null;
     name: string;
     description: string;
-    salary: number | null;
+    salary: string | null;
     status: boolean;
     createdAt: string;
     updatedAt: string;
@@ -58,15 +57,11 @@ export default function AreasPage() {
     ];
 
     const { departments, getDepartments } = useDepartments();
-    const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-
     const { areas, getAreas, createArea, deleteArea, updateArea, setAreas, errors: areaErrors } = useAreas();
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [areaDialog, setAreaDialog] = useState<boolean>(false);
     const [deleteAreaDialog, setDeleteAreaDialog] = useState<boolean>(false);
     const [area, setArea] = useState<Area>(emptyArea);
-    const [submitted, setSubmitted] = useState<boolean>(false);
-    const [globalFilter, setGlobalFilter] = useState<string>('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<Area[]>>(null);
     const [estados, setEstados] = useState<string[]>([]);
@@ -122,7 +117,6 @@ export default function AreasPage() {
 
     const header = renderHeader();
 
-
     useEffect(() => {
         getAreas()
         getDepartments();
@@ -142,16 +136,16 @@ export default function AreasPage() {
     }
 
     const openNew = () => {
-        setArea(emptyArea);
-        setSubmitted(false);
+        // setArea(emptyArea);
+        // setSubmitted(false);
         setAreaDialog(true);
     };
 
     const hideDialog = () => {
         setEstados([]);
         setSelectedStatus(null);
-        setSelectedDepartment(null);
-        setSubmitted(false);
+        // setSelectedDepartment(null);
+        // setSubmitted(false);
         setAreaDialog(false);
     };
 
@@ -159,50 +153,6 @@ export default function AreasPage() {
         setDeleteAreaDialog(false);
     };
 
-    const saveArea = () => {
-        console.log(areaErrors)
-        if (areaErrors.length > 0) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Revise los campos', life: 3000 });
-            return;
-        } else {
-            setSubmitted(true);
-            if (area.id) {
-                if (area.name.trim() && area.salary !== null) {
-                    let _areas = [...areas];
-                    let _area = { ...area };
-
-                    const index = findIndexById(area.id);
-                    _areas[index] = _area;
-                    if (selectedStatus?.code === true) {
-                        _area.status = true
-                    } else if (selectedStatus?.code === false) { _area.status = false } else { _area.status = area.status }
-                    // if (area.departmentId === null) { _area.departmentId = 1 } else { _area.departmentId = area.departmentId }
-                    if (selectedDepartment !== null) { _area.departmentId = selectedDepartment.id } else { _area.departmentId = area.departmentId }
-                    updateArea(area.id, _area);
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Updated', life: 3000 });
-                    setAreaDialog(false);
-                    setArea(emptyArea);
-                }
-            } else {
-                if (area.name.trim()) {
-                    let _areas = [...areas];
-                    let _area = { ...area };
-                    if (selectedDepartment !== null) { _area.departmentId = selectedDepartment.id } else { _area.departmentId = area.departmentId }
-
-                    _areas.push(_area);
-                    createArea(_area);
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Created', life: 3000 });
-
-                    setAreaDialog(false);
-                    setArea(emptyArea);
-                }
-            }
-        }
-
-
-
-
-    };
 
     const editArea = (area: Area) => {
         setArea({ ...area });
@@ -222,38 +172,7 @@ export default function AreasPage() {
         setAreas(_areas);
         setDeleteAreaDialog(false);
         setArea(emptyArea);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Deleted', life: 3000 });
-    };
-
-    const findIndexById = (id: number) => {
-        let index = -1;
-
-        for (let i = 0; i < areas.length; i++) {
-            if (areas[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-        return index;
-    };
-
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
-        const val = (e.target && e.target.value) || '';
-        let _area = { ...area };
-        // @ts-ignore
-        _area[name] = val;
-
-        setArea(_area);
-    };
-
-    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-        const val = e.value ?? 0;
-        let _area = { ...area };
-
-        // @ts-ignore
-        _area[name] = val;
-
-        setArea(_area);
+        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Deleted', life: 5000 });
     };
 
     const leftToolbarTemplate = () => {
@@ -303,12 +222,6 @@ export default function AreasPage() {
         }
     };
 
-    const areaDialogFooter = (
-        <React.Fragment>
-            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Guardar Area" icon="pi pi-check" onClick={saveArea} />
-        </React.Fragment>
-    );
     const deleteAreaDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteAreaDialog} />
@@ -316,20 +229,15 @@ export default function AreasPage() {
         </React.Fragment>
     );
 
-    const showInfo = (severity, summary, detail) => {
-        toast.current?.show({ severity, summary, detail, life: 3000 });
-        toast.current?.clear;
-    }
 
     return (
         <div>
             <Toast ref={toast} />
 
-            {areaErrors.map((error, i) => (
-                <div key={i}>
-                    {showInfo('error', 'Error', error)}
-                </div>
+            {areaErrors.map((error) => (
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })            
             ))}
+
             <div className="card">
                 <h3>Areas (Cargos)</h3>
                 <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
@@ -354,135 +262,149 @@ export default function AreasPage() {
                 </DataTable>
             </div>
 
-            <Dialog visible={areaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Area" modal className="p-fluid" footer={areaDialogFooter} onHide={hideDialog}>
-                <div className="field">
-                    <label htmlFor="name" className="font-bold">
-                        Nombre del Area o Cargo *
-                    </label>
-
-                    <InputText id="name" value={area.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !area.name })} />
-                    {submitted && !area.name && <small className="p-error">El nombre es requerido.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="description" className="font-bold">
-                        Descripción
-                    </label>
-                    <InputText id="description" value={area.description || ''} onChange={(e) => onInputChange(e, 'description')} required autoFocus />
-                </div>
-                <div className="field">
-                    <label htmlFor="salary" className="font-bold">
-                        Salario base *
-                    </label>
-                    <InputNumber id="salary" value={area.salary} onValueChange={(e) => onInputNumberChange(e, 'salary')} mode="currency" currency="GTQ" locale="en-US" />
-                    {submitted && !area.salary && <small className="p-error">El salario base es requerido.</small>}
-                </div>
-                <div className="field">
-                    {area.id ? (
-                        <>
-                            <label htmlFor="updates" className="font-bold mt-3">
-                                Actualizaciones
-                            </label>
-                            <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
-                                <div className="flex align-items-center mb-3">
-                                    <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
-                                    <label htmlFor="checkbox Estado" className="ml-2">
-                                        Estado
-                                    </label>
-                                </div>
-                                <div className="flex align-items-center mb-3">
-                                    <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
-                                    <label htmlFor="checkbox Departamento" className="ml-2">
-                                        Departamento
-                                    </label>
-                                </div>
-                            </div>
-                            {estados.includes('e2') ? (
-                                <>
-                                    <label htmlFor="status" className="font-bold my-3">
-                                        Estado
-                                    </label>
-                                    <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" autoFocus />
-                                </>
-                            ) : (<></>)}
-
-                            {estados.includes('e3') ? (
-                                <>
-                                    <label htmlFor="department" className="font-bold my-3">
-                                        Departamento
-                                    </label>
-                                    <Dropdown value={selectedDepartment} onChange={(e: DropdownChangeEvent) => setSelectedDepartment(e.value)} options={departments} optionLabel="name" placeholder="Selecciona un Nuevo Departamento" className="w-full" />
-                                </>
-                            ) : (<></>)}
 
 
+
+
+
+
+
+
+            <Dialog visible={areaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Area" modal className="p-fluid" onHide={hideDialog}>
+                <Formik
+                    initialValues={{ name: '' || area.name, description: '' || area.description, salary: '' || area.salary, department: '' }}
+                    validate={values => {
+                        let errors = {};
+                        if (!values.name) {
+                            errors.name = 'El nombre es requerido';
+                        } else if (values.name.length < 3) {
+                            errors.name = 'El nombre debe tener al menos 3 caracteres';
+                        } else if (!/^[a-zA-ZÀ-ÿ\s]{1,40}$/.test(values.name)) {
+                            errors.name = 'El nombre solo puede contener letras';
+                        }
+                        if (!values.salary) {
+                            errors.salary = 'El salario es requerido';
+                        } else if (values.salary <= 0) {
+                            errors.salary = 'El salario debe ser mayor a 0';
+                        } else if (!/^[0-9]+(\.[0-9]+)?$/.test(values.salary)) {
+                            errors.salary = 'El salario solo puede contener números y un punto decimal opcional';
+                        }
+                        if (!area.id) {
+                            if (!values.department) {
+                                errors.department = 'El departamento es requerido';
+                            }
+                        }
+                        return errors;
+                    }}
+                    onSubmit={(values, { resetForm }) => {
+
+                        if (values) {
+                            if (area.id) {
+
+                                if (selectedStatus?.code === true) { values.status = true }
+                                else if (selectedStatus?.code === false) { values.status = false } else { values.status = area.status }
+                                if (values.department !== "") { values.departmentId = values.department.id } else { values.departmentId = area.departmentId }
+                                updateArea(area.id, values);
+                                setAreaDialog(false);
+                                setArea(emptyArea);
+                                resetForm();
+                            } else {
+                                values.departmentId = values.department.id
+                                createArea(values);
+                                setAreaDialog(false);
+                                setArea(emptyArea);
+                                resetForm();
+                            }
+
+                        } else {
+                            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Area no creada', life: 5000 });
+                        }
+                    }}
+                >
+                    {({ values, errors, dirty, isValid, handleChange, handleBlur }) => (
+                        <Form>
                             <div className="field">
-                                <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                                <div className="formgrid grid">
-                                    <div className="col-12">
-                                        <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                            <Chip label={`${area.department?.name}`} className="text-lg font-bold uppercase" />
-                                            <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(area)}`} severity={getSeverity(area)}></Tag>
-                                            <Chip label={`Creado el: ${new Date(area.createdAt).toLocaleDateString()} - ${new Date(area.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                            <Chip label={`Ultima Actualización: ${new Date(area.updatedAt).toLocaleDateString()} - ${new Date(area.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                        </div>
-                                    </div>
-                                </div>
+                                <label htmlFor="name" className="font-bold">Nombre del Area o Cargo *</label>
+                                <InputText id="name" name='name' type='text' autoFocus value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name} />
+                                <ErrorMessage name="name" component={() => (<small className="p-error">{errors.name}</small>)} />
                             </div>
-                        </>
-                    ) : (
-                        <>
-                            <label htmlFor="department" className="font-bold my-3">
-                                Departamento
-                            </label>
-                            <Dropdown id="department" value={selectedDepartment} onChange={(e: DropdownChangeEvent) => setSelectedDepartment(e.value)} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" className={classNames({ 'w-full p-invalid': submitted && !area.department })} required/>
-                            {submitted && !area.department && <small className="p-error">El departamento es requerido.</small>}
-                        </>
+                            <div className="field">
+                                <label htmlFor="description" className="font-bold">Descripción</label>
+                                <InputTextarea id="description" name='description' autoResize rows={1} value={values.description || ''} onChange={handleChange} onBlur={handleBlur} />
+                                <ErrorMessage name="description" component={() => (<small className="p-error">{errors.description}</small>)} />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="salary" className="font-bold">Salario base *</label>
+                                <InputText id="salary" name='salary' type='number' value={values.salary || ''} onChange={handleChange} onBlur={handleBlur} />
+                                <ErrorMessage name="salary" component={() => (<small className="p-error">{errors.salary}</small>)} />
+                            </div>
+                            <div className="field">
+                                {area.id ? (
+                                    <>
+                                        <label htmlFor="updates" className="font-bold mt-3">
+                                            Actualizaciones
+                                        </label>
+                                        <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
+                                                <label htmlFor="checkbox Estado" className="ml-2">
+                                                    Estado
+                                                </label>
+                                            </div>
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
+                                                <label htmlFor="checkbox Departamento" className="ml-2">
+                                                    Departamento
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {estados.includes('e2') ? (
+                                            <>
+                                                <label htmlFor="status" className="font-bold my-3">
+                                                    Estado
+                                                </label>
+                                                <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" autoFocus />
+                                            </>
+                                        ) : (<></>)}
+
+                                        {estados.includes('e3') ? (
+                                            <>
+                                                <label htmlFor="department" className="font-bold my-3">Departamento</label>
+                                                <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" />
+                                            </>
+                                        ) : (<></>)}
+
+
+                                        <div className="field">
+                                            <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                            <div className="formgrid grid">
+                                                <div className="col-12">
+                                                    <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                                        <Chip label={`${area.department?.name}`} className="text-lg font-bold uppercase" />
+                                                        <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(area)}`} severity={getSeverity(area)}></Tag>
+                                                        <Chip label={`Creado el: ${new Date(area.createdAt).toLocaleDateString()} - ${new Date(area.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                        <Chip label={`Ultima Actualización: ${new Date(area.updatedAt).toLocaleDateString()} - ${new Date(area.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <label htmlFor="department" className="font-bold my-3">Departamento</label>
+                                        <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" />
+                                        <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
+
+                                    </>
+                                )}
+                            </div>
+                            <div className="field flex mt-7 mb-0 align-content-between justify-content-between">
+                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
+                                <Button label="Guardar Area" icon="pi pi-check" type='submit' className='mx-1' disabled={area.id ? false : !(isValid && dirty)} />
+                            </div>
+                        </Form>
                     )}
-                </div>
-
-
-                {/* <div className="field">
-                    <label htmlFor="description" className="font-bold">
-                        Description
-                    </label>
-                    <InputTextarea id="description" value={area.description} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onInputTextAreaChange(e, 'description')} required rows={3} cols={20} />
-                </div>
-                <div className="field">
-                    <label className="mb-3 font-bold">Category</label>
-                    <div className="formgrid grid">
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category1" name="category" value="Accessories" onChange={onCategoryChange} checked={area.category === 'Accessories'} />
-                            <label htmlFor="category1">Accessories</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category2" name="category" value="Clothing" onChange={onCategoryChange} checked={area.category === 'Clothing'} />
-                            <label htmlFor="category2">Clothing</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category3" name="category" value="Electronics" onChange={onCategoryChange} checked={area.category === 'Electronics'} />
-                            <label htmlFor="category3">Electronics</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category4" name="category" value="Fitness" onChange={onCategoryChange} checked={area.category === 'Fitness'} />
-                            <label htmlFor="category4">Fitness</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="formgrid grid">
-                    <div className="field col">
-                        <label htmlFor="price" className="font-bold">
-                            Price
-                        </label>
-                        <InputNumber id="price" value={area.price} onValueChange={(e) => onInputNumberChange(e, 'price')} mode="currency" currency="USD" locale="en-US" />
-                    </div>
-                    <div className="field col">
-                        <label htmlFor="quantity" className="font-bold">
-                            Quantity
-                        </label>
-                        <InputNumber id="quantity" value={area.quantity} onValueChange={(e) => onInputNumberChange(e, 'quantity')} />
-                    </div>
-                </div> */}
+                </Formik>
             </Dialog>
 
             <Dialog visible={deleteAreaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteAreaDialogFooter} onHide={hideDeleteAreaDialog}>
@@ -496,6 +418,5 @@ export default function AreasPage() {
                 </div>
             </Dialog>
         </div>
-
     );
 }

@@ -25,7 +25,7 @@ export const createArea = async (req, res) => {
 
 export const getAreas = async (req, res) => {
     try {
-        const areas = await AreaSchema.findAll( { include: [{ association: 'department' }] } );
+        const areas = await AreaSchema.findAll( { include: [{ association: 'department' }] , order: [['createdAt' && 'updatedAt', 'DESC']]} );
         if (areas.length === 0) return res.status(404).json({ message: "No hay areas registradas" });
         res.status(200).json(areas);
     } catch (error) {

@@ -4,6 +4,7 @@ import { UserProvider } from "./UsersContext";
 import { RolesProvider } from "./RolContext";
 import { DepartmentProvider } from "./DepartmentContext";
 import { AreaProvider } from "./AreaContext";
+import { AuthProvider } from "./AuthContext";
 
 const GeneralContext = createContext();
 
@@ -18,17 +19,19 @@ export const useGeneral = () => {
 export function GeneralProvider({ children }) {
     return (
         <GeneralContext.Provider value={{}}>
-            <CompanyProvider>
-                <UserProvider>
-                    <RolesProvider>
-                        <DepartmentProvider>
-                            <AreaProvider>
-                                {children}
-                            </AreaProvider>
-                        </DepartmentProvider>
-                    </RolesProvider>
-                </UserProvider>
-            </CompanyProvider>
+            <AuthProvider>
+                <CompanyProvider>
+                    <UserProvider>
+                        <RolesProvider>
+                            <DepartmentProvider>
+                                <AreaProvider>
+                                    {children}
+                                </AreaProvider>
+                            </DepartmentProvider>
+                        </RolesProvider>
+                    </UserProvider>
+                </CompanyProvider>
+            </AuthProvider>
         </GeneralContext.Provider>
     )
 }

@@ -21,29 +21,27 @@ import { GeneralProvider } from "./api/context/GeneralContext";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <GeneralProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route index element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
+    <GeneralProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<LayoutDashboard />} >
-                <Route index element={<Dashboard />} />
-                <Route path="departments" element={<DepartmentsPage />} />
-                <Route path="areas" element={<AreasPage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="company" element={<CompanyPage />} />
-                <Route path="employees" element={<EmployeesPage />} />
-                <Route path="nomina" element={<NominaPage />} />
-              </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<LayoutDashboard />} >
+              <Route index element={<Dashboard />} />
+              <Route path="departments" element={<DepartmentsPage />} />
+              <Route path="areas" element={<AreasPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="company" element={<CompanyPage />} />
+              <Route path="employees" element={<EmployeesPage />} />
+              <Route path="nomina" element={<NominaPage />} />
             </Route>
-            <Route path="/access-denied" element={<ErrorAccessPage />} />
-            <Route path="*" element={<Error404Page />} />
-          </Routes>
-        </BrowserRouter>
-      </GeneralProvider>
-    </AuthProvider>
+          </Route>
+          <Route path="/access-denied" element={<ErrorAccessPage />} />
+          <Route path="*" element={<Error404Page />} />
+        </Routes>
+      </BrowserRouter>
+    </GeneralProvider>
   )
 }

@@ -46,12 +46,13 @@ export function AreaProvider({ children }) {
         try {
             const res = await createAreaRequest(area);
 
-            if(res.status === 200){
+            if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Creada', life: 3000 });
                 window.location.reload();
             };
         } catch (error) {
             if (Array.isArray(error.response.data)) {
+                // return toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data, life: 3000 });
                 return setErrors(error.response.data);
             }
             setErrors([error.response.data.message]);
@@ -62,12 +63,13 @@ export function AreaProvider({ children }) {
         try {
             const res = await updateAreaRequest(id, area);
             // setAreas(res.data);
-            if(res.status === 200){
+            if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Actualizada', life: 3000 });
                 window.location.reload();
             };
         } catch (error) {
             if (Array.isArray(error.response.data)) {
+                // return toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data, life: 3000 });
                 return setErrors(error.response.data);
             }
             setErrors([error.response.data.message]);
