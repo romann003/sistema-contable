@@ -2,6 +2,8 @@ import { Router } from "express";
 import * as areaController from "../controllers/area.controller.js";
 import { authJwt } from "../middlewares/index.js";
 import {validateArea} from "../validators/area.validator.js";
+import { validateSchema } from "../middlewares/validator.middleware.js";
+import { areaSchema } from "../schemas/area.schema.js";
 
 const router = Router();
 

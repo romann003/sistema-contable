@@ -5,7 +5,7 @@ export const validateResult = (req, res, next) => {
         const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 const checkError = errors.array().map(error => error.msg);
-                return res.status(403).json(errors.array().map(error => error.msg));
+                return res.status(403).json(checkError);
             }
             next();
     } catch (error) {

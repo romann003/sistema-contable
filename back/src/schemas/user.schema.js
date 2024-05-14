@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { UserSchema } from '../models/User.js';
 
 export const userSchema = z.object({
     name: z.string({

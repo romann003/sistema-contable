@@ -18,6 +18,7 @@ export function DepartmentProvider({ children }) {
     const [departments, setDepartments] = useState([]);
     const toast = useRef<Toast>(null);
 
+    //?------------------------ get ------------------------
     const getDepartments = async () => {
         try {
             const res = await getDepartmentsRequest();
@@ -30,6 +31,7 @@ export function DepartmentProvider({ children }) {
         }
     }
 
+    //?------------------------ get by id ------------------------
     const getDepartment = async (id) => {
         try {
             const res = await getDepartmentRequest(id);
@@ -42,6 +44,7 @@ export function DepartmentProvider({ children }) {
         }
     }
 
+    //?------------------------ create ------------------------
     const createDepartment = async (department) => {
         try {
             const res = await createDepartmentRequest(department);
@@ -49,9 +52,7 @@ export function DepartmentProvider({ children }) {
             if(res.status === 200){
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Departamento Creado', life: 3000 });
                 window.location.reload();
-            };
-
-
+            }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -60,10 +61,10 @@ export function DepartmentProvider({ children }) {
         }
     }
 
+    //?------------------------ update ------------------------
     const updateDepartment = async (id, department) => {
         try {
             const res = await updateDepartmentRequest(id, department);
-            // setDepartments(res.data);
             if(res.status === 200){
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Departamento Actualizado', life: 3000 });
                 window.location.reload();
@@ -76,10 +77,14 @@ export function DepartmentProvider({ children }) {
         }
     }
 
+    //?------------------------ delete ------------------------
     const deleteDepartment = async (id) => {
         try {
             const res = await deleteDepartmentRequest(id);
-            // if(res.status === 204) setDepartments(departments.filter((u) => u.id !== id));
+            if (res.status === 200) {
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Departamento Eliminado Exitosamente', life: 3000 });
+                setDepartments(departments.filter((val) => val.id !== id));
+            }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -88,7 +93,7 @@ export function DepartmentProvider({ children }) {
         }
     }
 
-
+    //?------------------------ useEffect (errors) ------------------------
     useEffect(() => {
         if (errors.length > 0) {
             const timer = setTimeout(() => {
@@ -98,14 +103,14 @@ export function DepartmentProvider({ children }) {
         }
     }, [errors]);
 
-
-
     return (
-
         <DepartmentContext.Provider value={{
             departments, setDepartments, getDepartments, getDepartment, createDepartment, deleteDepartment, updateDepartment, errors
         }}>
             <Toast ref={toast} />
+            {errors.map((error) => (
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
+            ))}
             {children}
         </DepartmentContext.Provider>
     )

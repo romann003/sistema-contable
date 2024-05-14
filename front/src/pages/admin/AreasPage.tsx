@@ -6,20 +6,18 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
-import { useAreas } from '../../api/context/AreaContext';
-import { useDepartments } from '../../api/context/DepartmentContext';
 import { Chip } from 'primereact/chip';
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, ErrorMessage } from 'formik';
 import { InputTextarea } from 'primereact/inputtextarea';
-
+import { useDepartments } from '../../api/context/DepartmentContext';
+import { useAreas } from '../../api/context/AreaContext';
 
 interface Area {
     id: number | null;
@@ -32,14 +30,15 @@ interface Area {
     department: string | null;
     departmentId: number | null;
 }
-
 interface Status {
     name: string;
     code: boolean;
 }
 
 export default function AreasPage() {
-    let emptyArea: Area = {
+
+    //? -------------------- INITIAL STATES -------------------
+    const emptyArea: Area = {
         id: null,
         name: '',
         description: '',
@@ -56,29 +55,32 @@ export default function AreasPage() {
         { name: 'Inactivo', code: false }
     ];
 
+    //? -------------------- CONTEXT API -------------------
     const { departments, getDepartments } = useDepartments();
     const { areas, getAreas, createArea, deleteArea, updateArea, setAreas, errors: areaErrors } = useAreas();
+    //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
-    const [areaDialog, setAreaDialog] = useState<boolean>(false);
-    const [deleteAreaDialog, setDeleteAreaDialog] = useState<boolean>(false);
+    const [estados, setEstados] = useState<string[]>([]);
     const [area, setArea] = useState<Area>(emptyArea);
     const toast = useRef<Toast>(null);
+    //? -------------------- DIALOG STATES -------------------
+    const [areaDialog, setAreaDialog] = useState<boolean>(false);
+    const [deleteAreaDialog, setDeleteAreaDialog] = useState<boolean>(false);
+    //? -------------------- DATATABLE STATES -------------------
     const dt = useRef<DataTable<Area[]>>(null);
-    const [estados, setEstados] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
     const [filters, setFilters] = useState<DataTableFilterMeta>({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         name: { value: null, matchMode: FilterMatchMode.CONTAINS },
         description: { value: null, matchMode: FilterMatchMode.CONTAINS },
         salary: { value: null, matchMode: FilterMatchMode.EQUALS },
-        status: { value: null, matchMode: FilterMatchMode.EQUALS },
         'department.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     });
-    const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
 
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        let _filters = { ...filters };
+        const _filters = { ...filters };
 
         // @ts-ignore
         _filters['global'].value = value;
@@ -87,6 +89,18 @@ export default function AreasPage() {
         setGlobalFilterValue(value);
     };
 
+    const onEstadosChange = (e: CheckboxChangeEvent) => {
+        const _estados = [...estados];
+
+        if (e.checked)
+            _estados.push(e.value);
+        else
+            _estados.splice(_estados.indexOf(e.value), 1);
+
+        setEstados(_estados);
+    }
+
+    //? -------------------- DTATABLE FUNCTIONS -------------------
     const renderHeader = () => {
         return (
             <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -99,6 +113,7 @@ export default function AreasPage() {
         );
     };
 
+    //? -------------------- DATATABLE INPUT TEMPLATES -------------------
     const desBodyTemplate = (rowData: Area) => {
         return (
             <div className="flex align-items-center gap-2">
@@ -115,48 +130,35 @@ export default function AreasPage() {
         );
     };
 
+    //? -------------------- LOADING DATA -------------------
     const header = renderHeader();
-
     useEffect(() => {
         getAreas()
         getDepartments();
         setLoading(false);
-
     }, []);
 
-    const onEstadosChange = (e: CheckboxChangeEvent) => {
-        let _estados = [...estados];
 
-        if (e.checked)
-            _estados.push(e.value);
-        else
-            _estados.splice(_estados.indexOf(e.value), 1);
 
-        setEstados(_estados);
-    }
-
+    //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
-        // setArea(emptyArea);
-        // setSubmitted(false);
+        setArea(emptyArea);
         setAreaDialog(true);
     };
 
     const hideDialog = () => {
         setEstados([]);
         setSelectedStatus(null);
-        // setSelectedDepartment(null);
-        // setSubmitted(false);
         setAreaDialog(false);
     };
-
-    const hideDeleteAreaDialog = () => {
-        setDeleteAreaDialog(false);
-    };
-
 
     const editArea = (area: Area) => {
         setArea({ ...area });
         setAreaDialog(true);
+    };
+
+    const hideDeleteAreaDialog = () => {
+        setDeleteAreaDialog(false);
     };
 
     const confirmDeleteArea = (area: Area) => {
@@ -165,16 +167,12 @@ export default function AreasPage() {
     };
 
     const deleteAreaModal = () => {
-        let _areas = areas.filter((val) => val.id !== area.id);
-        // setAreas(areas.filter((val) => val.id !== area.id));
-
         deleteArea(area.id);
-        setAreas(_areas);
         setDeleteAreaDialog(false);
         setArea(emptyArea);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Deleted', life: 5000 });
     };
 
+    //? -------------------- DTATABLE ACTIONS -------------------
     const leftToolbarTemplate = () => {
         return (
             <div className="flex flex-wrap gap-2">
@@ -222,6 +220,8 @@ export default function AreasPage() {
         }
     };
 
+
+    //? -------------------- MODAL BUTTONS -------------------
     const deleteAreaDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteAreaDialog} />
@@ -229,19 +229,15 @@ export default function AreasPage() {
         </React.Fragment>
     );
 
-
+    //? -------------------- RENDER -------------------
     return (
         <div>
             <Toast ref={toast} />
-
-            {areaErrors.map((error) => (
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })            
-            ))}
-
             <div className="card">
                 <h3>Areas (Cargos)</h3>
                 <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
 
+                {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTable ref={dt} dataKey="id" value={areas} filters={filters} loading={loading}
                     paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} areas (cargos)"
@@ -262,19 +258,12 @@ export default function AreasPage() {
                 </DataTable>
             </div>
 
-
-
-
-
-
-
-
-
+            {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
             <Dialog visible={areaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Area" modal className="p-fluid" onHide={hideDialog}>
                 <Formik
                     initialValues={{ name: '' || area.name, description: '' || area.description, salary: '' || area.salary, department: '' }}
                     validate={values => {
-                        let errors = {};
+                        const errors = {};
                         if (!values.name) {
                             errors.name = 'El nombre es requerido';
                         } else if (values.name.length < 3) {
@@ -317,15 +306,15 @@ export default function AreasPage() {
                             }
 
                         } else {
-                            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Area no creada', life: 5000 });
+                            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Area no registrada', life: 5000 });
                         }
                     }}
                 >
-                    {({ values, errors, dirty, isValid, handleChange, handleBlur }) => (
+                    {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
                         <Form>
                             <div className="field">
                                 <label htmlFor="name" className="font-bold">Nombre del Area o Cargo *</label>
-                                <InputText id="name" name='name' type='text' autoFocus value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name} />
+                                <InputText id="name" name='name' type='text' autoFocus value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name && touched.name} />
                                 <ErrorMessage name="name" component={() => (<small className="p-error">{errors.name}</small>)} />
                             </div>
                             <div className="field">
@@ -335,7 +324,7 @@ export default function AreasPage() {
                             </div>
                             <div className="field">
                                 <label htmlFor="salary" className="font-bold">Salario base *</label>
-                                <InputText id="salary" name='salary' type='number' value={values.salary || ''} onChange={handleChange} onBlur={handleBlur} />
+                                <InputText id="salary" name='salary' type='number' value={values.salary || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.salary && touched.salary} />
                                 <ErrorMessage name="salary" component={() => (<small className="p-error">{errors.salary}</small>)} />
                             </div>
                             <div className="field">
@@ -392,7 +381,7 @@ export default function AreasPage() {
                                 ) : (
                                     <>
                                         <label htmlFor="department" className="font-bold my-3">Departamento</label>
-                                        <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" />
+                                        <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" invalid={!!errors.department && touched.department} />
                                         <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
 
                                     </>
@@ -407,6 +396,7 @@ export default function AreasPage() {
                 </Formik>
             </Dialog>
 
+            {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
             <Dialog visible={deleteAreaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteAreaDialogFooter} onHide={hideDeleteAreaDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />

@@ -62,7 +62,7 @@ export const deleteAreaById = async (req, res) => {
     try {
         const deleteArea = await AreaSchema.destroy({ where: { id: req.params.areaId } });
         if (!deleteArea) return res.status(404).json({ message: "Area del departamento no encontrado" });
-        res.status(204);
+        res.status(200).json({ message: "Area eliminada correctamente" });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
