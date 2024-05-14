@@ -26,7 +26,7 @@ export const createDepartment = async (req, res) => {
 
 export const getDepartments = async (req, res) => {
     try {
-        const departments = await DepartmentSchema.findAll({ include: [{ association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']] });
+        const departments = await DepartmentSchema.findAll({ include: [{ association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']]});
         // const departments = await DepartmentSchema.findAll({where: { status: true } });
         if (departments.length === 0) return res.status(404).json({ message: "No hay departamentos registrados" });
         res.status(200).json(departments);

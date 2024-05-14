@@ -130,6 +130,14 @@ export default function AreasPage() {
         );
     };
 
+    const departmentBodyTemplate = (rowData: Area) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span className='bg-gray-200 border-round-3xl px-3 py-2 uppercase font-bold'>{rowData.department.name}</span>
+            </div>
+        );
+    };
+
     //? -------------------- LOADING DATA -------------------
     const header = renderHeader();
     useEffect(() => {
@@ -242,16 +250,16 @@ export default function AreasPage() {
                     paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} areas (cargos)"
                     // rowsPerPageOptions={[5, 10, 25]}
-                    globalFilterFields={['name', 'description', 'salary', 'department.name', 'status']} header={header} emptyMessage="No se encontraron areas."
+                    globalFilterFields={['name', 'description', 'salary', 'department.name']} header={header} emptyMessage="No se encontraron areas."
                     filterDisplay="row"
                 >
 
                     <Column header="ID" body={(rowData) => <span>{areas.indexOf(rowData) + 1}</span>} />
-                    <Column sortable field="name" header="NOMBRE" filter filterPlaceholder="Buscar por nombre" style={{ minWidth: '12rem' }} />
-                    <Column sortable header="DESCRIPCION" filterField="description" style={{ minWidth: '12rem' }} body={desBodyTemplate} filter filterPlaceholder="Busar por descripcion" />
-                    <Column sortable header="SALARIO" filterField="salary" style={{ minWidth: '8rem' }} body={salaryBodyTemplate} filter filterPlaceholder="Busar por salario" />
+                    <Column sortable field="name" header="NOMBRE" filter filterPlaceholder="Filtrar por nombre" style={{ minWidth: '12rem' }} />
+                    <Column sortable field="description" header="DESCRIPCION" filterField="description" style={{ minWidth: '12rem' }} body={desBodyTemplate} filter filterPlaceholder="Filtrar por descripcion" />
+                    <Column sortable field="salary" header="SALARIO" filterField="salary" style={{ minWidth: '8rem' }} body={salaryBodyTemplate} filter filterPlaceholder="Filtrar por salario" />
+                    <Column sortable field="department.name" header="DEPARTAMENTO" filterField="department.name" style={{ minWidth: '8rem' }} body={departmentBodyTemplate} filter filterPlaceholder="Filtrar por departamento" />
                     <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
-                    <Column style={{ minWidth: '12rem' }} header="DEPARTAMENTO" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.department.name}`} />} />
                     <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
                     <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
                     <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }}></Column>

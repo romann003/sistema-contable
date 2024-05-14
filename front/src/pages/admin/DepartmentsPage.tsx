@@ -109,7 +109,7 @@ export default function DepartmentsPage() {
                 <h4 className="m-0">Lista de Departamentos</h4>
                 <IconField iconPosition="left">
                     <InputIcon className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
                 </IconField>
             </div>
         );
@@ -273,13 +273,13 @@ export default function DepartmentsPage() {
                     paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} departamentos"
                     // rowsPerPageOptions={[5, 10, 25]}
-                    globalFilterFields={['name', 'description', 'status']} header={header} emptyMessage="No se encontraron departamentos."
+                    globalFilterFields={['name', 'description']} header={header} emptyMessage="No se encontraron departamentos."
                     filterDisplay="row"
                 >
 
                     <Column header="ID" body={(rowData) => <span>{departments.indexOf(rowData) + 1}</span>} />
-                    <Column field="name" header="NOMBRE" filter filterPlaceholder="Search by name" style={{ minWidth: '12rem' }} />
-                    <Column header="DESCRIPCION" filterField="description" style={{ minWidth: '12rem' }} body={desBodyTemplate} filter filterPlaceholder="Search by department" />
+                    <Column sortable field="name" header="NOMBRE" filter filterPlaceholder="Filtrar por nombre" style={{ minWidth: '12rem' }} />
+                    <Column sortable field="description" header="DESCRIPCION" filterField="description" style={{ minWidth: '12rem' }} body={desBodyTemplate} filter filterPlaceholder="Filtrar por descripcion" />
                     <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
                     {/* <Column style={{ minWidth: '12rem' }} header="EMPRESA" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.company.business_name}`} />} /> */}
                     <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
@@ -389,11 +389,11 @@ export default function DepartmentsPage() {
                             </div>
                             <div className="field flex mt-7 mb-0 align-content-between justify-content-between">
                                 <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
-                                {department.id && (selectedStatus?.code === false) ? (
+                                {/* {department.id && (selectedStatus?.code === false) ? (
                                     <Button label="Guardar Departamento" type='button' icon="pi pi-check"  onClick={confirmChangeStatusDepartment} className='nx-1' disabled={department.id ? false : !(isValid && dirty)} />
-                                ) : (
+                                ) : ( */}
                                     <Button label="Guardar Departamento" icon="pi pi-check" type='submit' className='mx-1' disabled={department.id ? false : !(isValid && dirty)} />
-                                )}
+                                 {/* )} */}
                             </div>
                         </Form>
                     )}
@@ -413,7 +413,7 @@ export default function DepartmentsPage() {
             </Dialog>
 
             {/* //? -------------------- MODAL DIALOG (CHANGE STATUS) ------------------- */}
-            <Dialog visible={updateStatusDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Advertencia" modal footer={changeStatusDepartmentDialogFooter} onHide={hideChangeStatusDepartmentDialog}>
+            {/* <Dialog visible={updateStatusDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Advertencia" modal footer={changeStatusDepartmentDialogFooter} onHide={hideChangeStatusDepartmentDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                     {department && (
@@ -422,7 +422,7 @@ export default function DepartmentsPage() {
                         </span>
                     )}
                 </div>
-            </Dialog>
+            </Dialog> */}
         </div >
 
     );

@@ -1,5 +1,15 @@
 import { CompanySchema } from "../models/Company.js";
 
+export const getCompanies = async (req, res) => {
+    try {
+        const companies = await CompanySchema.findAll( {  order: [['createdAt' && 'updatedAt', 'DESC']]} );
+        if (companies.length === 0) return res.status(404).json({ message: "No hay companias registradas" });
+        res.status(200).json(companies);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+
 export const getCompanyById = async (req, res) => {
     try {
         const getCompany = await CompanySchema.findOne({ where: { id: req.params.companyId } });

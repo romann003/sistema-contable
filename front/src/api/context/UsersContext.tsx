@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getUsersRequest, getUserRequest, createUserRequest, updateUserRequest, deleteUserRequest } from "../user.js";
 import { Toast } from 'primereact/toast';
 
-
 const UserContext = createContext();
 
 export const useUsers = () => {
@@ -18,6 +17,7 @@ export function UserProvider({ children }) {
     const [users, setUsers] = useState([]);
     const toast = useRef<Toast>(null);
 
+    //?------------------------ get ------------------------
     const getUsers = async () => {
         try {
             const res = await getUsersRequest();
@@ -30,6 +30,7 @@ export function UserProvider({ children }) {
         }
     }
 
+    //?------------------------ get by id ------------------------
     const getUser = async (id) => {
         try {
             const res = await getUserRequest(id);
@@ -42,16 +43,15 @@ export function UserProvider({ children }) {
         }
     }
 
+    //?------------------------ create ------------------------
     const createUser = async (user) => {
         try {
             const res = await createUserRequest(user);
 
-            if(res.status === 200){
+            if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Creado', life: 3000 });
                 window.location.reload();
-            };
-
-
+            }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -60,14 +60,14 @@ export function UserProvider({ children }) {
         }
     }
 
+    //?------------------------ update ------------------------
     const updateUser = async (id, user) => {
         try {
             const res = await updateUserRequest(id, user);
-            // setUsers(res.data);
-            if(res.status === 200){
+            if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Actualizado', life: 3000 });
                 window.location.reload();
-            };
+            }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -76,10 +76,14 @@ export function UserProvider({ children }) {
         }
     }
 
+    //?------------------------ delete ------------------------
     const deleteUser = async (id) => {
         try {
             const res = await deleteUserRequest(id);
-            // if(res.status === 204) setUsers(users.filter((u) => u.id !== id));
+            if (res.status === 200) {
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Eliminado Exitosamente', life: 3000 });
+                setUsers(users.filter((val) => val.id !== id));
+            }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -88,7 +92,7 @@ export function UserProvider({ children }) {
         }
     }
 
-
+    //?------------------------ useEffect (errors) ------------------------
     useEffect(() => {
         if (errors.length > 0) {
             const timer = setTimeout(() => {
@@ -101,11 +105,13 @@ export function UserProvider({ children }) {
 
 
     return (
-        
         <UserContext.Provider value={{
             users, setUsers, getUsers, getUser, createUser, deleteUser, updateUser, errors
         }}>
             <Toast ref={toast} />
+            {errors.map((error) => (
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
+            ))}
             {children}
         </UserContext.Provider>
     )

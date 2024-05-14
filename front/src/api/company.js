@@ -1,5 +1,5 @@
 import axios from "./axios.js";
 
-export const getCompaniesRequest = () => axios.get(`/users`);
-export const getCompanyRequest = (id) => axios.get(`/users/${id}`);
-export const updateCompanyRequest = (company) => axios.put(`/company/${company.id}`, company);
+export const getCompaniesRequest = async () => axios.get(`/company`);
+export const getCompanyRequest = async (id) => axios.get(`/company/${id}`);
+export const updateCompanyRequest = async (id, company) => axios.put(`/company/${id}`, company);

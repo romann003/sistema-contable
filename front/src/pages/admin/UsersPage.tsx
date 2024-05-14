@@ -11,15 +11,16 @@ import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
-import { useUsers } from '../../api/context/UsersContext';
 import { Chip } from 'primereact/chip';
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { FilterMatchMode } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
+import { Formik, Form, ErrorMessage } from 'formik';
+import { useUsers } from '../../api/context/UsersContext';
 import { useRoles } from '../../api/context/RolContext';
 
 
-import { FilterMatchMode } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
 
 
 interface User {
@@ -33,6 +34,7 @@ interface User {
     createdAt: string;
     updatedAt: string;
     rol: string | null;
+    rolId: number | null;
 }
 
 interface Status {
@@ -46,7 +48,9 @@ interface Status {
 // }
 
 export default function UsersPage() {
-    let emptyUser: User = {
+
+    //? -------------------- INITIAL STATES -------------------
+    const emptyUser: User = {
         id: null,
         name: '',
         last_name: '',
@@ -54,6 +58,10 @@ export default function UsersPage() {
         email: '',
         password: '',
         status: true,
+        createdAt: '',
+        updatedAt: '',
+        rol: '',
+        rolId: null
     };
 
     const typeStatus: Status[] = [
@@ -66,21 +74,26 @@ export default function UsersPage() {
     //     { name: 'Moderador', code: 'moderador' }
     // ];
 
+    //? -------------------- CONTEXT API -------------------
     const { roles, getRoles } = useRoles();
     const { users, getUsers, createUser, deleteUser, updateUser, setUsers, errors: userErrors } = useUsers();
+
+    //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [selectedRol, setSelectedRol] = useState<string>('');
+    const [estados, setEstados] = useState<string[]>([]);
+    const [user, setUser] = useState<User>(emptyUser);
+    const toast = useRef<Toast>(null);
+    const [submitted, setSubmitted] = useState<boolean>(false);
+
+    //? -------------------- DIALOG STATES -------------------
     const [userDialog, setUserDialog] = useState<boolean>(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState<boolean>(false);
-    const [user, setUser] = useState<User>(emptyUser);
-    const [submitted, setSubmitted] = useState<boolean>(false);
-    const [globalFilter, setGlobalFilter] = useState<string>('');
-    const toast = useRef<Toast>(null);
+
+    //? -------------------- DATATABLE STATES -------------------
     const dt = useRef<DataTable<User[]>>(null);
-    const [estados, setEstados] = useState<string[]>([]);
-
-
     const [loading, setLoading] = useState<boolean>(true);
+    const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
     const [filters, setFilters] = useState<DataTableFilterMeta>({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         name: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -90,7 +103,6 @@ export default function UsersPage() {
         status: { value: null, matchMode: FilterMatchMode.EQUALS },
         'rol.name': { value: null, matchMode: FilterMatchMode.EQUALS },
     });
-    const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
 
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -103,36 +115,6 @@ export default function UsersPage() {
         setGlobalFilterValue(value);
     };
 
-    const renderHeader = () => {
-        return (
-            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-                <h4 className="m-0">Lista de Usuarios</h4>
-                <IconField iconPosition="left">
-                    <InputIcon className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-                </IconField>
-            </div>
-        );
-    };
-
-    const last_nameBodyTemplate = (rowData: User) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.last_name}</span>
-            </div>
-        );
-    };
-
-    const header = renderHeader();
-
-
-    useEffect(() => {
-        getUsers()
-        getRoles()
-        setLoading(false);
-    }, []);
-
-
     const onEstadosChange = (e: CheckboxChangeEvent) => {
         let _estados = [...estados];
 
@@ -144,9 +126,65 @@ export default function UsersPage() {
         setEstados(_estados);
     }
 
+    //? -------------------- DTATABLE FUNCTIONS -------------------
+    const renderHeader = () => {
+        return (
+            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
+                <h4 className="m-0">Lista de Usuarios</h4>
+                <IconField iconPosition="left">
+                    <InputIcon className="pi pi-search" />
+                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
+                </IconField>
+            </div>
+        );
+    };
+
+    //? -------------------- DATATABLE INPUT TEMPLATES -------------------
+    const last_nameBodyTemplate = (rowData: User) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span>{rowData.last_name}</span>
+            </div>
+        );
+    };
+
+    const usernameBodyTemplate = (rowData: User) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span>{rowData.username}</span>
+            </div>
+        );
+    };
+
+    const emailBodyTemplate = (rowData: User) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span>{rowData.email}</span>
+            </div>
+        );
+    };
+
+    const rolBodyTemplate = (rowData: User) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span className='bg-gray-200 border-round-3xl px-3 py-2 font-bold uppercase'>{rowData.rol.name}</span>
+            </div>
+        );
+    };
+
+    //? -------------------- LOADING DATA -------------------
+    const header = renderHeader();
+
+    useEffect(() => {
+        getUsers()
+        getRoles()
+        setLoading(false);
+    }, []);
+
+    //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
         setUser(emptyUser);
-        setSubmitted(false);
+        // setSubmitted(false);
         setUserDialog(true);
     };
 
@@ -154,8 +192,29 @@ export default function UsersPage() {
         setEstados([]);
         setSelectedStatus(null);
         setSelectedRol(null);
-        setSubmitted(false);
+        // setSubmitted(false);
         setUserDialog(false);
+    };
+
+    const editUser = (user: User) => {
+        setUser({ ...user });
+        setUserDialog(true);
+    };
+
+    const confirmDeleteUser = (user: User) => {
+        setUser(user);
+        setDeleteUserDialog(true);
+    };
+
+    const deleteUserModal = () => {
+        // let _users = users.filter((val) => val.id !== user.id);
+        // setUsers(users.filter((val) => val.id !== user.id));
+
+        deleteUser(user.id);
+        // setUsers(_users);
+        setDeleteUserDialog(false);
+        setUser(emptyUser);
+        // toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
     };
 
     const hideDeleteUserDialog = () => {
@@ -200,32 +259,10 @@ export default function UsersPage() {
                 }
             }
         }
-
-
-
-
     };
 
-    const editUser = (user: User) => {
-        setUser({ ...user });
-        setUserDialog(true);
-    };
 
-    const confirmDeleteUser = (user: User) => {
-        setUser(user);
-        setDeleteUserDialog(true);
-    };
 
-    const deleteUserModal = () => {
-        let _users = users.filter((val) => val.id !== user.id);
-        // setUsers(users.filter((val) => val.id !== user.id));
-
-        deleteUser(user.id);
-        setUsers(_users);
-        setDeleteUserDialog(false);
-        setUser(emptyUser);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
-    };
 
     const findIndexById = (id: number) => {
         let index = -1;
@@ -259,6 +296,8 @@ export default function UsersPage() {
         setUser(_user);
     };
 
+
+    //? -------------------- DTATABLE ACTIONS -------------------
     const leftToolbarTemplate = () => {
         return (
             <div className="flex flex-wrap gap-2">
@@ -306,12 +345,13 @@ export default function UsersPage() {
         }
     };
 
-    const userDialogFooter = (
-        <React.Fragment>
-            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Guardar Usuario" icon="pi pi-check" onClick={saveUser} />
-        </React.Fragment>
-    );
+    //? -------------------- MODAL BUTTONS -------------------
+    // const userDialogFooter = (
+    //     <React.Fragment>
+    //         <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
+    //         <Button label="Guardar Usuario" icon="pi pi-check" onClick={saveUser} />
+    //     </React.Fragment>
+    // );
     const deleteUserDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
@@ -319,212 +359,226 @@ export default function UsersPage() {
         </React.Fragment>
     );
 
-    const showInfo = (severity, summary, detail) => {
-        toast.current?.show({ severity, summary, detail, life: 3000 });
-        toast.current?.clear;
-    }
+    // const showInfo = (severity, summary, detail) => {
+    //     toast.current?.show({ severity, summary, detail, life: 3000 });
+    //     toast.current?.clear;
+    // }
 
+    //? -------------------- RENDER -------------------
     return (
         <div>
             <Toast ref={toast} />
-            {userErrors.map((error, i) => (
-                <div key={i}>
-                    {showInfo('error', 'Error', error)}
-                </div>
-            ))}
             <div className="card">
                 <h3>Usuarios</h3>
                 <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
+
+                {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTable ref={dt} dataKey="id" value={users} filters={filters} loading={loading}
                     paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} usuarios"
                     // rowsPerPageOptions={[5, 10, 25]}
-                    globalFilterFields={['name', 'last_name', 'username', 'email', 'status', 'rol.name']} header={header} emptyMessage="No se encontraron usuarios."
+                    globalFilterFields={['name', 'last_name', 'username', 'email', 'rol.name']} header={header} emptyMessage="No se encontraron usuarios."
                     filterDisplay="row"
                 >
                     <Column header="ID" body={(rowData) => <span>{users.indexOf(rowData) + 1}</span>} />
                     {/* <Column header="NOMBRE COMPLETO" style={{ minWidth: '8rem' }} body={(rowData) => <span>{`${rowData.name} ${rowData.last_name}`}</span>} /> */}
-                    <Column field="name" header="NOMBRES" filter filterPlaceholder="Search by name" sortable style={{ minWidth: '12rem' }} />
-                    <Column header="APELLIDOS" filterField="description" body={last_nameBodyTemplate} filter filterPlaceholder="Search by last name" sortable style={{ minWidth: '12rem' }} />
-                    <Column field="username" header="USERNAME" sortable style={{ minWidth: '10rem' }}></Column>
-                    <Column field="email" header="EMAIL" sortable style={{ minWidth: '10rem' }}></Column>
+                    <Column field="name" header="NOMBRES" filter filterPlaceholder="Filtrar por nombres" sortable style={{ minWidth: '12rem' }} />
+                    <Column sortable field="last_name" header="APELLIDOS" filterField="last_name" body={last_nameBodyTemplate} filter filterPlaceholder="Filtrar por apellidos" style={{ minWidth: '12rem' }} />
+                    <Column sortable field="username" header="USERNAME" filterField="username" body={usernameBodyTemplate} filter filterPlaceholder="Filtrar por username" style={{ minWidth: '12rem' }} />
+                    <Column sortable field="email" header="EMAIL" filterField="email" body={emailBodyTemplate} filter filterPlaceholder="Filtrar por email" style={{ minWidth: '12rem' }} />
+                    <Column sortable field="rol.name" header="ROL" filterField="rol.name" body={rolBodyTemplate} filter filterPlaceholder="Filtrar por rol" style={{ minWidth: '12rem' }} />
                     <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
-                    <Column style={{ minWidth: '10rem' }} header="ROL" body={(rowData) => <Chip className='font-bold uppercase' label={`${rowData.rol.name}`} />}/>
                     <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
                     <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
                     <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }}></Column>
                 </DataTable>
             </div>
 
-            <Dialog visible={userDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Usuario" modal className="p-fluid" footer={userDialogFooter} onHide={hideDialog}>
-                <div className="field">
-                    <label htmlFor="name" className="font-bold">
-                        Nombres
-                    </label>
+            {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
+            <Dialog visible={userDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Usuario" modal className="p-fluid" onHide={hideDialog}>
+                <Formik
+                    initialValues={{ name: '' || user.name, last_name: '' || user.last_name, username: '' || user.username, email: '' || user.email, password: '' || user.password, rol: '' }}
+                    validate={values => {
+                        const errors = {};
+                        if (!values.name) {
+                            errors.name = 'El nombre es requerido';
+                        } else if (values.name.length < 3) {
+                            errors.name = 'El nombre debe tener al menos 3 caracteres';
+                        } else if (!/^[a-zA-ZÀ-ÿ\s]{1,40}$/.test(values.name)) {
+                            errors.name = 'El nombre solo puede contener letras';
+                        }
+                        if (!values.last_name) {
+                            errors.last_name = 'El apellido es requerido';
+                        } else if (values.last_name.length < 3) {
+                            errors.last_name = 'El apellido debe tener al menos 3 caracteres';
+                        } else if (!/^[a-zA-ZÀ-ÿ\s]{1,40}$/.test(values.last_name)) {
+                            errors.last_name = 'El apellido solo puede contener letras';
+                        }
+                        if (!values.username) {
+                            errors.username = 'El nombre de usuario es requerido';
+                        } else if (values.username.length < 3) {
+                            errors.username = 'El nombre de usuario debe tener al menos 3 caracteres';
+                        } else if (!/^[a-zA-ZÀ-ÿ\s]{1,40}$/.test(values.username)) {
+                            errors.username = 'El nombre de usuario solo puede contener letras';
+                        }
+                        if (!values.email) {
+                            errors.email = 'El email es requerido';
+                        } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(values.email)) {
+                            errors.email = 'El email es invalido';
+                        }
+                        if (!user.id) {
+                            if (!values.password) {
+                                errors.password = 'La contraseña es requerida';
+                            } else if (values.password.length < 6) {
+                                errors.password = 'La contraseña debe tener al menos 6 caracteres';
+                            }
+                            if (!values.rol) {
+                                errors.rol = 'El rol es requerido';
+                            }
+                        }
+                        return errors;
+                    }}
+                    onSubmit={(values, { resetForm }) => {
 
-                    <InputText id="name" value={user.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.name })} />
-                    {submitted && !user.name && <small className="p-error">Los nombres es requerido.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="last_name" className="font-bold">
-                        Apellidos
-                    </label>
-                    <InputText id="last_name" value={user.last_name} onChange={(e) => onInputChange(e, 'last_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.last_name })} />
-                    {submitted && !user.last_name && <small className="p-error">Los apellidos es requerido.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="username" className="font-bold">
-                        Nombre de Usuario
-                    </label>
-                    <InputText id="username" value={user.username} onChange={(e) => onInputChange(e, 'username')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.username })} />
-                    {submitted && !user.username && <small className="p-error">El nombre de usuario es requerido.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="email" className="font-bold">
-                        Correo Electrónico
-                    </label>
-                    <InputText id="email" type="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
-                    {submitted && !user.email && <small className="p-error">El correo es requerido.</small>}
-                </div>
-                <div className="field">
-                    {user.id ? (
-                        <>
-                            <label htmlFor="updates" className="font-bold mt-3">
-                                Actualizaciones
-                            </label>
-                            <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
-                                <div className="flex align-items-center mb-3">
-                                    <Checkbox inputId="e1" name="e1" value="e1" onChange={onEstadosChange} checked={estados.includes('e1')} />
-                                    <label htmlFor="checkbox Password" className="ml-2">
-                                        Contraseña
-                                    </label>
-                                </div>
-                                <div className="flex align-items-center mb-3">
-                                    <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
-                                    <label htmlFor="checkbox Estado" className="ml-2">
-                                        Estado
-                                    </label>
-                                </div>
-                                <div className="flex align-items-center mb-3">
-                                    <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
-                                    <label htmlFor="checkbox Rol" className="ml-2">
-                                        Rol
-                                    </label>
-                                </div>
+                        if (values) {
+                            if (user.id) {
 
+                                if (selectedStatus?.code === true) { values.status = true }
+                                else if (selectedStatus?.code === false) { values.status = false } else { values.status = user.status }
+                                if (values.rol !== "") { values.rolId = values.rol.id } else { values.rolId = user.rolId }
+                                updateUser(user.id, values);
+                                setUserDialog(false);
+                                setUser(emptyUser);
+                                resetForm();
+                            } else {
+                                values.rolId = values.rol.id
+                                createUser(values);
+                                setUserDialog(false);
+                                setUser(emptyUser);
+                                resetForm();
+                            }
 
-                            </div>
-                            {estados.includes('e1') ? (
-                                <>
-                                    <label htmlFor="password" className="font-bold my-3">
-                                        Contraseña
-                                    </label>
-                                    <InputText type="password" id="password" onChange={(e) => onInputChange(e, 'password')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.password })} />
-                                    {submitted && !user.password && <small className="p-error">La contraseña es requerida.</small>}
-                                </>
-                            ) : (<></>)}
-
-                            {estados.includes('e2') ? (
-                                <>
-                                    <label htmlFor="status" className="font-bold my-3">
-                                        Estado
-                                    </label>
-                                    <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" autoFocus />
-                                </>
-                            ) : (<></>)}
-
-                            {estados.includes('e3') ? (
-                                <>
-                                    <label htmlFor="rol" className="font-bold my-3">
-                                        Rol
-                                    </label>
-                                    <Dropdown value={selectedRol} onChange={(e: DropdownChangeEvent) => setSelectedRol(e.value)} options={roles} optionLabel="name" placeholder="Selecciona un rol" className="w-full" />
-                                    {/* {console.log(selectedRol?.id)} */}
-                                </>
-                            ) : (<></>)}
-
-
-
-
-
-
-
-
-
-
-
-
-
+                        } else {
+                            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Area no registrada', life: 5000 });
+                        }
+                    }}
+                >
+                    {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
+                        <Form>
                             <div className="field">
-                                <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                                <div className="formgrid grid">
-                                    <div className="col-12">
-                                        <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                            <Chip label={`${user.rol?.name}`} className="text-lg font-bold uppercase" />
-                                            <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(user)}`} severity={getSeverity(user)}></Tag>
-                                            <Chip label={`Creado el: ${new Date(user.createdAt).toLocaleDateString()} - ${new Date(user.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                            <Chip label={`Ultima Actualización: ${new Date(user.updatedAt).toLocaleDateString()} - ${new Date(user.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                        </div>
-                                    </div>
-                                </div>
+                                <label htmlFor="name" className="font-bold">Nombres</label>
+                                <InputText id="name" name='name' type='text' autoFocus value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name && touched.name} />
+                                <ErrorMessage name="name" component={() => (<small className="p-error">{errors.name}</small>)} />
                             </div>
-                        </>
-                    ) : (
-                        <>
-                            <label htmlFor="password" className="font-bold">
-                                Password
-                            </label>
-                            <InputText id="password" type="password" onChange={(e) => onInputChange(e, 'password')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.password })} />
-                            {submitted && !user.password && <small className="p-error">Password is required.</small>}
-                        </>
+                            <div className="field">
+                                <label htmlFor="last_name" className="font-bold">Apellidos</label>
+                                <InputText id="last_name" name='last_name' type='text' value={values.last_name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.last_name && touched.last_name} />
+                                <ErrorMessage name="last_name" component={() => (<small className="p-error">{errors.last_name}</small>)} />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="username" className="font-bold">Nombre de Usuario</label>
+                                <InputText id="username" name='username' type='text' value={values.username} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.username && touched.username} />
+                                <ErrorMessage name="username" component={() => (<small className="p-error">{errors.username}</small>)} />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="email" className="font-bold">Correo Electrónico</label>
+                                <InputText id="email" name='email' type='email' value={values.email} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.email && touched.email} />
+                                <ErrorMessage name="email" component={() => (<small className="p-error">{errors.email}</small>)} />
+                            </div>
+                            <div className="field">
+                                {user.id ? (
+                                    <>
+                                        <label htmlFor="updates" className="font-bold mt-3">
+                                            Actualizaciones
+                                        </label>
+                                        <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e1" name="e1" value="e1" onChange={onEstadosChange} checked={estados.includes('e1')} />
+                                                <label htmlFor="checkbox Password" className="ml-2">
+                                                    Contraseña
+                                                </label>
+                                            </div>
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
+                                                <label htmlFor="checkbox Estado" className="ml-2">
+                                                    Estado
+                                                </label>
+                                            </div>
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
+                                                <label htmlFor="checkbox Rol" className="ml-2">
+                                                    Rol
+                                                </label>
+                                            </div>
+
+
+                                        </div>
+                                        {estados.includes('e1') ? (
+                                            <>
+                                                <label htmlFor="password" className="font-bold">Contraseña</label>
+                                                <InputText id="password" name='password' type='password' value={values.password} onChange={handleChange} onBlur={handleBlur} />
+                                                {/* <ErrorMessage name="password" component={() => (<small className="p-error">{errors.password}</small>)} /> */}
+                                            </>
+                                        ) : (<></>)}
+                                        {estados.includes('e2') ? (
+                                            <>
+                                                <label htmlFor="status" className="font-bold my-3">Estado</label>
+                                                <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" />
+                                            </>
+                                        ) : (<></>)}
+
+                                        {estados.includes('e3') ? (
+                                            <>
+                                                <label htmlFor="rol" className="font-bold my-3">Rol</label>
+                                                <Dropdown id="rol" name="rol" value={values.rol} onChange={handleChange} onBlur={handleBlur} options={roles} optionLabel="name" placeholder="Selecciona un Rol" />
+                                            </>
+                                        ) : (<></>)}
+
+
+                                        <div className="field">
+                                            <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                            <div className="formgrid grid">
+                                                <div className="col-12">
+                                                    <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                                        <Chip label={`${user.rol?.name}`} className="text-lg font-bold uppercase" />
+                                                        <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(user)}`} severity={getSeverity(user)}></Tag>
+                                                        <Chip label={`Creado el: ${new Date(user.createdAt).toLocaleDateString()} - ${new Date(user.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                        <Chip label={`Ultima Actualización: ${new Date(user.updatedAt).toLocaleDateString()} - ${new Date(user.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="field">
+                                            <label htmlFor="password" className="font-bold">Contraseña</label>
+                                            <InputText id="password" name='password' type='password' value={values.password} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.password && touched.password} />
+                                            <ErrorMessage name="password" component={() => (<small className="p-error">{errors.password}</small>)} />
+                                        </div>
+                                        <div className="field">
+                                            <label htmlFor="rol" className="font-bold">Rol</label>
+                                            <Dropdown id="rol" name="rol" value={values.rol} onChange={handleChange} onBlur={handleBlur} options={roles} optionLabel="name" placeholder="Selecciona un Rol" invalid={!!errors.rol && touched.rol} />
+                                            <ErrorMessage name="rol" component={() => (<small className="p-error">{errors.rol}</small>)} />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            <div className="field flex mt-7 mb-0 align-content-between justify-content-between">
+                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
+                                <Button label="Guardar Usuario" icon="pi pi-check" type='submit' className='mx-1' disabled={user.id ? false : !(isValid && dirty)} />
+                            </div>
+                        </Form>
                     )}
+                </Formik>
 
-                </div>
 
 
-                {/* <div className="field">
-                    <label htmlFor="description" className="font-bold">
-                        Description
-                    </label>
-                    <InputTextarea id="description" value={user.description} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onInputTextAreaChange(e, 'description')} required rows={3} cols={20} />
-                </div>
-                <div className="field">
-                    <label className="mb-3 font-bold">Category</label>
-                    <div className="formgrid grid">
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category1" name="category" value="Accessories" onChange={onCategoryChange} checked={user.category === 'Accessories'} />
-                            <label htmlFor="category1">Accessories</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category2" name="category" value="Clothing" onChange={onCategoryChange} checked={user.category === 'Clothing'} />
-                            <label htmlFor="category2">Clothing</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category3" name="category" value="Electronics" onChange={onCategoryChange} checked={user.category === 'Electronics'} />
-                            <label htmlFor="category3">Electronics</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category4" name="category" value="Fitness" onChange={onCategoryChange} checked={user.category === 'Fitness'} />
-                            <label htmlFor="category4">Fitness</label>
-                        </div>
-                    </div>
-                </div>
 
-                <div className="formgrid grid">
-                    <div className="field col">
-                        <label htmlFor="price" className="font-bold">
-                            Price
-                        </label>
-                        <InputNumber id="price" value={user.price} onValueChange={(e) => onInputNumberChange(e, 'price')} mode="currency" currency="USD" locale="en-US" />
-                    </div>
-                    <div className="field col">
-                        <label htmlFor="quantity" className="font-bold">
-                            Quantity
-                        </label>
-                        <InputNumber id="quantity" value={user.quantity} onValueChange={(e) => onInputNumberChange(e, 'quantity')} />
-                    </div>
-                </div> */}
+
+
             </Dialog>
 
+            {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
             <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteUserDialogFooter} onHide={hideDeleteUserDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
@@ -535,14 +589,6 @@ export default function UsersPage() {
                     )}
                 </div>
             </Dialog>
-
-            {/* <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteUsersDialog}>
-                <div className="confirmation-content">
-                    <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {user && <span>Are you sure you want to delete the selected userss?</span>}
-                </div>
-            </Dialog> */}
         </div>
-
     );
 }

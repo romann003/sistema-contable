@@ -10,6 +10,7 @@ import departmentRoutes from './routes/department.routes.js'
 import areaRoutes from './routes/area.routes.js'
 import employeeRoutes from './routes/employee.routes.js'
 import rolRoutes from './routes/rol.routes.js'
+import nominaRoutes from './routes/nomina.routes.js'
 import { createRoles, createCompany, createArea, createDepartment, createUser } from './libs/initialSetup.js'
 
 //Initial setup
@@ -37,6 +38,7 @@ app.use('/api/departments', departmentRoutes)
 app.use('/api/areas', areaRoutes)
 app.use('/api/employees', employeeRoutes)
 app.use('/api/roles', rolRoutes)
+app.use('/api/nominas', nominaRoutes)
 
 
 export default app;
