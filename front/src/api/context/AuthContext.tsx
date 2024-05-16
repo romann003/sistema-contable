@@ -1,10 +1,13 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+
 import {
   registerRequest,
   loginRequiest,
   verifyTokenRequest,
 } from "../auth.js";
 import Cookies from "js-cookie";
+import { Toast } from 'primereact/toast';
+
 
 export const AuthContext = createContext();
 
@@ -21,6 +24,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const toast = useRef<Toast>(null);
 
   const signup = async (user) => {
     try {
@@ -37,6 +41,8 @@ export const AuthProvider = ({ children }) => {
       const res = await loginRequiest(user);
       setIsAuthenticated(true);
       setUser(res.data);
+      window.location.reload();
+      toast.current?.show({ severity: 'info', summary: 'Login', detail: 'Has iniciado sesion', life: 3000 });
     } catch (error) {
       if (Array.isArray(error.response.data)) {
         return setErrors(error.response.data);
@@ -49,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     Cookies.remove("token");
     setIsAuthenticated(false);
     setUser(null);
+    toast.current?.show({ severity: 'info', summary: 'Logout', detail: 'Has cerrado sesion', life: 3000 });
   };
 
   useEffect(() => {
@@ -59,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       return () => clearTimeout(timer);
     }
   }, [errors]);
-  
+
   useEffect(() => {
     async function checkLogin() {
       const cookies = Cookies.get();
@@ -75,7 +82,7 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(false);
           setLoading(false);
           return;
-        } 
+        }
 
         setIsAuthenticated(true);
         setUser(res.data);
@@ -93,6 +100,10 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{ signup, signin, logout, loading, user, isAuthenticated, errors }}
     >
+      <Toast ref={toast} />
+      {errors.map((error) => (
+        toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
+      ))}
       {children}
     </AuthContext.Provider>
   );

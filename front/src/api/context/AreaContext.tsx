@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getAreasRequest, getAreaRequest, createAreaRequest, updateAreaRequest, deleteAreaRequest } from "../area.js";
 import { Toast } from 'primereact/toast';
 
-
 const AreaContext = createContext();
 
 export const useAreas = () => {
@@ -50,7 +49,7 @@ export function AreaProvider({ children }) {
             const res = await createAreaRequest(area);
 
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Creada', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Creada Exitosamente', life: 3000 });
                 window.location.reload();
             }
         } catch (error) {
@@ -66,7 +65,7 @@ export function AreaProvider({ children }) {
         try {
             const res = await updateAreaRequest(id, area);
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Actualizada', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Actualizada Exitosamente', life: 3000 });
                 window.location.reload();
             }
         } catch (error) {
@@ -82,7 +81,7 @@ export function AreaProvider({ children }) {
         try {
             const res = await deleteAreaRequest(id);
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Area Eliminada Exitosamente', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Eliminada Exitosamente', life: 3000 });
                 setAreas(areas.filter((val) => val.id !== id));
             }
         } catch (error) {

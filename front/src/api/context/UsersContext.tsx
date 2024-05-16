@@ -49,7 +49,7 @@ export function UserProvider({ children }) {
             const res = await createUserRequest(user);
 
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Creado', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Creado Exitosamente', life: 3000 });
                 window.location.reload();
             }
         } catch (error) {
@@ -65,7 +65,7 @@ export function UserProvider({ children }) {
         try {
             const res = await updateUserRequest(id, user);
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Actualizado', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Actualizado Exitosamente', life: 3000 });
                 window.location.reload();
             }
         } catch (error) {
@@ -81,7 +81,7 @@ export function UserProvider({ children }) {
         try {
             const res = await deleteUserRequest(id);
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Usuario Eliminado Exitosamente', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Eliminado Exitosamente', life: 3000 });
                 setUsers(users.filter((val) => val.id !== id));
             }
         } catch (error) {

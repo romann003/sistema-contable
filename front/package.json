@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^1.6.8",
     "chart.js": "^4.4.2",
+    "dayjs": "^1.11.11",
     "formik": "^2.4.6",
     "js-cookie": "^3.0.5",
     "primeflex": "^3.3.1",

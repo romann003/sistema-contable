@@ -5,10 +5,10 @@ import {validateDepartment} from "../validators/department.validator.js";
 
 const router = Router();
 
-router.post('/', [authJwt.verifyToken, authJwt.isAdmin], validateDepartment(1), departmentController.createDepartment);
-router.get('/', [authJwt.verifyToken, authJwt.isAdmin], departmentController.getDepartments);
-router.get('/:departmentId', [authJwt.verifyToken, authJwt.isAdmin], departmentController.getDepartmentById);
-router.put('/:departmentId', [authJwt.verifyToken, authJwt.isAdmin], validateDepartment(), departmentController.updateDepartmentById);
-router.delete('/:departmentId', [authJwt.verifyToken, authJwt.isAdmin], departmentController.deleteDepartmentById);
+router.post('/', [authJwt.verifyToken, authJwt.isOnlyAdmins], validateDepartment(1), departmentController.createDepartment);
+router.get('/', [authJwt.verifyToken, authJwt.isOnlyAdmins], departmentController.getDepartments);
+router.get('/:departmentId', [authJwt.verifyToken, authJwt.isOnlyAdmins], departmentController.getDepartmentById);
+router.put('/:departmentId', [authJwt.verifyToken, authJwt.isOnlyAdmins], validateDepartment(), departmentController.updateDepartmentById);
+router.delete('/:departmentId', [authJwt.verifyToken, authJwt.isOnlyAdmins], departmentController.deleteDepartmentById);
 
 export default router;

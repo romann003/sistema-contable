@@ -118,7 +118,7 @@ export const deleteEmployeeById = async (req, res) => {
         const { employeeId } = req.params;
         const deleteEmployee = await EmployeeSchema.destroy({ where: { id: employeeId } });
         if (!deleteEmployee) return res.status(404).json({ message: "Empleado no encontrado" });
-        res.status(204);
+        res.status(200).json({ message: "Empleado eliminado correctamente" });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

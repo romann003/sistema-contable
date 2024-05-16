@@ -16,7 +16,7 @@ export const createArea = async (req, res) => {
             const savedArea = await newArea.save();
             res.status(200).json({ savedArea });
         } else {
-            return res.status(400).json(['Debes de ingresar el id del departamento']);
+            return res.status(400).json({ message: "Debes de ingresar el id del departamento" });
         }
     } catch (error) {
         return res.status(500).json({ message: error.message });

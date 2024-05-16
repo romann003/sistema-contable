@@ -23,26 +23,13 @@ export default function LoginPage() {
     });
 
     useEffect(() => {
-        if (isAuthenticated) navigate("/dashboard");
+        if (isAuthenticated) navigate("/dashboard", { replace: true, state: { refresh: true } });
     }, [isAuthenticated, navigate]);
-
-    const showInfo = (severity, summary, detail) => {
-        toast.current?.show({ severity, summary, detail, life: 3000 });
-        toast.current?.clear;
-    }
 
     return (
         <>
             <form onSubmit={onSubmit} className="p-fluid">
-
-                {/* ERRORES */}
                 <Toast ref={toast} />
-
-                {signinErrors.map((error, i) => (
-                    <div key={i}>
-                        {showInfo('error', 'Error', error)}
-                    </div>
-                ))}
 
                 <div className={containerClassName}>
 
@@ -77,8 +64,7 @@ export default function LoginPage() {
                                             {...register('email', { required: true })}
                                         />
 
-                                        {errors.email && (<div>{showInfo('warn', 'Error', 'Email requerido')}
-                                        </div>)}
+                                        {errors.email && (<>{toast.current?.show({ severity: 'warn', summary: 'Advertencia', detail: 'Email requerido', life: 3000 })}</>)}
 
                                     </div>
 
@@ -99,7 +85,7 @@ export default function LoginPage() {
                                             {...register('password', { required: true })}
                                         />
                                         {/* {errors.password && (<p className="text-red-500">Contraseña requerido</p>)} */}
-                                        {errors.password && (<div>{showInfo('warn', 'Error', 'Contraseña requerida')}</div>)}
+                                        {errors.password && (<>{toast.current?.show({ severity: 'warn', summary: 'Advertencia', detail: 'Contraseña requerida', life: 3000 })}</>)}
 
                                     </div>
                                     <div className="flex align-items-center justify-content-between mb-5 gap-5"></div>

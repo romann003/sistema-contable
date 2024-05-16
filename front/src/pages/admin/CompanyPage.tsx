@@ -254,7 +254,7 @@ export default function CompanyPage() {
                         <Form>
                             <div className="field">
                                 <label htmlFor="business_name" className="font-bold">Nombre de la Empresa</label>
-                                <InputText id="business_name" name='business_name' type='text' autoFocus value={values.business_name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.business_name && touched.business_name} />
+                                <InputText id="business_name" name='business_name' type='text' value={values.business_name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.business_name && touched.business_name} />
                                 <ErrorMessage name="business_name" component={() => (<small className="p-error">{errors.business_name}</small>)} />
                             </div>
                             <div className="field">

@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { UserSchema, encryptPassword } from "../models/User.js";
 
 export const createUser = async (req, res) => {
@@ -35,7 +36,14 @@ export const createUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
     try {
-        const users = await UserSchema.findAll( { attributes: { exclude: ['password'] }, include: [{ association: 'rol' }], order: [['createdAt' && 'updatedAt', 'DESC']] } );
+        const users = await UserSchema.findAll({
+            attributes: { exclude: ['password'] }, include: [{ association: 'rol' }], order: [['createdAt' && 'updatedAt', 'DESC']], where: {
+                rolId: {
+                    [Op.not]: '1'
+                }
+            }
+        });
+        console.log(users)
         if (users.length === 0) return res.status(404).json({ message: "No hay usuarios registrados" });
         res.status(200).json(users);
     } catch (error) {
@@ -75,7 +83,7 @@ export const updateUserById = async (req, res) => {
         if (password) updatedUser.password = await encryptPassword(password);
         await updatedUser.save();
 
-        res.status(200).json( updatedUser );
+        res.status(200).json(updatedUser);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

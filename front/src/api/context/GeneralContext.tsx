@@ -5,6 +5,7 @@ import { RolesProvider } from "./RolContext";
 import { DepartmentProvider } from "./DepartmentContext";
 import { AreaProvider } from "./AreaContext";
 import { AuthProvider } from "./AuthContext";
+import { EmployeeProvider } from "./EmployeeContext";
 
 const GeneralContext = createContext();
 
@@ -25,7 +26,9 @@ export function GeneralProvider({ children }) {
                         <RolesProvider>
                             <DepartmentProvider>
                                 <AreaProvider>
-                                    {children}
+                                    <EmployeeProvider>
+                                        {children}
+                                    </EmployeeProvider>
                                 </AreaProvider>
                             </DepartmentProvider>
                         </RolesProvider>

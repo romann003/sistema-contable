@@ -4,6 +4,6 @@ import { authJwt } from "../middlewares/index.js";
 
 const router = Router();
 
-router.get('/', [authJwt.verifyToken, authJwt.isAdmin], rolController.getRoles);
+router.get('/', [authJwt.verifyToken, authJwt.isSuperAdmin], rolController.getRoles);
 
 export default router;

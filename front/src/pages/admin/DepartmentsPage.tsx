@@ -336,7 +336,7 @@ export default function DepartmentsPage() {
                         <Form>
                             <div className="field">
                                 <label htmlFor="name" className="font-bold">Nombre del Departamento</label>
-                                <InputText id="name" name='name' type='text' autoFocus value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name && touched.name} />
+                                <InputText id="name" name='name' type='text' value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name && touched.name} />
                                 <ErrorMessage name="name" component={() => (<small className="p-error">{errors.name}</small>)} />
                             </div>
                             <div className="field">
@@ -367,7 +367,7 @@ export default function DepartmentsPage() {
                                                 <label htmlFor="status" className="font-bold my-3">
                                                     Estado
                                                 </label>
-                                                <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full" autoFocus />
+                                                <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full uppercase"  emptyMessage="No se encontraron estados" />
                                             </>
                                         ) : (<></>)}
 

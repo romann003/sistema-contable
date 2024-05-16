@@ -49,7 +49,7 @@ const getCompanies = async () => {
         try {
             const res = await updateCompanyRequest(id, company);
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Empresa Actualizada', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empresa Actualizada Exitosamente', life: 3000 });
                 window.location.reload();
             }
         } catch (error) {

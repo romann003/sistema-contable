@@ -40,5 +40,10 @@ app.use('/api/employees', employeeRoutes)
 app.use('/api/roles', rolRoutes)
 app.use('/api/nominas', nominaRoutes)
 
+//Error
+app.use((req, res, next) => {
+    res.status(404).json({ message: 'Endpoint no encontrado' })
+})
+
 
 export default app;

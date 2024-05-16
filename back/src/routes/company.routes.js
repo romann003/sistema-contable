@@ -6,8 +6,8 @@ import {validateCompany} from "../validators/company.validator.js";
 
 const router = Router();
 
-router.get('/', [authJwt.verifyToken, authJwt.isAdmin], companyController.getCompanies);
-router.get('/:companyId', [authJwt.verifyToken, authJwt.isAdmin], companyController.getCompanyById);
-router.put('/:companyId', [authJwt.verifyToken, authJwt.isAdmin], validateCompany(), companyController.updateCompanyById);
+router.get('/', [authJwt.verifyToken, authJwt.isSuperAdmin], companyController.getCompanies);
+router.get('/:companyId', [authJwt.verifyToken, authJwt.isSuperAdmin], companyController.getCompanyById);
+router.put('/:companyId', [authJwt.verifyToken, authJwt.isSuperAdmin], validateCompany(), companyController.updateCompanyById);
 
 export default router;

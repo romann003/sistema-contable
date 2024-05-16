@@ -1,256 +1,226 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { ProductService } from '../../demo/service/ProductService';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
-import { FileUpload } from 'primereact/fileupload';
-import { Rating } from 'primereact/rating';
 import { Toolbar } from 'primereact/toolbar';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
+import { Chip } from 'primereact/chip';
+import { Checkbox } from "primereact/checkbox";
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { FilterMatchMode } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
+import { Formik, Form, ErrorMessage } from 'formik';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { useDepartments } from '../../api/context/DepartmentContext';
+import { useAreas } from '../../api/context/AreaContext';
 
-interface Product {
-    id: string | null;
-    code: string;
+interface Area {
+    id: number | null;
     name: string;
     description: string;
-    image: string | null;
-    price: number;
-    category: string | null;
-    quantity: number;
-    inventoryStatus: string;
-    rating: number;
+    salary: string | null;
+    status: boolean;
+    createdAt: string;
+    updatedAt: string;
+    department: string | null;
+    departmentId: number | null;
+}
+interface Status {
+    name: string;
+    code: boolean;
 }
 
 export default function EmployeesPage() {
-    let emptyProduct: Product = {
+
+    //? -------------------- INITIAL STATES -------------------
+    const emptyArea: Area = {
         id: null,
-        code: '',
         name: '',
-        image: null,
         description: '',
-        category: null,
-        price: 0,
-        quantity: 0,
-        rating: 0,
-        inventoryStatus: 'INSTOCK',
+        salary: null,
+        status: true,
+        createdAt: '',
+        updatedAt: '',
+        department: '',
+        departmentId: null,
     };
 
-    const [products, setProducts] = useState<Product[]>([]);
-    const [productDialog, setProductDialog] = useState<boolean>(false);
-    const [deleteProductDialog, setDeleteProductDialog] = useState<boolean>(false);
-    const [deleteProductsDialog, setDeleteProductsDialog] = useState<boolean>(false);
-    const [product, setProduct] = useState<Product>(emptyProduct);
-    const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
-    const [submitted, setSubmitted] = useState<boolean>(false);
-    const [globalFilter, setGlobalFilter] = useState<string>('');
+    const typeStatus: Status[] = [
+        { name: 'Activo', code: true },
+        { name: 'Inactivo', code: false }
+    ];
+
+    //? -------------------- CONTEXT API -------------------
+    const { departments, getDepartments } = useDepartments();
+    const { areas, getAreas, createArea, deleteArea, updateArea, setAreas, errors: areaErrors } = useAreas();
+    //? -------------------- STATES -------------------
+    const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
+    const [estados, setEstados] = useState<string[]>([]);
+    const [area, setArea] = useState<Area>(emptyArea);
     const toast = useRef<Toast>(null);
-    const dt = useRef<DataTable<Product[]>>(null);
+    //? -------------------- DIALOG STATES -------------------
+    const [areaDialog, setAreaDialog] = useState<boolean>(false);
+    const [deleteAreaDialog, setDeleteAreaDialog] = useState<boolean>(false);
+    //? -------------------- DATATABLE STATES -------------------
+    const dt = useRef<DataTable<Area[]>>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
+    const [filters, setFilters] = useState<DataTableFilterMeta>({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        description: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        salary: { value: null, matchMode: FilterMatchMode.EQUALS },
+        'department.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    });
 
-    useEffect(() => {
-        ProductService.getProducts().then((data) => setProducts(data));
-    }, []);
-
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    };
-
-    const openNew = () => {
-        setProduct(emptyProduct);
-        setSubmitted(false);
-        setProductDialog(true);
-    };
-
-    const hideDialog = () => {
-        setSubmitted(false);
-        setProductDialog(false);
-    };
-
-    const hideDeleteProductDialog = () => {
-        setDeleteProductDialog(false);
-    };
-
-    const hideDeleteProductsDialog = () => {
-        setDeleteProductsDialog(false);
-    };
-
-    const saveProduct = () => {
-        setSubmitted(true);
-
-        if (product.name.trim()) {
-            let _products = [...products];
-            let _product = { ...product };
-
-            if (product.id) {
-                const index = findIndexById(product.id);
-
-                _products[index] = _product;
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-            } else {
-                _product.id = createId();
-                _product.image = 'product-placeholder.svg';
-                _products.push(_product);
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-            }
-
-            setProducts(_products);
-            setProductDialog(false);
-            setProduct(emptyProduct);
-        }
-    };
-
-    const editProduct = (product: Product) => {
-        setProduct({ ...product });
-        setProductDialog(true);
-    };
-
-    const confirmDeleteProduct = (product: Product) => {
-        setProduct(product);
-        setDeleteProductDialog(true);
-    };
-
-    const deleteProduct = () => {
-        let _products = products.filter((val) => val.id !== product.id);
-
-        setProducts(_products);
-        setDeleteProductDialog(false);
-        setProduct(emptyProduct);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-    };
-
-    const findIndexById = (id: string) => {
-        let index = -1;
-
-        for (let i = 0; i < products.length; i++) {
-            if (products[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    };
-
-    const createId = (): string => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-
-        return id;
-    };
-
-    const exportCSV = () => {
-        dt.current?.exportCSV();
-    };
-
-    const confirmDeleteSelected = () => {
-        setDeleteProductsDialog(true);
-    };
-
-    const deleteSelectedProducts = () => {
-        let _products = products.filter((val) => !selectedProducts.includes(val));
-
-        setProducts(_products);
-        setDeleteProductsDialog(false);
-        setSelectedProducts([]);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
-    };
-
-    const onCategoryChange = (e: RadioButtonChangeEvent) => {
-        let _product = { ...product };
-
-        _product['category'] = e.value;
-        setProduct(_product);
-    };
-
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
-        const val = (e.target && e.target.value) || '';
-        let _product = { ...product };
+    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const _filters = { ...filters };
 
         // @ts-ignore
-        _product[name] = val;
+        _filters['global'].value = value;
 
-        setProduct(_product);
+        setFilters(_filters);
+        setGlobalFilterValue(value);
     };
 
-    const onInputTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>, name: string) => {
-        const val = (e.target && e.target.value) || '';
-        let _product = { ...product };
+    const onEstadosChange = (e: CheckboxChangeEvent) => {
+        const _estados = [...estados];
 
-        // @ts-ignore
-        _product[name] = val;
+        if (e.checked)
+            _estados.push(e.value);
+        else
+            _estados.splice(_estados.indexOf(e.value), 1);
 
-        setProduct(_product);
-    };
+        setEstados(_estados);
+    }
 
-    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-        const val = e.value ?? 0;
-        let _product = { ...product };
-
-        // @ts-ignore
-        _product[name] = val;
-
-        setProduct(_product);
-    };
-
-    const leftToolbarTemplate = () => {
+    //? -------------------- DTATABLE FUNCTIONS -------------------
+    const renderHeader = () => {
         return (
-            <div className="flex flex-wrap gap-2">
-                <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
-                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedProducts || !selectedProducts.length} />
+            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
+                <h4 className="m-0">Lista de Areas (Cargos)</h4>
+                <IconField iconPosition="left">
+                    <InputIcon className="pi pi-search" />
+                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
+                </IconField>
             </div>
         );
     };
 
-    const rightToolbarTemplate = () => {
-        return <Button label="Export" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />;
+    //? -------------------- DATATABLE INPUT TEMPLATES -------------------
+    const desBodyTemplate = (rowData: Area) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span>{rowData.description}</span>
+            </div>
+        );
     };
 
-    const imageBodyTemplate = (rowData: Product) => {
-        return <img src={`https://primefaces.org/cdn/primereact/images/product/${rowData.image}`} alt={rowData.image!} className="shadow-2 border-round" style={{ width: '64px' }} />;
-      };
-
-    const priceBodyTemplate = (rowData: Product) => {
-        return formatCurrency(rowData.price);
+    const salaryBodyTemplate = (rowData: Area) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span>{rowData.salary}</span>
+            </div>
+        );
     };
 
-    const ratingBodyTemplate = (rowData: Product) => {
-        return <Rating value={rowData.rating} readOnly cancel={false} />;
+    const departmentBodyTemplate = (rowData: Area) => {
+        return (
+            <div className="flex align-items-center gap-2">
+                <span className='bg-gray-200 border-round-3xl px-3 py-2 uppercase font-bold'>{rowData.department.name}</span>
+            </div>
+        );
     };
 
-    const statusBodyTemplate = (rowData: Product) => {
-        return <Tag value={rowData.inventoryStatus} severity={getSeverity(rowData)}></Tag>;
+    //? -------------------- LOADING DATA -------------------
+    const header = renderHeader();
+    useEffect(() => {
+        getAreas()
+        getDepartments();
+        setLoading(false);
+    }, []);
+
+
+
+    //? -------------------- MODAL DIALOGS -------------------
+    const openNew = () => {
+        setArea(emptyArea);
+        setAreaDialog(true);
     };
 
-    const actionBodyTemplate = (rowData: Product) => {
+    const hideDialog = () => {
+        setEstados([]);
+        setSelectedStatus(null);
+        setAreaDialog(false);
+    };
+
+    const editArea = (area: Area) => {
+        setArea({ ...area });
+        setAreaDialog(true);
+    };
+
+    const hideDeleteAreaDialog = () => {
+        setDeleteAreaDialog(false);
+    };
+
+    const confirmDeleteArea = (area: Area) => {
+        setArea(area);
+        setDeleteAreaDialog(true);
+    };
+
+    const deleteAreaModal = () => {
+        deleteArea(area.id);
+        setDeleteAreaDialog(false);
+        setArea(emptyArea);
+    };
+
+    //? -------------------- DTATABLE ACTIONS -------------------
+    const leftToolbarTemplate = () => {
+        return (
+            <div className="flex flex-wrap gap-2">
+                <Button label="Agregar Area" icon="pi pi-plus" severity="success" onClick={openNew} />
+            </div>
+        );
+    };
+
+    const statusBodyTemplate = (rowData: Area) => {
+        return <Tag className="text-sm font-bold" value={getDatoStatus(rowData)} severity={getSeverity(rowData)}></Tag>;
+    };
+
+    const actionBodyTemplate = (rowData: Area) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editProduct(rowData)} />
-                <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteProduct(rowData)} />
+                <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editArea(rowData)} />
+                <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteArea(rowData)} />
             </React.Fragment>
         );
     };
 
-    const getSeverity = (product: Product) => {
-        switch (product.inventoryStatus) {
-            case 'INSTOCK':
+    const getDatoStatus = (area: Area) => {
+        switch (area.status) {
+            case true:
+                return 'ACTIVO';
+
+            case false:
+                return 'INACTIVO';
+
+            default:
+                return null;
+        }
+    };
+
+    const getSeverity = (area: Area) => {
+        switch (area.status) {
+            case true:
                 return 'success';
 
-            case 'LOWSTOCK':
-                return 'warning';
-
-            case 'OUTOFSTOCK':
+            case false:
                 return 'danger';
 
             default:
@@ -258,137 +228,193 @@ export default function EmployeesPage() {
         }
     };
 
-    const header = (
-        <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 className="m-0">Manage Products</h4>
-            <IconField iconPosition="left">
-                <InputIcon className="pi pi-search" />
-                <InputText type="search" placeholder="Search..." onInput={(e) => { const target = e.target as HTMLInputElement; setGlobalFilter(target.value); }} />
-            </IconField>
-        </div>
-    );
-    const productDialogFooter = (
+
+    //? -------------------- MODAL BUTTONS -------------------
+    const deleteAreaDialogFooter = (
         <React.Fragment>
-            <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" onClick={saveProduct} />
-        </React.Fragment>
-    );
-    const deleteProductDialogFooter = (
-        <React.Fragment>
-            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteProductDialog} />
-            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteProduct} />
-        </React.Fragment>
-    );
-    const deleteProductsDialogFooter = (
-        <React.Fragment>
-            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteProductsDialog} />
-            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedProducts} />
+            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteAreaDialog} />
+            <Button label="Si, eliminar" icon="pi pi-check" severity="danger" onClick={deleteAreaModal} />
         </React.Fragment>
     );
 
+    //? -------------------- RENDER -------------------
     return (
-
         <div>
             <Toast ref={toast} />
             <div className="card">
-                <h3>Empleados</h3>
-                <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
+                <h3>Areas (Cargos)</h3>
+                <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
 
-                <DataTable ref={dt} value={products} selection={selectedProducts} 
-                        onSelectionChange={(e) => {
-                            if (Array.isArray(e.value)) {
-                                setSelectedProducts(e.value);
-                            }
-                        }}
-                        dataKey="id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products" globalFilter={globalFilter} header={header}
-                        selectionMode="multiple"
+                {/* //? -------------------- DATATABLE ------------------- */}
+                <DataTable ref={dt} dataKey="id" value={areas} filters={filters} loading={loading}
+                    paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} areas (cargos)"
+                    // rowsPerPageOptions={[5, 10, 25]}
+                    globalFilterFields={['name', 'description', 'salary', 'department.name']} header={header} emptyMessage="No se encontraron areas."
+                    filterDisplay="row"
                 >
-                    <Column selectionMode="multiple" exportable={false}></Column>
-                    <Column field="code" header="Code" sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column field="name" header="Name" sortable style={{ minWidth: '16rem' }}></Column>
-                    <Column field="image" header="Image" body={imageBodyTemplate}></Column>
-                    <Column field="price" header="Price" body={priceBodyTemplate} sortable style={{ minWidth: '8rem' }}></Column>
-                    <Column field="category" header="Category" sortable style={{ minWidth: '10rem' }}></Column>
-                    <Column field="rating" header="Reviews" body={ratingBodyTemplate} sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column field="inventoryStatus" header="Status" body={statusBodyTemplate} sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
+
+                    <Column header="ID" body={(rowData) => <span>{areas.indexOf(rowData) + 1}</span>} />
+                    <Column sortable field="name" header="NOMBRE" filter filterPlaceholder="Filtrar por nombre" style={{ minWidth: '12rem' }} />
+                    <Column sortable field="description" header="DESCRIPCION" filterField="description" style={{ minWidth: '12rem' }} body={desBodyTemplate} filter filterPlaceholder="Filtrar por descripcion" />
+                    <Column sortable field="salary" header="SALARIO" filterField="salary" style={{ minWidth: '8rem' }} body={salaryBodyTemplate} filter filterPlaceholder="Filtrar por salario" />
+                    <Column sortable field="department.name" header="DEPARTAMENTO" filterField="department.name" style={{ minWidth: '8rem' }} body={departmentBodyTemplate} filter filterPlaceholder="Filtrar por departamento" />
+                    <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
+                    <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
+                    <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
+                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }}></Column>
                 </DataTable>
             </div>
 
-            <Dialog visible={productDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Product Details" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
-                {product.image && <img src={`https://primefaces.org/cdn/primereact/images/product/${product.image}`} alt={product.image} className="product-image block m-auto pb-3" />}
-                <div className="field">
-                    <label htmlFor="name" className="font-bold">
-                        Name
-                    </label>
-                    <InputText id="name" value={product.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !product.name })} />
-                    {submitted && !product.name && <small className="p-error">Name is required.</small>}
-                </div>
-                <div className="field">
-                    <label htmlFor="description" className="font-bold">
-                        Description
-                    </label>
-                    <InputTextarea id="description" value={product.description} onChange={(e:ChangeEvent<HTMLTextAreaElement>) => onInputTextAreaChange(e, 'description')} required rows={3} cols={20} />
-                </div>
+            {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
+            <Dialog visible={areaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Area" modal className="p-fluid" onHide={hideDialog}>
+                <Formik
+                    initialValues={{ name: '' || area.name, description: '' || area.description, salary: '' || area.salary, department: '' }}
+                    validate={values => {
+                        const errors = {};
+                        if (!values.name) {
+                            errors.name = 'El nombre es requerido';
+                        } else if (values.name.length < 3) {
+                            errors.name = 'El nombre debe tener al menos 3 caracteres';
+                        } else if (!/^[a-zA-ZÀ-ÿ\s]{1,40}$/.test(values.name)) {
+                            errors.name = 'El nombre solo puede contener letras';
+                        }
+                        if (!values.salary) {
+                            errors.salary = 'El salario es requerido';
+                        } else if (values.salary <= 0) {
+                            errors.salary = 'El salario debe ser mayor a 0';
+                        } else if (!/^[0-9]+(\.[0-9]+)?$/.test(values.salary)) {
+                            errors.salary = 'El salario solo puede contener números y un punto decimal opcional';
+                        }
+                        if (!area.id) {
+                            if (!values.department) {
+                                errors.department = 'El departamento es requerido';
+                            }
+                        }
+                        return errors;
+                    }}
+                    onSubmit={(values, { resetForm }) => {
 
-                <div className="field">
-                    <label className="mb-3 font-bold">Category</label>
-                    <div className="formgrid grid">
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category1" name="category" value="Accessories" onChange={onCategoryChange} checked={product.category === 'Accessories'} />
-                            <label htmlFor="category1">Accessories</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category2" name="category" value="Clothing" onChange={onCategoryChange} checked={product.category === 'Clothing'} />
-                            <label htmlFor="category2">Clothing</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category3" name="category" value="Electronics" onChange={onCategoryChange} checked={product.category === 'Electronics'} />
-                            <label htmlFor="category3">Electronics</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton inputId="category4" name="category" value="Fitness" onChange={onCategoryChange} checked={product.category === 'Fitness'} />
-                            <label htmlFor="category4">Fitness</label>
-                        </div>
-                    </div>
-                </div>
+                        if (values) {
+                            if (area.id) {
 
-                <div className="formgrid grid">
-                    <div className="field col">
-                        <label htmlFor="price" className="font-bold">
-                            Price
-                        </label>
-                        <InputNumber id="price" value={product.price} onValueChange={(e) => onInputNumberChange(e, 'price')} mode="currency" currency="USD" locale="en-US" />
-                    </div>
-                    <div className="field col">
-                        <label htmlFor="quantity" className="font-bold">
-                            Quantity
-                        </label>
-                        <InputNumber id="quantity" value={product.quantity} onValueChange={(e) => onInputNumberChange(e, 'quantity')} />
-                    </div>
-                </div>
+                                if (selectedStatus?.code === true) { values.status = true }
+                                else if (selectedStatus?.code === false) { values.status = false } else { values.status = area.status }
+                                if (values.department !== "") { values.departmentId = values.department.id } else { values.departmentId = area.departmentId }
+                                updateArea(area.id, values);
+                                setAreaDialog(false);
+                                setArea(emptyArea);
+                                resetForm();
+                            } else {
+                                values.departmentId = values.department.id
+                                createArea(values);
+                                setAreaDialog(false);
+                                setArea(emptyArea);
+                                resetForm();
+                            }
+
+                        } else {
+                            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Area no registrada', life: 5000 });
+                        }
+                    }}
+                >
+                    {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
+                        <Form>
+                            <div className="field">
+                                <label htmlFor="name" className="font-bold">Nombre del Area o Cargo *</label>
+                                <InputText id="name" name='name' type='text' value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name && touched.name} />
+                                <ErrorMessage name="name" component={() => (<small className="p-error">{errors.name}</small>)} />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="description" className="font-bold">Descripción</label>
+                                <InputTextarea id="description" name='description' autoResize rows={1} value={values.description || ''} onChange={handleChange} onBlur={handleBlur} />
+                                <ErrorMessage name="description" component={() => (<small className="p-error">{errors.description}</small>)} />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="salary" className="font-bold">Salario base *</label>
+                                <InputText id="salary" name='salary' type='number' value={values.salary || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.salary && touched.salary} />
+                                <ErrorMessage name="salary" component={() => (<small className="p-error">{errors.salary}</small>)} />
+                            </div>
+                            <div className="field">
+                                {area.id ? (
+                                    <>
+                                        <label htmlFor="updates" className="font-bold mt-3">
+                                            Actualizaciones
+                                        </label>
+                                        <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
+                                                <label htmlFor="checkbox Estado" className="ml-2">
+                                                    Estado
+                                                </label>
+                                            </div>
+                                            <div className="flex align-items-center mb-3">
+                                                <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
+                                                <label htmlFor="checkbox Departamento" className="ml-2">
+                                                    Departamento
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {estados.includes('e2') ? (
+                                            <>
+                                                <label htmlFor="status" className="font-bold my-3">
+                                                    Estado
+                                                </label>
+                                                <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full uppercase" emptyMessage="No se encontraron estados" />
+                                            </>
+                                        ) : (<></>)}
+
+                                        {estados.includes('e3') ? (
+                                            <>
+                                                <label htmlFor="department" className="font-bold my-3">Departamento</label>
+                                                <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
+                                            </>
+                                        ) : (<></>)}
+
+
+                                        <div className="field">
+                                            <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                            <div className="formgrid grid">
+                                                <div className="col-12">
+                                                    <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                                        <Chip label={`${area.department?.name}`} className="text-lg font-bold uppercase" />
+                                                        <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(area)}`} severity={getSeverity(area)}></Tag>
+                                                        <Chip label={`Creado el: ${new Date(area.createdAt).toLocaleDateString()} - ${new Date(area.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                        <Chip label={`Ultima Actualización: ${new Date(area.updatedAt).toLocaleDateString()} - ${new Date(area.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <label htmlFor="department" className="font-bold my-3">Departamento</label>
+                                        <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" invalid={!!errors.department && touched.department} emptyMessage="No se encontraron departamentos" className="w-full uppercase"/>
+                                        <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
+
+                                    </>
+                                )}
+                            </div>
+                            <div className="field flex mt-7 mb-0 align-content-between justify-content-between">
+                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
+                                <Button label="Guardar Area" icon="pi pi-check" type='submit' className='mx-1' disabled={area.id ? false : !(isValid && dirty)} />
+                            </div>
+                        </Form>
+                    )}
+                </Formik>
             </Dialog>
 
-            <Dialog visible={deleteProductDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
+            {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
+            <Dialog visible={deleteAreaDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteAreaDialogFooter} onHide={hideDeleteAreaDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {product && (
+                    {area && (
                         <span>
-                            Are you sure you want to delete <b>{product.name}</b>?
+                            ¿Estas seguro que deseas eliminar el area(cargo): <b className="font-bold">{area.name}</b>?
                         </span>
                     )}
                 </div>
             </Dialog>
-
-            <Dialog visible={deleteProductsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
-                <div className="confirmation-content">
-                    <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {product && <span>Are you sure you want to delete the selected products?</span>}
-                </div>
-            </Dialog>
         </div>
-            
     );
 }

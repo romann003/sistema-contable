@@ -1,28 +1,27 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { getDepartmentsRequest, getDepartmentRequest, createDepartmentRequest, updateDepartmentRequest, deleteDepartmentRequest } from "../department.js";
+import { getEmployeesRequest, getEmployeeRequest, createEmployeeRequest, updateEmployeeRequest, deleteEmployeeRequest } from "../employee.js";
 import { Toast } from 'primereact/toast';
 
+const EmployeeContext = createContext();
 
-const DepartmentContext = createContext();
-
-export const useDepartments = () => {
-    const context = useContext(DepartmentContext);
+export const useEmployees = () => {
+    const context = useContext(EmployeeContext);
     if (!context) {
-        throw new Error("useDepartments must be used within an DepartmentProvider");
+        throw new Error("useEmployee must be used within an EmployeeProvider");
     }
     return context;
-}
+};
 
-export function DepartmentProvider({ children }) {
+export function EmployeeProvider({ children }) {
     const [errors, setErrors] = useState([]);
-    const [departments, setDepartments] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const toast = useRef<Toast>(null);
 
     //?------------------------ get ------------------------
-    const getDepartments = async () => {
+    const getEmployees = async () => {
         try {
-            const res = await getDepartmentsRequest();
-            setDepartments(res.data);
+            const res = await getEmployeesRequest();
+            setEmployees(res.data);
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -32,10 +31,10 @@ export function DepartmentProvider({ children }) {
     }
 
     //?------------------------ get by id ------------------------
-    const getDepartment = async (id) => {
+    const getEmployee = async (id) => {
         try {
-            const res = await getDepartmentRequest(id);
-            setDepartments(res.data);
+            const res = await getEmployeeRequest(id);
+            setEmployees(res.data);
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -45,12 +44,12 @@ export function DepartmentProvider({ children }) {
     }
 
     //?------------------------ create ------------------------
-    const createDepartment = async (department) => {
+    const createEmployee = async (employee) => {
         try {
-            const res = await createDepartmentRequest(department);
+            const res = await createEmployeeRequest(employee);
 
-            if(res.status === 200){
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Departamento Creado Exitosamente', life: 3000 });
+            if (res.status === 200) {
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empleado Creado Exitosamente', life: 3000 });
                 window.location.reload();
             }
         } catch (error) {
@@ -62,13 +61,13 @@ export function DepartmentProvider({ children }) {
     }
 
     //?------------------------ update ------------------------
-    const updateDepartment = async (id, department) => {
+    const updateEmployee = async (id, employee) => {
         try {
-            const res = await updateDepartmentRequest(id, department);
-            if(res.status === 200){
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Departamento Actualizado Exitosamente', life: 3000 });
+            const res = await updateEmployeeRequest(id, employee);
+            if (res.status === 200) {
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empleado Actualizado Exitosamente', life: 3000 });
                 window.location.reload();
-            };
+            }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
                 return setErrors(error.response.data);
@@ -78,12 +77,12 @@ export function DepartmentProvider({ children }) {
     }
 
     //?------------------------ delete ------------------------
-    const deleteDepartment = async (id) => {
+    const deleteEmployee = async (id) => {
         try {
-            const res = await deleteDepartmentRequest(id);
+            const res = await deleteEmployeeRequest(id);
             if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Departamento Eliminado Exitosamente', life: 3000 });
-                setDepartments(departments.filter((val) => val.id !== id));
+                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empleado Eliminado Exitosamente', life: 3000 });
+                setEmployees(employees.filter((val) => val.id !== id));
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -104,14 +103,16 @@ export function DepartmentProvider({ children }) {
     }, [errors]);
 
     return (
-        <DepartmentContext.Provider value={{
-            departments, setDepartments, getDepartments, getDepartment, createDepartment, deleteDepartment, updateDepartment, errors
-        }}>
+        <EmployeeContext.Provider
+            value={{
+                errors, employees, getEmployees, getEmployee, createEmployee, updateEmployee, deleteEmployee
+            }}
+        >
             <Toast ref={toast} />
             {errors.map((error) => (
                 toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
             ))}
             {children}
-        </DepartmentContext.Provider>
-    )
+        </EmployeeContext.Provider>
+    );
 }

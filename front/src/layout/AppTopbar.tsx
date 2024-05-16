@@ -27,7 +27,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const toast = useRef<Toast>(null);
     const accept = () => {
         logout();
-        navigate('/', { replace: true });
+        navigate('/', { replace: true, state: { refresh: true } });
     }
 
     const confirm1 = () => {

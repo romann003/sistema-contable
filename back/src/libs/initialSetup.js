@@ -12,6 +12,7 @@ export const createRoles = async () => {
         if (count > 0) return;
 
         const values = await Promise.all([
+            RolSchema.create({ name: 'root' }),
             RolSchema.create({ name: 'administrador' }),
             RolSchema.create({ name: 'moderador' })
         ])
@@ -53,9 +54,9 @@ export const createUser = async () => {
             UserSchema.create({
                 name: 'SUPER',
                 last_name: 'ADMIN',
-                username: 'admin',
-                email: 'admin@admin.com',
-                password: await encryptPassword('admin123'),
+                username: 'super admin',
+                email: 'sadmin@sadmin.com',
+                password: await encryptPassword('sadmin123'),
                 status: true,
                 rolId: 1,
                 companyId: 1
