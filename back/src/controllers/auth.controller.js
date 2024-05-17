@@ -43,10 +43,10 @@ export const verifyToken = async (req, res) => {
         if (!token) return res.status(401).json({ message: "No hay token, autorizacion denegada" })
 
         jwt.verify(token, config.SECRET, async (err, decoded) => {
-            if (err) return res.status(401).json({ message: "No autorizado" })
+            if (err) return res.status(401).json({ message: "No autorizado - Token no valido" })
             // req.userId = decoded.id
             const userFound = await UserSchema.findByPk(decoded.id)
-            if (!userFound) return res.status(401).json({ message: "No autorizado" })
+            if (!userFound) return res.status(401).json({ message: "No autorizado - Usuario no encontrado" })
             return res.json({ id: userFound.id, username: userFound.username, email: userFound.email })
         })
     } catch (error) {

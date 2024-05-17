@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { getDepartmentsRequest, getDepartmentRequest, createDepartmentRequest, updateDepartmentRequest, deleteDepartmentRequest } from "../department.js";
+import { getDepartmentsRequest, getDepartmentRequest, createDepartmentRequest, updateDepartmentRequest, deleteDepartmentRequest, getActiveDepartmentsRequest } from "../department.js";
 import { Toast } from 'primereact/toast';
 
 
@@ -31,6 +31,18 @@ export function DepartmentProvider({ children }) {
         }
     }
 
+    const getActiveDepartments = async () => {
+        try {
+            const res = await getActiveDepartmentsRequest();
+            setDepartments(res.data);
+        } catch (error) {
+            if (Array.isArray(error.response.data)) {
+                return setErrors(error.response.data);
+            }
+            setErrors([error.response.data.message]);
+        }
+    }
+
     //?------------------------ get by id ------------------------
     const getDepartment = async (id) => {
         try {
@@ -51,7 +63,8 @@ export function DepartmentProvider({ children }) {
 
             if(res.status === 200){
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Departamento Creado Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setDepartments(departments);
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -67,7 +80,8 @@ export function DepartmentProvider({ children }) {
             const res = await updateDepartmentRequest(id, department);
             if(res.status === 200){
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Departamento Actualizado Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setDepartments(departments);
             };
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -105,7 +119,7 @@ export function DepartmentProvider({ children }) {
 
     return (
         <DepartmentContext.Provider value={{
-            departments, setDepartments, getDepartments, getDepartment, createDepartment, deleteDepartment, updateDepartment, errors
+            departments, setDepartments, getDepartments, getDepartment, createDepartment, deleteDepartment, updateDepartment, getActiveDepartments, errors
         }}>
             <Toast ref={toast} />
             {errors.map((error) => (

@@ -43,7 +43,6 @@ export const getUsers = async (req, res) => {
                 }
             }
         });
-        console.log(users)
         if (users.length === 0) return res.status(404).json({ message: "No hay usuarios registrados" });
         res.status(200).json(users);
     } catch (error) {

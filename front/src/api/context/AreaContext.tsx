@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { getAreasRequest, getAreaRequest, createAreaRequest, updateAreaRequest, deleteAreaRequest } from "../area.js";
+import { getAreasRequest, getAreaRequest, createAreaRequest, updateAreaRequest, deleteAreaRequest, getAreasByIdRequest } from "../area.js";
 import { Toast } from 'primereact/toast';
 
 const AreaContext = createContext();
@@ -31,6 +31,18 @@ export function AreaProvider({ children }) {
     }
 
     //?------------------------ get by id ------------------------
+    const getAreasById = async (id) => {
+        try {
+            const res = await getAreasByIdRequest(id);
+            setAreas(res.data);
+        } catch (error) {
+            if (Array.isArray(error.response.data)) {
+                return setErrors(error.response.data);
+            }
+            setErrors([error.response.data.message]);
+        }
+    }
+
     const getArea = async (id) => {
         try {
             const res = await getAreaRequest(id);
@@ -50,7 +62,8 @@ export function AreaProvider({ children }) {
 
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Creada Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setAreas(areas)
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -66,7 +79,8 @@ export function AreaProvider({ children }) {
             const res = await updateAreaRequest(id, area);
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Actualizada Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setAreas(areas)
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -104,7 +118,7 @@ export function AreaProvider({ children }) {
 
     return (
         <AreaContext.Provider value={{
-            areas, setAreas, getAreas, getArea, createArea, deleteArea, updateArea, errors
+            areas, setAreas, getAreas, getAreasById, getArea, createArea, deleteArea, updateArea, errors
         }}>
             <Toast ref={toast} />
             {errors.map((error) => (

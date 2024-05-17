@@ -7,7 +7,8 @@ export const getRoles = async (req, res) => {
             where: {
                 name: {
                     [Op.not]: 'root'
-                }
+                },
+                status: true
             }
         });
         

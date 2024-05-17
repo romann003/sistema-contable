@@ -56,7 +56,7 @@ export default function AreasPage() {
     ];
 
     //? -------------------- CONTEXT API -------------------
-    const { departments, getDepartments } = useDepartments();
+    const { departments, getActiveDepartments } = useDepartments();
     const { areas, getAreas, createArea, deleteArea, updateArea, setAreas, errors: areaErrors } = useAreas();
     //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
@@ -142,9 +142,9 @@ export default function AreasPage() {
     const header = renderHeader();
     useEffect(() => {
         getAreas()
-        getDepartments();
+        getActiveDepartments();
         setLoading(false);
-    }, []);
+    }, [area]);
 
 
 
@@ -252,6 +252,7 @@ export default function AreasPage() {
                     // rowsPerPageOptions={[5, 10, 25]}
                     globalFilterFields={['name', 'description', 'salary', 'department.name']} header={header} emptyMessage="No se encontraron areas."
                     filterDisplay="row"
+                    stripedRows 
                 >
 
                     <Column header="ID" body={(rowData) => <span>{areas.indexOf(rowData) + 1}</span>} />

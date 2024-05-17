@@ -124,7 +124,7 @@ export default function CompanyPage() {
     useEffect(() => {
         getCompanies();
         setLoading(false);
-    }, []);
+    }, [company]);
 
 
 

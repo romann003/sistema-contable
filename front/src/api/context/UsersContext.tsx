@@ -50,7 +50,8 @@ export function UserProvider({ children }) {
 
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Creado Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setUsers(users);
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -66,7 +67,8 @@ export function UserProvider({ children }) {
             const res = await updateUserRequest(id, user);
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Actualizado Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setUsers(users);
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {

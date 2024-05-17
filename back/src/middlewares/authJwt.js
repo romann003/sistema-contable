@@ -47,7 +47,7 @@ export const isSuperAdmin = async (req, res, next) => {
     const user = await UserSchema.findByPk(req.userId)
     const roles = await RolSchema.findAll({ where: { id: user.rolId } });
     if (roles.length === 0) {
-        return res.status(403).json({ message: "No autorizado" })
+        return res.status(403).json({ message: "No autorizado - Rol no encontrado" })
     }
 
     for (let i = 0; i < roles.length; i++) {
@@ -63,7 +63,7 @@ export const isAdmin = async (req, res, next) => {
     const user = await UserSchema.findByPk(req.userId)
     const roles = await RolSchema.findAll({ where: { id: user.rolId } });
     if (roles.length === 0) {
-        return res.status(403).json({ message: "No autorizado" })
+        return res.status(403).json({ message: "No autorizado - Rol no encontrado" })
     }
 
     for (let i = 0; i < roles.length; i++) {
@@ -79,7 +79,7 @@ export const isModerator = async (req, res, next) => {
     const user = await UserSchema.findByPk(req.userId)
     const roles = await RolSchema.findAll({ where: { id: user.rolId } });
     if (roles.length === 0) {
-        return res.status(403).json({ message: "No autorizado" })
+        return res.status(403).json({ message: "No autorizado - Rol no encontrado" })
     }
 
     for (let i = 0; i < roles.length; i++) {
@@ -95,7 +95,7 @@ export const isValidUser = async (req, res, next) => {
     const user = await UserSchema.findByPk(req.userId)
     const roles = await RolSchema.findAll({ where: { id: user.rolId } });
     if (roles.length === 0) {
-        return res.status(403).json({ message: "No autorizado" })
+        return res.status(403).json({ message: "No autorizado - Rol no encontrado" })
     }
 
     for (let i = 0; i < roles.length; i++) {
@@ -111,7 +111,7 @@ export const isOnlyAdmins = async (req, res, next) => {
     const user = await UserSchema.findByPk(req.userId)
     const roles = await RolSchema.findAll({ where: { id: user.rolId } });
     if (roles.length === 0) {
-        return res.status(403).json({ message: "No autorizado" })
+        return res.status(403).json({ message: "No autorizado - Rol no encontrado" })
     }
 
     for (let i = 0; i < roles.length; i++) {

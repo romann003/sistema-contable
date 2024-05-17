@@ -33,6 +33,26 @@ export const getAreas = async (req, res) => {
     }
 }
 
+export const getAreasById = async (req, res) => {
+    try {
+        const areas = await AreaSchema.findAll( {
+            where: {departmentId: req.params.departmentId, status: true}, 
+            include: [{ association: 'department', where: {status: true} }],
+            order: [['createdAt' && 'updatedAt', 'DESC']]} );
+
+        const areasWithDepartments = areas.filter(area => area.department !== null);
+
+        if (areasWithDepartments.length !== areas.length) {
+            return res.status(400).json({ message: "Al menos una área no tiene departamento asociado" });
+        }else{
+        }
+        res.status(200).json(areas);
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+
 export const getAreaById = async (req, res) => {
     try {
         const getArea = await AreaSchema.findOne({ where: { id: req.params.areaId } });

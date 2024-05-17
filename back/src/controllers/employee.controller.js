@@ -47,7 +47,8 @@ export const createEmployee = async (req, res) => {
 
 export const getEmployees = async (req, res) => {
     try {
-        const employees = await EmployeeSchema.findAll();
+        const employees = await EmployeeSchema.findAll({ include: [{ association: 'department'}, {association: 'area'}], order: [['createdAt' && 'updatedAt', 'DESC']]});
+
         if (employees.length === 0) return res.status(404).json({ message: "Empleados no encontrados" });
         res.status(200).json(employees);
     } catch (error) {

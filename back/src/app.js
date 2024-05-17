@@ -23,6 +23,7 @@ createArea()
 
 //Middlewares
 app.use(cors({
+    // origin: 'http://25.58.152.111:5173',
     origin: 'http://localhost:5173',
     credentials: true
 })); 

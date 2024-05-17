@@ -179,7 +179,7 @@ export default function UsersPage() {
         getUsers()
         getRoles()
         setLoading(false);
-    }, []);
+    }, [user]);
 
     //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
@@ -378,6 +378,7 @@ export default function UsersPage() {
                     // rowsPerPageOptions={[5, 10, 25]}
                     globalFilterFields={['name', 'last_name', 'username', 'email', 'rol.name']} header={header} emptyMessage="No se encontraron usuarios."
                     filterDisplay="row"
+                    stripedRows 
                 >
                     <Column header="ID" body={(rowData) => <span>{users.indexOf(rowData) + 1}</span>} />
                     {/* <Column header="NOMBRE COMPLETO" style={{ minWidth: '8rem' }} body={(rowData) => <span>{`${rowData.name} ${rowData.last_name}`}</span>} /> */}

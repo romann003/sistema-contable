@@ -50,7 +50,8 @@ const getCompanies = async () => {
             const res = await updateCompanyRequest(id, company);
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empresa Actualizada Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setCompanies(companies)
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {

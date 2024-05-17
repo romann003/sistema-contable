@@ -9,6 +9,7 @@ const router = Router();
 
 router.post('/', [authJwt.verifyToken, authJwt.isOnlyAdmins], validateArea(1), areaController.createArea);
 router.get('/', [authJwt.verifyToken, authJwt.isOnlyAdmins], areaController.getAreas);
+router.get('/department/:departmentId', [authJwt.verifyToken, authJwt.isOnlyAdmins], areaController.getAreasById);
 router.get('/:areaId', [authJwt.verifyToken, authJwt.isOnlyAdmins], areaController.getAreaById);
 router.put('/:areaId', [authJwt.verifyToken, authJwt.isOnlyAdmins], validateArea(), areaController.updateAreaById);
 router.delete('/:areaId', [authJwt.verifyToken, authJwt.isOnlyAdmins], areaController.deleteAreaById);

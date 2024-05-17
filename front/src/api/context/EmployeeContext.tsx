@@ -50,7 +50,8 @@ export function EmployeeProvider({ children }) {
 
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empleado Creado Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setEmployees(employees)
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {
@@ -66,7 +67,8 @@ export function EmployeeProvider({ children }) {
             const res = await updateEmployeeRequest(id, employee);
             if (res.status === 200) {
                 toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empleado Actualizado Exitosamente', life: 3000 });
-                window.location.reload();
+                // window.location.reload();
+                setEmployees(employees)
             }
         } catch (error) {
             if (Array.isArray(error.response.data)) {

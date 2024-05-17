@@ -129,7 +129,7 @@ export default function DepartmentsPage() {
     useEffect(() => {
         getDepartments()
         setLoading(false);
-    }, []);
+    }, [department]);
 
     //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
@@ -179,7 +179,6 @@ export default function DepartmentsPage() {
             if (department.id) {
                 if (selectedStatus?.code === true) { values.status = true }
                 else if (selectedStatus?.code === false) { values.status = false } else { values.status = department.status }
-                console.log(values)
                 updateDepartment(department.id, values);
                 setDepartmentDialog(false);
                 setUpdateStatusDialog(false);

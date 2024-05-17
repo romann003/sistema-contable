@@ -35,6 +35,17 @@ export const getDepartments = async (req, res) => {
     }
 }
 
+export const getActiveDepartments = async (req, res) => {
+    try {
+        const departments = await DepartmentSchema.findAll({ where: { status: true}, order: [['createdAt' && 'updatedAt', 'DESC']]});
+        // const departments = await DepartmentSchema.findAll({where: { status: true } });
+        if (departments.length === 0) return res.status(404).json({ message: "No hay departamentos registrados" });
+        res.status(200).json(departments);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+
 export const getDepartmentById = async (req, res) => {
     try {
         const getDepartment = await DepartmentSchema.findOne({ where: { id: req.params.departmentId } });

@@ -47,7 +47,7 @@ export default function LoginPage() {
                             <div className="w-full surface-card py-8 px-6 sm:px-6" style={{ borderRadius: '53px' }}>
                                 <div className="text-center mb-6">
                                     <div className="text-900 text-3xl font-medium mb-3">Inicia Sesión</div>
-                                    <span className="text-600 font-medium">Sistema Conable - Proyecto UMG</span>
+                                    <span className="text-600 font-medium">Sistema Contable - Proyecto UMG</span>
                                 </div>
 
                                 <div>
