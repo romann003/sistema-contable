@@ -83,7 +83,6 @@ export const AuthProvider = ({ children }) => {
           setLoading(false);
           return;
         }
-
         setIsAuthenticated(true);
         setUser(res.data);
         setLoading(false);

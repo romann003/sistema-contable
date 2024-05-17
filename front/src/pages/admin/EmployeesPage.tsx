@@ -513,7 +513,7 @@ export default function EmployeesPage() {
             </div>
 
             {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
-            <Dialog visible={employeeDialog} style={{ width: 'auto', height: '40rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Empleado" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={true} closeOnEscape={false}
+            <Dialog visible={employeeDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Empleado" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={true} closeOnEscape={false}
             >
                 <Formik
                     initialValues={{ name: '' || employee.name, last_name: '' || employee.last_name, phone: '' || employee.phone, country: '' || employee.country, identification_type: '' || employee.identification_type, identification: '' || employee.identification, nit: '' || employee.nit, igss: '' || employee.igss, gender: '' || employee.gender, birthdate: '' || employee.birthdate, address: '' || employee.address, hire_date: '' || employee.hire_date, contract_type: '' || employee.contract_type, work_day: '' || employee.work_day, department: '', area: '' }}
@@ -614,19 +614,36 @@ export default function EmployeesPage() {
                     onSubmit={(values, { resetForm }) => {
 
                         if (values) {
+                            values.birthdate = dayjs.utc(values.birthdate).format()
+                            values.hire_date = dayjs.utc(values.hire_date).format()
                             if (employee.id) {
-                                values.birthdate = dayjs.utc(values.birthdate).format()
-                                // if (selectedStatus?.code === true) { values.status = true }
-                                // else if (selectedStatus?.code === false) { values.status = false } else { values.status = employee.status }
-                                // if (values.department !== "") { values.departmentId = values.department.id } else { values.departmentId = employee.departmentId }
-                                // updateEmployee(employee.id, values);
-                                // setEmployeeDialog(false);
-                                // setEmployee(emptyEmployee);
-                                // resetForm();
-                            } else {
-                                values.birthdate = dayjs.utc(values.birthdate).format()
-                                values.hire_date = dayjs.utc(values.hire_date).format()
+                                if( selectedCountry?.code) { values.country = selectedCountry.code }
+                                else { values.country = employee.country }
 
+                                if( selectedTypeIdentification?.code) { values.identification_type = selectedTypeIdentification.code }
+                                else { values.identification_type = employee.identification_type }
+
+                                if( selectedGender?.code) { values.gender = selectedGender.code }
+                                else { values.gender = employee.gender }
+
+                                if( selectedContractType?.code) { values.contract_type = selectedContractType.code }
+                                else { values.contract_type = employee.contract_type }
+
+                                if( selectedWorkDay?.code) { values.work_day = selectedWorkDay.code }
+                                else { values.work_day = employee.work_day }
+
+                                if (selectedStatus?.code === true) { values.status = true }
+                                else if (selectedStatus?.code === false) { values.status = false } else { values.status = employee.status }
+
+                                if (values.department !== "") { values.departmentId = values.department.id } else { values.departmentId = employee.departmentId }
+
+                                if (values.area !== "") { values.areaId = values.area.id } else { values.areaId = employee.areaId }
+
+                                updateEmployee(employee.id, values);
+                                setEmployeeDialog(false);
+                                setEmployee(emptyEmployee);
+                                resetForm();
+                            } else {
                                 values.country = selectedCountry.code
                                 values.identification_type = selectedTypeIdentification.code
                                 values.gender = selectedGender.code
@@ -692,7 +709,25 @@ export default function EmployeesPage() {
                                                         invalid={!!errors.identification_type && touched.identification_type} className="w-full uppercase" emptyMessage="No se encontraron tipos" />
                                                     <ErrorMessage name="identification_type" component={() => (<small className="p-error">{errors.identification_type}</small>)} />
                                                 </div>
-                                            </>) : (<></>)}
+                                            </>) : (<>
+                                                <div className="field col-4">
+                                                    <label htmlFor="country" className="font-bold">País
+                                                    </label>
+                                                    <Dropdown id='country' name='country' value={selectedCountry} onChange={(e: DropdownChangeEvent) => { setSelectedCountry(e.value); handleChange(e) }} onBlur={handleBlur} options={typeCountry} optionLabel="name" placeholder="Selecciona un país" className="w-full uppercase" emptyMessage="No se encontraron países" />
+                                                </div>
+
+                                                <div className="field col-4">
+                                                    <label htmlFor="gender" className="font-bold">Género
+                                                    </label>
+                                                    <Dropdown id='gender' name='gender' value={selectedGender} onChange={(e: DropdownChangeEvent) => { setSelectedGender(e.value); handleChange(e) }} onBlur={handleBlur} options={typeGender} optionLabel="name" placeholder="Selecciona un género" className="w-full uppercase" emptyMessage="No se encontraron generos" />
+                                                </div>
+
+                                                <div className="field col-4">
+                                                    <label htmlFor="identification_type" className="font-bold">Tipo Identificación
+                                                    </label>
+                                                    <Dropdown id='identification_type' name='identification_type' value={selectedTypeIdentification} onChange={(e: DropdownChangeEvent) => { setSelectedTypeIdentification(e.value); handleChange(e) }} onBlur={handleBlur} options={typeIdentification} optionLabel="name" placeholder="Selecciona un tipo" className="w-full uppercase" emptyMessage="No se encontraron tipos" />
+                                                </div>
+                                            </>)}
 
                                             <div className="field col-4">
                                                 <label htmlFor="nit" className="font-bold">Número de NIT <span className='text-red-600'>*</span></label>
@@ -726,13 +761,13 @@ export default function EmployeesPage() {
                                 <TabPanel className='w-full' header="Header II" headerTemplate={tab2HeaderTemplate}>
                                     <div className="formgrid grid mt-5">
                                         <div className="p-fluid grid">
+                                            <div className="field col-4">
+                                                <label htmlFor="hire_date" className="font-bold">Fecha Contratación <span className='text-red-600'>*</span></label>
+                                                {/* <Calendar id='hire_date' name='hire_date' value={values.hire_date} onChange={(e) => { e.stopPropagation(); setDate(e.value); handleChange(e); }} onBlur={handleBlur} invalid={!!errors.hire_date && touched.hire_date} touchUI /> */}
+                                                <InputText id="hire_date" name='hire_date' type='date' value={values.hire_date || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.hire_date && touched.hire_date} />
+                                                <ErrorMessage name="hire_date" component={() => (<small className="p-error">{errors.hire_date}</small>)} />
+                                            </div>
                                             {!employee.id ? (<>
-                                                <div className="field col-4">
-                                                    <label htmlFor="hire_date" className="font-bold">Fecha Contratación <span className='text-red-600'>*</span></label>
-                                                    {/* <Calendar id='hire_date' name='hire_date' value={values.hire_date} onChange={(e) => { e.stopPropagation(); setDate(e.value); handleChange(e); }} onBlur={handleBlur} invalid={!!errors.hire_date && touched.hire_date} touchUI /> */}
-                                                    <InputText id="hire_date" name='hire_date' type='date' value={values.hire_date || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.hire_date && touched.hire_date} />
-                                                    <ErrorMessage name="hire_date" component={() => (<small className="p-error">{errors.hire_date}</small>)} />
-                                                </div>
                                                 <div className="field col-4">
                                                     <label htmlFor="contract_type" className="font-bold">Tipo Contrato <span className='text-red-600'>*</span>
                                                     </label>
@@ -757,101 +792,73 @@ export default function EmployeesPage() {
                                                     }} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" invalid={!!errors.department && touched.department} emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
                                                     <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
                                                 </div>
+                                                {/* {setdId(values.department.id)} */}
+                                                <div className="field col-4">
+                                                    <label htmlFor="area" className="font-bold">Area <span className='text-red-600'>*</span></label>
+                                                    <Dropdown id="area" name="area" value={values.area} onChange={handleChange} onBlur={handleBlur} options={areas} optionLabel="name" placeholder="Selecciona un Area" invalid={!!errors.area && touched.area} emptyMessage="No se encontraron areas" className="w-full uppercase" />
+                                                    <ErrorMessage name="area" component={() => (<small className="p-error">{errors.area}</small>)} />
+                                                </div>
 
-                                                {values.department.id ? (<>
-                                                    {/* {setdId(values.department.id)} */}
-                                                    <div className="field col-4">
-                                                        <label htmlFor="area" className="font-bold">Area <span className='text-red-600'>*</span></label>
-                                                        <Dropdown id="area" name="area" value={values.area} onChange={handleChange} onBlur={handleBlur} options={areas} optionLabel="name" placeholder="Selecciona un Area" invalid={!!errors.area && touched.area} emptyMessage="No se encontraron areas" className="w-full uppercase" />
-                                                        <ErrorMessage name="area" component={() => (<small className="p-error">{errors.area}</small>)} />
-                                                    </div>
-                                                </>) : (<></>)}
-
-                                            </>) : (<></>)}
-
-
-
-                                            {employee.id ? (
-                                                <>
-                                                    <label htmlFor="updates" className="font-bold mt-3">
-                                                        Actualizaciones
+                                            </>) : (<>
+                                                <div className="field col-4">
+                                                    <label htmlFor="contract_type" className="font-bold">Tipo Contrato
                                                     </label>
-                                                    <div className="flex flex-wrap justify-content-evenly gap-3 mt-2">
-                                                        <div className="flex align-items-center mb-3">
-                                                            <Checkbox inputId="e2" name="e2" value="e2" onChange={onEstadosChange} checked={estados.includes('e2')} />
-                                                            <label htmlFor="checkbox Estado" className="ml-2">
-                                                                Estado
-                                                            </label>
-                                                        </div>
-                                                        <div className="flex align-items-center mb-3">
-                                                            <Checkbox inputId="e3" name="e3" value="e3" onChange={onEstadosChange} checked={estados.includes('e3')} />
-                                                            <label htmlFor="checkbox Departamento" className="ml-2">
-                                                                Departamento
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                    {estados.includes('e2') ? (
-                                                        <>
-                                                            <label htmlFor="status" className="font-bold my-3">
-                                                                Estado
-                                                            </label>
-                                                            <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full uppercase" emptyMessage="No se encontraron estados" />
-                                                        </>
-                                                    ) : (<></>)}
+                                                    <Dropdown id='contract_type' name='contract_type' value={selectedContractType} onChange={(e: DropdownChangeEvent) => { setSelectedContractType(e.value); handleChange(e) }} onBlur={handleBlur} options={typeContract} optionLabel="name" placeholder="Selecciona el tipo de contrato" className="w-full uppercase" emptyMessage="No se encontraron tipos" />
+                                                </div>
 
-                                                    {estados.includes('e3') ? (
-                                                        <>
-                                                            <label htmlFor="department" className="font-bold my-3">Departamento</label>
-                                                            <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
-                                                        </>
-                                                    ) : (<></>)}
+                                                <div className="field col-4">
+                                                    <label htmlFor="work_day" className="font-bold">Jornada Laboral
+                                                    </label>
+                                                    <Dropdown id='work_day' name='work_day' value={selectedWorkDay} onChange={(e: DropdownChangeEvent) => { setSelectedWorkDay(e.value); handleChange(e) }} onBlur={handleBlur} options={typeWorkDay} optionLabel="name" placeholder="Selecciona una jornada" className="w-full uppercase" emptyMessage="No se encontraron jornadas" />
+                                                </div>
 
-
-                                                    <div className="field">
-                                                        <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                                                        <div className="formgrid grid">
-                                                            <div className="col-12">
-                                                                <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                                                    <Chip label={`${employee.department?.name}`} className="text-lg font-bold uppercase" />
-                                                                    <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(employee)}`} severity={getSeverity(employee)}></Tag>
-                                                                    <Chip label={`Creado el: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                                                    <Chip label={`Ultima Actualización: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="flex flex-column md:flex-row gap-4">
-                                                        {/* <div className="field flex-1">
-                                                            <label htmlFor="department" className="font-bold my-3 ">Departamento<span className='text-red-600'>*</span></label>
-                                                            <Dropdown id="department" name="department" value={values.department} onChange={handleChange} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" invalid={!!errors.department && touched.department} emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
-                                                            <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
-                                                        </div>
-                                                        <div className="field flex-1">
-                                                            <label htmlFor="area" className="font-bold my-3">Area <span className='text-red-600'>*</span></label>
-                                                            <Dropdown id="area" name="area" value={values.area} onChange={handleChange} onBlur={handleBlur} options={areas} optionLabel="name" placeholder="Selecciona un Area" invalid={!!errors.area && touched.area} emptyMessage="No se encontraron areas" className="w-full uppercase" />
-                                                            <ErrorMessage name="area" component={() => (<small className="p-error">{errors.area}</small>)} />
-                                                        </div> */}
-                                                        {/* <div className="field flex-1">
-                                                <label htmlFor="country" className="font-bold my-3">País <span className='text-red-600'>*</span>
-                                                </label>
-                                                <Dropdown id='country' name='country' value={selectedCountry} onChange={(e: DropdownChangeEvent) => { setSelectedCountry(e.value); handleChange(e) }} onBlur={handleBlur} options={typeCountry} optionLabel="name" placeholder="Selecciona un país"
-                                                    invalid={!!errors.country && touched.country} className="w-full uppercase" emptyMessage="No se encontraron países" />
-                                                <ErrorMessage name="country" component={() => (<small className="p-error">{errors.country}</small>)} />
-                                            </div> */}
-                                                    </div>
-                                                </>
-                                            )}
+                                                <div className="field col-4">
+                                                    <label htmlFor="department" className="font-bold">Departament</label>
+                                                    <Dropdown id="department" name="department" value={values.department} onChange={(e) => {
+                                                        handleChange(e);
+                                                        setdId(e.value.id);
+                                                    }} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
+                                                </div>
+                                                {/* {setdId(values.department.id)} */}
+                                                <div className="field col-4">
+                                                    <label htmlFor="area" className="font-bold">Area</label>
+                                                    <Dropdown id="area" name="area" value={values.area} onChange={handleChange} onBlur={handleBlur} options={areas} optionLabel="name" placeholder="Selecciona un Area" emptyMessage="No se encontraron areas" className="w-full uppercase" />
+                                                </div>
+                                            </>)}
                                         </div>
                                     </div>
                                 </TabPanel>
+                                {employee.id ? (
+                                    <TabPanel className='w-full' header="Header III" headerTemplate={tab3HeaderTemplate}>
+                                        <div className="formgrid grid mt-5">
+                                            <div className="p-fluid grid">
+                                                <div className="field col-12">
+                                                    <label htmlFor="status" className="font-bold my-3">
+                                                        Estado
+                                                    </label>
+                                                    <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full uppercase" emptyMessage="No se encontraron estados" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="field">
+                                            <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                            <div className="formgrid grid">
+                                                <div className="col-12">
+                                                    <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                                        <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(employee)}`} severity={getSeverity(employee)}></Tag>
+                                                        <Chip label={`Creado el: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                        <Chip label={`Ultima Actualización: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </TabPanel>
+                                ) : (<></>)}
                             </TabView>
 
                             <div className="flex mb-0 pt-3">
                                 <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
-                                <Button label="Guardar Employee" icon="pi pi-check" type='submit' className='mx-1' disabled={employee.id ? false : !(isValid && dirty)} />
+                                <Button label="Guardar Empleado" icon="pi pi-check" type='submit' className='mx-1' disabled={employee.id ? false : !(isValid && dirty)} />
                             </div>
                         </Form>
                     )}
@@ -883,7 +890,8 @@ export default function EmployeesPage() {
                                                     <div className="flex flex-wrap gap-3 justify-content-evenly">
                                                         <Chip label={`Pais: ${employee.country}`} className='text-lg font-bold uppercase' />
                                                         <Chip label={`Genero: ${employee.gender}`} className='text-lg font-semibold uppercase' />
-                                                        <Chip label={`Fecha Cumpleaños: ${new Date(employee.birthdate).toLocaleDateString()}`} className='text-lg font-semibold uppercase' />
+                                                        <Chip label={`Fecha Cumpleaños: 
+                                                        ${dayjs(employee.birthdate).utc().format("DD/MM/YYYY")}`} className='text-lg font-semibold uppercase' />
                                                         <Chip label={`DIRECCIÓN: ${employee.address}`} className='text-lg font-semibold' />
 
                                                     </div>
@@ -896,7 +904,9 @@ export default function EmployeesPage() {
                                             <div className="formgrid grid">
                                                 <div className="col-12">
                                                     <div className=" flex flex-wrap gap-3 justify-content-evenly">
-                                                        <Chip label={`Fecha Contratación: ${new Date(employee.hire_date).toLocaleDateString()}`} className='text-lg font-bold uppercase' />
+                                                        <Chip label={`Fecha Contratación: ${dayjs(employee.hire_date).utc().format("DD/MM/YYYY")}`} className='text-lg font-bold uppercase' />
+                                                        {/* <Chip label={`Fecha Contratación: ${new Date(employee.hire_date).toLocaleDateString()}`} className='text-lg font-bold uppercase' /> */}
+
                                                         <Chip label={`Tipo Contrato: ${employee.contract_type}`} className='text-lg font-bold uppercase' />
                                                         <Chip label={`Jornada laboral ordinaria: ${employee.work_day}`} className='text-lg font-bold uppercase' />
                                                         <Chip label={`Salario Base: ${employee.area?.salary}`} className='text-lg font-bold uppercase' />

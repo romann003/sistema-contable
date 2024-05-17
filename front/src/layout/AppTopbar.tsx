@@ -60,7 +60,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
                 <div className='mt-auto -m-1'>
                     {isAuthenticated ? (
-                        <h5 className='text-gray-700'>Bienvenido, {user?.username} 👋</h5>
+                        <h5 className='text-gray-700'>Bienvenido, {user?.name} {user?.last_name} 👋</h5>
                     ) : (
                         <h5></h5>
                     )}

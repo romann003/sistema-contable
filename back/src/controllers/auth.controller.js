@@ -24,6 +24,8 @@ export const login = async (req, res) => {
         res.json({
             id: userFound.id,
             username: userFound.username,
+            name: userFound.name,
+            last_name: userFound.last_name,
             email: userFound.email,
             rol: userFound.rol.name
         });
@@ -45,9 +47,15 @@ export const verifyToken = async (req, res) => {
         jwt.verify(token, config.SECRET, async (err, decoded) => {
             if (err) return res.status(401).json({ message: "No autorizado - Token no valido" })
             // req.userId = decoded.id
-            const userFound = await UserSchema.findByPk(decoded.id)
+            const userFound = await UserSchema.findByPk(decoded.id, {attributes: { exclude: ['password'] }})
             if (!userFound) return res.status(401).json({ message: "No autorizado - Usuario no encontrado" })
-            return res.json({ id: userFound.id, username: userFound.username, email: userFound.email })
+            return res.json({
+                id: userFound.id,
+                username: userFound.username,
+                name: userFound.name,
+                last_name: userFound.last_name,
+                email: userFound.email
+            })
         })
     } catch (error) {
         return res.status(401).json({ message: "No autorizado" })
