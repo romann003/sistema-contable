@@ -65,12 +65,13 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         <h5></h5>
                     )}
                 </div>
-                <Link to="/dashboard/company">
+                {/* <Link to="/dashboard/company">
                     <button type="button" className="p-link layout-topbar-button">
                         <i className="pi pi-cog"></i>
                         <span>Settings</span>
                     </button>
-                </Link>
+                </Link> */}
+                
                 {/* <Link to="/" onClick={() => { logout(); }}> */}
                 <button onClick={confirm1} type="button" className="p-link layout-topbar-button">
                     <i className="pi pi-power-off"></i>

@@ -1,4 +1,3 @@
-import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 
@@ -12,7 +11,6 @@ import 'primeicons/primeicons.css'; //icons
 import 'primeflex/primeflex.css'; // flex
 
 import './styles/layout/layout.scss';
-import './styles/demo/Demos.scss';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>

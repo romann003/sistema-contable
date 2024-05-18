@@ -12,7 +12,6 @@ import { Outlet, useLocation, Link } from 'react-router-dom';
 
 // const LayoutDashboard = ({ children }: ChildContainerProps) => {
 const LayoutDashboard = () => {
-    // console.clear();
     const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
     const { setRipple } = useContext(PrimeReactContext);
     const topbarRef = useRef<AppTopbarRef>(null);
@@ -134,7 +133,7 @@ const LayoutDashboard = () => {
                     </div>
                     <AppFooter />
                 </div>
-                <AppConfig />
+                {/* <AppConfig /> */}
                 <div className="layout-mask"></div>
             </div>
         </React.Fragment>
