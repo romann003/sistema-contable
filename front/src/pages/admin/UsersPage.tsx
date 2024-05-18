@@ -19,7 +19,9 @@ import { DataTableFilterMeta } from 'primereact/datatable';
 import { Formik, Form, ErrorMessage } from 'formik';
 import { useUsers } from '../../api/context/UsersContext';
 import { useRoles } from '../../api/context/RolContext';
-
+import { BreadCrumb } from 'primereact/breadcrumb';
+import { MenuItem } from 'primereact/menuitem';
+import { Link } from 'react-router-dom';
 
 
 
@@ -48,6 +50,11 @@ interface Status {
 // }
 
 export default function UsersPage() {
+
+    const items: MenuItem[] = [{ template: () => <Link to=""><span className="text-primary font-semibold">Usuarios</span></Link> }];
+    const home: MenuItem = {
+        template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
+    }
 
     //? -------------------- INITIAL STATES -------------------
     const emptyUser: User = {
@@ -313,8 +320,10 @@ export default function UsersPage() {
     const actionBodyTemplate = (rowData: User) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editUser(rowData)} />
-                <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteUser(rowData)} />
+                <div className="flex align-align-content-center justify-content-evenly">
+                    <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editUser(rowData)} />
+                    <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteUser(rowData)} />
+                </div>
             </React.Fragment>
         );
     };
@@ -370,7 +379,8 @@ export default function UsersPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Usuarios</h3>
-                <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
+                <BreadCrumb model={items} home={home} />
+                <Toolbar className="my-4" left={leftToolbarTemplate}></Toolbar>
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTable ref={dt} dataKey="id" value={users} filters={filters} loading={loading}
@@ -378,7 +388,8 @@ export default function UsersPage() {
                     // rowsPerPageOptions={[5, 10, 25]}
                     globalFilterFields={['name', 'last_name', 'username', 'email', 'rol.name']} header={header} emptyMessage="No se encontraron usuarios."
                     filterDisplay="row"
-                    stripedRows 
+                    stripedRows
+                    scrollable
                 >
                     <Column header="ID" body={(rowData) => <span>{users.indexOf(rowData) + 1}</span>} />
                     {/* <Column header="NOMBRE COMPLETO" style={{ minWidth: '8rem' }} body={(rowData) => <span>{`${rowData.name} ${rowData.last_name}`}</span>} /> */}
@@ -390,7 +401,7 @@ export default function UsersPage() {
                     <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
                     <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
                     <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }}></Column>
+                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }} alignFrozen='right' frozen></Column>
                 </DataTable>
             </div>
 

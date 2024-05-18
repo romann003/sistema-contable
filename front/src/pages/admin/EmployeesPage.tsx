@@ -25,6 +25,9 @@ import utc from 'dayjs/plugin/utc'
 import { useDepartments } from '../../api/context/DepartmentContext';
 import { useAreas } from '../../api/context/AreaContext';
 import { useEmployees } from '../../api/context/EmployeeContext';
+import { BreadCrumb } from 'primereact/breadcrumb';
+import { MenuItem } from 'primereact/menuitem';
+import { Link } from 'react-router-dom';
 
 dayjs.extend(utc);
 interface Employee {
@@ -77,6 +80,11 @@ interface Work_day {
 }
 
 export default function EmployeesPage() {
+
+    const items: MenuItem[] = [{template: () => <Link to=""><span className="text-primary font-semibold">Empleados</span></Link> }];
+    const home: MenuItem = {
+        template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
+    }
 
     //? -------------------- INITIAL STATES -------------------
     const emptyEmployee: Employee = {
@@ -472,7 +480,8 @@ export default function EmployeesPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Empleados</h3>
-                <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
+                <BreadCrumb model={items} home={home} />
+                <Toolbar className="my-4" left={leftToolbarTemplate}></Toolbar>
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTable ref={dt} dataKey="id" value={employees} filters={filters} loading={loading}
@@ -481,7 +490,6 @@ export default function EmployeesPage() {
                     // rowsPerPageOptions={[5, 10, 25]}
                     globalFilterFields={['name', 'last_name', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']} header={header} emptyMessage="No se encontraron empleados."
                     filterDisplay="row"
-                    // showGridlines 
                     stripedRows
                     scrollable
                 >

@@ -14,6 +14,9 @@ import { DataTableFilterMeta } from 'primereact/datatable';
 import { Formik, Form, ErrorMessage } from 'formik';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { useCompany } from '../../api/context/CompanyContext';
+import { BreadCrumb } from 'primereact/breadcrumb';
+import { MenuItem } from 'primereact/menuitem';
+import { Link } from 'react-router-dom';
 interface Company {
     id: number | null;
     business_name: string;
@@ -26,6 +29,11 @@ interface Company {
 }
 
 export default function CompanyPage() {
+
+    const items: MenuItem[] = [{ template: () => <Link to=""><span className="text-primary font-semibold">Mi Empresa</span></Link> }];
+    const home: MenuItem = {
+        template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
+    }
 
     //? -------------------- INITIAL STATES -------------------
     const emptyCompany: Company = {
@@ -139,10 +147,12 @@ export default function CompanyPage() {
     };
 
     //? -------------------- DTATABLE ACTIONS -------------------
-        const actionBodyTemplate = (rowData: Company) => {
+    const actionBodyTemplate = (rowData: Company) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editCompany(rowData)} />
+                <div className="flex align-align-content-center justify-content-evenly">
+                    <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editCompany(rowData)} />
+                </div>
             </React.Fragment>
         );
     };
@@ -178,7 +188,8 @@ export default function CompanyPage() {
         <div>
             <Toast ref={toast} />
             <div className="card">
-                <h3 className='mb-6'>Mi Empresa</h3>
+                <h3>Mi Empresa</h3>
+                <BreadCrumb model={items} home={home} className='mb-4' />
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTable ref={dt} dataKey="id" value={companies} filters={filters} loading={loading}
                     paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -186,6 +197,8 @@ export default function CompanyPage() {
                     // rowsPerPageOptions={[5, 10, 25]}
                     globalFilterFields={['business_name', 'nit', 'phone', 'address']} header={header} emptyMessage="No se encontraron empresas."
                     filterDisplay="row"
+                    stripedRows
+                    scrollable
                 >
                     <Column header="ID" body={(rowData) => <span>{companies.indexOf(rowData) + 1}</span>} />
                     <Column sortable field='business_name' header="RAZON SOCIAL" filterField="business_name" style={{ minWidth: '12rem' }} body={businessBodyTemplate} filter filterPlaceholder="Filtrar por razon social" />
@@ -195,7 +208,7 @@ export default function CompanyPage() {
                     {/* <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable /> */}
                     <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
                     <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '10rem' }}></Column>
+                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '5rem' }} alignFrozen='right' frozen></Column>
                 </DataTable>
             </div>
 
@@ -230,7 +243,7 @@ export default function CompanyPage() {
                             errors.address = 'La direccion es requerida';
                         } else if (values.address.length < 3) {
                             errors.address = 'La direccion debe tener al menos 3 caracteres';
-                        } 
+                        }
                         // else if (!/^[a-zA-Z0-9.&'-\s,]+$/.test(values.address)) {
                         //     errors.address = 'La direccion no es valida';
                         // }
@@ -244,7 +257,7 @@ export default function CompanyPage() {
                                 setCompanyDialog(false);
                                 setCompany(emptyCompany);
                                 resetForm();
-                            } 
+                            }
                         } else {
                             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Empresa no registrada', life: 5000 });
                         }
@@ -269,7 +282,7 @@ export default function CompanyPage() {
                             </div>
                             <div className="field">
                                 <label htmlFor="address" className="font-bold">Dirección</label>
-                                <InputTextarea id="address" name='address' autoResize rows={1} value={values.address || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.address && touched.address}  />
+                                <InputTextarea id="address" name='address' autoResize rows={1} value={values.address || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.address && touched.address} />
                                 <ErrorMessage name="address" component={() => (<small className="p-error">{errors.address}</small>)} />
                             </div>
                             <div className="field">
