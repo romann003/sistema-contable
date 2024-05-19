@@ -52,6 +52,7 @@ interface Employee {
     department: string | null;
     departmentId: number | null;
     employee: string | null;
+    area: string;
     areaId: number | null;
 }
 interface Status {
@@ -81,7 +82,7 @@ interface Work_day {
 
 export default function EmployeesPage() {
 
-    const items: MenuItem[] = [{template: () => <Link to=""><span className="text-primary font-semibold">Empleados</span></Link> }];
+    const items: MenuItem[] = [{ template: () => <Link to=""><span className="text-primary font-semibold">Empleados</span></Link> }];
     const home: MenuItem = {
         template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
     }
@@ -109,6 +110,7 @@ export default function EmployeesPage() {
         department: '',
         departmentId: null,
         employee: '',
+        area: '',
         areaId: null
     };
 
@@ -141,10 +143,14 @@ export default function EmployeesPage() {
         { name: '8 Horas Diarias', code: '8 horas diarias' },
     ];
 
+
+
     //? -------------------- CONTEXT API -------------------
-    const { departments, getDepartments, getActiveDepartments } = useDepartments();
-    const { areas, getAreasById } = useAreas();
+    const { departments, getActiveDepartments, setDepartments } = useDepartments();
+    const { areas, getAreasById, setAreas } = useAreas();
     const { employees, getEmployees, createEmployee, deleteEmployee, updateEmployee } = useEmployees();
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [selectedArea, setSelectedArea] = useState(null);
     //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
@@ -153,7 +159,6 @@ export default function EmployeesPage() {
     const [selectedContractType, setSelectedContractType] = useState<Contract_type | null>(null);
     const [selectedWorkDay, setSelectedWorkDay] = useState<Work_day | null>(null);
     const [estados, setEstados] = useState<string[]>([]);
-    const [dId, setdId] = useState(0);
     const [employee, setEmployee] = useState<Employee>(emptyEmployee);
     const [date, setDate] = useState<Nullable<Date>>(null);
     const toast = useRef<Toast>(null);
@@ -304,39 +309,61 @@ export default function EmployeesPage() {
 
 
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            await getEmployees();
-            await getActiveDepartments();
-            setLoading(false);
-        };
 
-        fetchData();
+
+    useEffect(() => {
+        getEmployees();
+        getActiveDepartments();
+        setLoading(false);
     }, [employee]);
 
 
-    useEffect(() => {
-        if (dId !== 0 && dId !== null && dId !== undefined) {
-            const fetchAreas = async () => {
-                setLoading(true);
-                await getAreasById(dId);
-                setLoading(false);
-            };
-
-            fetchAreas();
+    const handleDepartmentChange = (e, handleChange, setFieldTouched, setFieldValue) => {
+        const department = e.value;
+        setSelectedDepartment(department);
+        setSelectedArea(null);
+        handleChange(e);
+        if (department) {
+            getAreasById(department.id);
+        } else {
+            setSelectedArea(null);
+            setAreas([]);
         }
-    }, [dId]);
+
+        setFieldTouched('area', true);
+        setFieldValue('area', '', true);
+    };
+
+    const handleCancel = (resetForm) => {
+        setSelectedDepartment(null);
+        setSelectedArea(null);
+        setAreas([]);
+        resetForm();
+        hideDialog();
+    };
+
+    const resetFormOnOpen = () => {
+        setSelectedDepartment(employee.department || null);
+        setSelectedArea(employee.area || null);
+        if (employee.department) {
+            getAreasById(employee.department.id);
+        } else {
+            setAreas([]);
+        }
+    };
 
 
     //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
         setEmployee(emptyEmployee);
         setEmployeeDialog(true);
+        // setDepartments([]);
+        resetFormOnOpen();
     };
 
     const hideDialog = () => {
         setEstados([]);
+        setDepartments([]);
         setSelectedStatus(null);
         setSelectedCountry(null);
         setSelectedGender(null);
@@ -357,9 +384,11 @@ export default function EmployeesPage() {
         setSeeEmployeeDialog(false);
     };
 
-    const editEmployee = (employee: Employee) => {
+    const editEmployee = (employee) => {
         setEmployee({ ...employee });
         setEmployeeDialog(true);
+        // setDepartments([]);
+        // resetFormOnOpen();
     };
 
     const seeEmployee = (employee: Employee) => {
@@ -524,7 +553,7 @@ export default function EmployeesPage() {
             <Dialog visible={employeeDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles del Empleado" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={true} closeOnEscape={false}
             >
                 <Formik
-                    initialValues={{ name: '' || employee.name, last_name: '' || employee.last_name, phone: '' || employee.phone, country: '' || employee.country, identification_type: '' || employee.identification_type, identification: '' || employee.identification, nit: '' || employee.nit, igss: '' || employee.igss, gender: '' || employee.gender, birthdate: '' || employee.birthdate, address: '' || employee.address, hire_date: '' || employee.hire_date, contract_type: '' || employee.contract_type, work_day: '' || employee.work_day, department: '', area: '' }}
+                    initialValues={{ name: '' || employee.name, last_name: '' || employee.last_name, phone: '' || employee.phone, country: '' || employee.country, identification_type: '' || employee.identification_type, identification: '' || employee.identification, nit: '' || employee.nit, igss: '' || employee.igss, gender: '' || employee.gender, birthdate: '' || employee.birthdate, address: '' || employee.address, hire_date: '' || employee.hire_date, contract_type: '' || employee.contract_type, work_day: '' || employee.work_day, department: employee.department || '', area: employee.area || '' }}
                     validate={values => {
                         const errors = {};
                         if (!values.name) {
@@ -584,8 +613,15 @@ export default function EmployeesPage() {
                         } else if (values.address.length < 3) {
                             errors.address = 'La direccion debe tener al menos 3 caracteres';
                         }
-                        else if (!/^[a-zA-Z0-9.&'-\s,]+$/.test(values.address)) {
+                        else if (!/^[a-zA-Z0-9.,\- áéíóúÁÉÍÓÚ]+$/.test(values.address)) {
                             errors.address = 'La direccion no es valida';
+                        }
+                        
+                        if (!values.department) {
+                            errors.department = 'El departamento es requerido';
+                        }
+                        if (!values.area) {
+                            errors.area = 'El area es requerida';
                         }
 
                         if (!employee.id) {
@@ -610,34 +646,27 @@ export default function EmployeesPage() {
                             if (!values.work_day) {
                                 errors.work_day = 'Debes de agregar una jornada laboral';
                             }
-                            if (!values.department) {
-                                errors.department = 'El departamento es requerido';
-                            }
-                            if (!values.area) {
-                                errors.area = 'El area es requerida';
-                            }
                         }
                         return errors;
                     }}
                     onSubmit={(values, { resetForm }) => {
-
                         if (values) {
-                            values.birthdate = dayjs.utc(values.birthdate).format()
-                            values.hire_date = dayjs.utc(values.hire_date).format()
+                            // values.birthdate = dayjs.utc(values.birthdate).format()
+                            // values.hire_date = dayjs.utc(values.hire_date).format()
                             if (employee.id) {
-                                if( selectedCountry?.code) { values.country = selectedCountry.code }
+                                if (selectedCountry?.code) { values.country = selectedCountry.code }
                                 else { values.country = employee.country }
 
-                                if( selectedTypeIdentification?.code) { values.identification_type = selectedTypeIdentification.code }
+                                if (selectedTypeIdentification?.code) { values.identification_type = selectedTypeIdentification.code }
                                 else { values.identification_type = employee.identification_type }
 
-                                if( selectedGender?.code) { values.gender = selectedGender.code }
+                                if (selectedGender?.code) { values.gender = selectedGender.code }
                                 else { values.gender = employee.gender }
 
-                                if( selectedContractType?.code) { values.contract_type = selectedContractType.code }
+                                if (selectedContractType?.code) { values.contract_type = selectedContractType.code }
                                 else { values.contract_type = employee.contract_type }
 
-                                if( selectedWorkDay?.code) { values.work_day = selectedWorkDay.code }
+                                if (selectedWorkDay?.code) { values.work_day = selectedWorkDay.code }
                                 else { values.work_day = employee.work_day }
 
                                 if (selectedStatus?.code === true) { values.status = true }
@@ -671,7 +700,7 @@ export default function EmployeesPage() {
                         }
                     }}
                 >
-                    {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
+                    {({ values, errors, touched, dirty, isValid, handleChange, handleBlur, resetForm, setFieldTouched, setFieldValue }) => (
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <TabView style={{ flex: 1, overflow: 'auto' }}>
                                 <TabPanel className='w-full' header="Header I" headerTemplate={tab1HeaderTemplate}>
@@ -792,20 +821,7 @@ export default function EmployeesPage() {
                                                     <ErrorMessage name="work_day" component={() => (<small className="p-error">{errors.work_day}</small>)} />
                                                 </div>
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="department" className="font-bold">Departamento<span className='text-red-600'>*</span></label>
-                                                    <Dropdown id="department" name="department" value={values.department} onChange={(e) => {
-                                                        handleChange(e);
-                                                        setdId(e.value.id);
-                                                    }} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" invalid={!!errors.department && touched.department} emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
-                                                    <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
-                                                </div>
-                                                {/* {setdId(values.department.id)} */}
-                                                <div className="field col-4">
-                                                    <label htmlFor="area" className="font-bold">Area <span className='text-red-600'>*</span></label>
-                                                    <Dropdown id="area" name="area" value={values.area} onChange={handleChange} onBlur={handleBlur} options={areas} optionLabel="name" placeholder="Selecciona un Area" invalid={!!errors.area && touched.area} emptyMessage="No se encontraron areas" className="w-full uppercase" />
-                                                    <ErrorMessage name="area" component={() => (<small className="p-error">{errors.area}</small>)} />
-                                                </div>
+
 
                                             </>) : (<>
                                                 <div className="field col-4">
@@ -819,20 +835,47 @@ export default function EmployeesPage() {
                                                     </label>
                                                     <Dropdown id='work_day' name='work_day' value={selectedWorkDay} onChange={(e: DropdownChangeEvent) => { setSelectedWorkDay(e.value); handleChange(e) }} onBlur={handleBlur} options={typeWorkDay} optionLabel="name" placeholder="Selecciona una jornada" className="w-full uppercase" emptyMessage="No se encontraron jornadas" />
                                                 </div>
-
-                                                <div className="field col-4">
-                                                    <label htmlFor="department" className="font-bold">Departament</label>
-                                                    <Dropdown id="department" name="department" value={values.department} onChange={(e) => {
-                                                        handleChange(e);
-                                                        setdId(e.value.id);
-                                                    }} onBlur={handleBlur} options={departments} optionLabel="name" placeholder="Selecciona un Departamento" emptyMessage="No se encontraron departamentos" className="w-full uppercase" />
-                                                </div>
-                                                {/* {setdId(values.department.id)} */}
-                                                <div className="field col-4">
-                                                    <label htmlFor="area" className="font-bold">Area</label>
-                                                    <Dropdown id="area" name="area" value={values.area} onChange={handleChange} onBlur={handleBlur} options={areas} optionLabel="name" placeholder="Selecciona un Area" emptyMessage="No se encontraron areas" className="w-full uppercase" />
-                                                </div>
                                             </>)}
+                                            <div className="field col-4">
+                                                <label htmlFor="department" className="font-bold">Departamento<span className='text-red-600'>*</span></label>
+
+                                                <Dropdown id="department" name="department"
+                                                    value={selectedDepartment}
+                                                    onChange={(e) => handleDepartmentChange(e, handleChange, setFieldTouched, setFieldValue)}
+                                                    onBlur={handleBlur}
+                                                    options={departments}
+                                                    optionLabel="name"
+                                                    placeholder="Selecciona un Departamento"
+                                                    emptyMessage="No se encontraron departamentos"
+                                                    className="w-full uppercase"
+                                                    invalid={!!errors.department && touched.department}
+                                                />
+                                                <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
+                                            </div>
+
+
+                                            <div className="field col-4">
+                                                <label htmlFor="area" className="font-bold">Area <span className='text-red-600'>*</span></label>
+
+                                                <Dropdown
+                                                    id="area"
+                                                    name="area"
+                                                    value={selectedArea}
+                                                    onChange={(e) => {
+                                                        handleChange(e);
+                                                        setSelectedArea(e.value);
+                                                    }}
+                                                    onBlur={handleBlur}
+                                                    options={areas}
+                                                    optionLabel="name"
+                                                    placeholder="Selecciona un Área"
+                                                    emptyMessage="No se encontraron áreas"
+                                                    className="w-full uppercase"
+                                                    disabled={!areas.length}
+                                                    invalid={!!errors.area && touched.area}
+                                                />
+                                                <ErrorMessage name="area" component={() => (<small className="p-error">{errors.area}</small>)} />
+                                            </div>
                                         </div>
                                     </div>
                                 </TabPanel>
@@ -865,7 +908,8 @@ export default function EmployeesPage() {
                             </TabView>
 
                             <div className="flex mb-0 pt-3">
-                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
+                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined
+                                    onClick={() => handleCancel(resetForm)} className='mx-1' />
                                 <Button label="Guardar Empleado" icon="pi pi-check" type='submit' className='mx-1' disabled={employee.id ? false : !(isValid && dirty)} />
                             </div>
                         </Form>

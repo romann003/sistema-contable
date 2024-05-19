@@ -1,5 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
+import moment from 'moment-timezone';
+moment.tz.setDefault('America/Guatemala');
 
 // primereact
 import { LayoutProvider } from "./layout/context/layoutcontext";
