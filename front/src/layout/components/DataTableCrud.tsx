@@ -4,7 +4,7 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 
-export default function DataTableCrud({ ref, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, onGlobalFilterChange, size, headerMessage}) {
+export default function DataTableCrud({ refe, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, onGlobalFilterChange, size, headerMessage}) {
 
     const header = () => {
         return (
@@ -20,7 +20,7 @@ export default function DataTableCrud({ ref, message, value, filters, loading, c
 
     return (
         <DataTable
-            ref={ref}
+            ref={refe}
             dataKey="id"
             value={value}
             filters={filters}

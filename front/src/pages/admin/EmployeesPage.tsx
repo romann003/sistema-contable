@@ -5,13 +5,12 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { Dialog } from 'primereact/dialog';
 import { Chip } from 'primereact/chip';
-import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { DropdownChangeEvent } from 'primereact/dropdown';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { Formik, Form, ErrorMessage } from 'formik';
+import { Formik, Form } from 'formik';
 import { TabView, TabPanel, TabPanelHeaderTemplateOptions } from 'primereact/tabview';
 import { Divider } from 'primereact/divider';
-import { Nullable } from "primereact/ts-helpers";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
 import { useDepartments } from '../../api/context/DepartmentContext';
@@ -22,60 +21,16 @@ import { MenuItem } from 'primereact/menuitem';
 import { Link } from 'react-router-dom';
 
 import { Formulario } from '../../layout/elements/Formularios.js';
+import {
+    emptyEmployee, typeStatus, typeGender, typeCountry, typeIdentification, typeContract, typeWorkDay,
+    Status, Country, Gender, Identification_type, Contract_type, Work_day, Employee
+}
+    from '../../layout/elements/InitialData';
 import { FormInput, FormTextArea, FormDropDown } from '../../layout/components/FormComponent.js';
 import DataTableCrud from '../../layout/components/DataTableCrud.js';
 import { ColumnChipBody, ColumnDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
 
 dayjs.extend(utc);
-interface Employee {
-    id: number | null;
-    name: string;
-    last_name: string;
-    phone: string | null;
-    country: string | null;
-    identification_type: string | null;
-    identification: string | null;
-    nit: string | null;
-    igss: string | null;
-    gender: string | null;
-    birthdate: string;
-    address: string;
-    hire_date: string;
-    contract_type: string;
-    work_day: string;
-    status: boolean;
-    createdAt: string;
-    updatedAt: string;
-    department: string | null;
-    departmentId: number | null;
-    employee: string | null;
-    area: string;
-    areaId: number | null;
-}
-interface Status {
-    name: string;
-    code: boolean;
-}
-interface Country {
-    name: string;
-    code: string;
-}
-interface Gender {
-    name: string;
-    code: string;
-}
-interface Identification_type {
-    name: string;
-    code: string;
-}
-interface Contract_type {
-    name: string;
-    code: string;
-}
-interface Work_day {
-    name: string;
-    code: string;
-}
 
 export default function EmployeesPage() {
 
@@ -84,79 +39,23 @@ export default function EmployeesPage() {
         template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
     }
 
-    //? -------------------- INITIAL STATES -------------------
-    const emptyEmployee: Employee = {
-        id: null,
-        name: '',
-        last_name: '',
-        phone: '',
-        country: '',
-        identification_type: '',
-        identification: '',
-        nit: '',
-        igss: '',
-        gender: '',
-        birthdate: '',
-        address: '',
-        hire_date: '',
-        contract_type: '',
-        work_day: '',
-        status: true,
-        createdAt: '',
-        updatedAt: '',
-        department: '',
-        departmentId: null,
-        employee: '',
-        area: '',
-        areaId: null
-    };
-
-    const typeStatus: Status[] = [
-        { name: 'Activo', code: true },
-        { name: 'Inactivo', code: false }
-    ];
-
-    const typeGender: Gender[] = [
-        { name: 'Hombre', code: 'hombre' },
-        { name: 'Mujer', code: 'mujer' }
-    ];
-
-    const typeCountry: Country[] = [
-        { name: 'Guatemala', code: 'guatemala' },
-        { name: 'Mexico', code: 'mexico' },
-        { name: 'Estados Unidos', code: 'usa' }
-    ];
-
-    const typeIdentification: Identification_type[] = [
-        { name: 'Dpi', code: 'dpi' },
-        { name: 'Pasaporte', code: 'pasaporte' },
-    ];
-
-    const typeContract: Contract_type[] = [
-        { name: 'Contrato', code: 'contrato' },
-        { name: 'Indefinido', code: 'indefinido' },
-    ];
-
-    const typeWorkDay: Work_day[] = [
-        { name: '8 Horas Diarias', code: '8 horas diarias' },
-    ];
 
     //? -------------------- CONTEXT API -------------------
     const { departments, getActiveDepartments, setDepartments } = useDepartments();
     const { areas, getAreasById, setAreas } = useAreas();
     const { employees, getEmployees, createEmployee, deleteEmployee, updateEmployee } = useEmployees();
+
     //? -------------------- STATES -------------------
-    const [selectedDepartment, setSelectedDepartment] = useState(null);
-    const [selectedArea, setSelectedArea] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
     const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
     const [selectedTypeIdentification, setSelectedTypeIdentification] = useState<Identification_type | null>(null);
     const [selectedContractType, setSelectedContractType] = useState<Contract_type | null>(null);
     const [selectedWorkDay, setSelectedWorkDay] = useState<Work_day | null>(null);
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [selectedArea, setSelectedArea] = useState(null);
     const [estados, setEstados] = useState<string[]>([]);
     const [employee, setEmployee] = useState<Employee>(emptyEmployee);
-    const [date, setDate] = useState<Nullable<Date>>(null);
     const toast = useRef<Toast>(null);
     //? -------------------- DIALOG STATES -------------------
     const [employeeDialog, setEmployeeDialog] = useState<boolean>(false);
@@ -409,15 +308,15 @@ export default function EmployeesPage() {
                     onGlobalFilterChange={onGlobalFilterChange}
                     message="empleados"
                     headerMessage="Lista de Empleados"
-                    ref={dt}
+                    refe={dt}
                     value={employees}
                     filters={filters}
                     loading={loading}
                     globalFilterFields={['name', 'last_name', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']}
                     //? -------------------- COLUMNS -------------------
-                    actionBodyTemplate={actionBodyTemplate}
                     size='15rem'
                     columns={[{ field: 'name', header: 'Nombres' }, { field: 'last_name', header: 'Apellidos', body: last_nameBodyTemplate }, { field: 'phone', header: 'Telefono', body: phoneBodyTemplate }, { field: 'identification', header: 'Identificacion', body: identificationBodyTemplate }, { field: 'nit', header: 'NIT', body: nitBodyTemplate }, { field: 'igss', header: 'IGSS', body: igssBodyTemplate }, { field: 'department.name', header: 'Departamento', body: departmentBodyTemplate }, { field: 'area.name', header: 'Area', body: areaBodyTemplate }, { field: 'status', header: 'Estado', body: statusBodyTemplate }, { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate }, { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate }]}
+                    actionBodyTemplate={actionBodyTemplate}
                 />
             </div>
 
