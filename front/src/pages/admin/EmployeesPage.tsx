@@ -1,24 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
-import { IconField } from 'primereact/iconfield';
-import { InputIcon } from 'primereact/inputicon';
 import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Tag } from 'primereact/tag';
 import { Chip } from 'primereact/chip';
-import { Checkbox } from "primereact/checkbox";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { Formik, Form, ErrorMessage } from 'formik';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { TabView, TabPanel, TabPanelHeaderTemplateOptions } from 'primereact/tabview';
 import { Divider } from 'primereact/divider';
-import { Calendar } from 'primereact/calendar';
 import { Nullable } from "primereact/ts-helpers";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
@@ -28,6 +20,11 @@ import { useEmployees } from '../../api/context/EmployeeContext';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { MenuItem } from 'primereact/menuitem';
 import { Link } from 'react-router-dom';
+
+import { Formulario } from '../../layout/elements/Formularios.js';
+import { FormInput, FormTextArea, FormDropDown } from '../../layout/components/FormComponent.js';
+import DataTableCrud from '../../layout/components/DataTableCrud.js';
+import { ColumnChipBody, ColumnDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
 
 dayjs.extend(utc);
 interface Employee {
@@ -134,6 +131,7 @@ export default function EmployeesPage() {
         { name: 'Dpi', code: 'dpi' },
         { name: 'Pasaporte', code: 'pasaporte' },
     ];
+
     const typeContract: Contract_type[] = [
         { name: 'Contrato', code: 'contrato' },
         { name: 'Indefinido', code: 'indefinido' },
@@ -143,15 +141,13 @@ export default function EmployeesPage() {
         { name: '8 Horas Diarias', code: '8 horas diarias' },
     ];
 
-
-
     //? -------------------- CONTEXT API -------------------
     const { departments, getActiveDepartments, setDepartments } = useDepartments();
     const { areas, getAreasById, setAreas } = useAreas();
     const { employees, getEmployees, createEmployee, deleteEmployee, updateEmployee } = useEmployees();
+    //? -------------------- STATES -------------------
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [selectedArea, setSelectedArea] = useState(null);
-    //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
     const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
@@ -193,131 +189,77 @@ export default function EmployeesPage() {
         setGlobalFilterValue(value);
     };
 
-    const onEstadosChange = (e: CheckboxChangeEvent) => {
-        const _estados = [...estados];
-
-        if (e.checked)
-            _estados.push(e.value);
-        else
-            _estados.splice(_estados.indexOf(e.value), 1);
-
-        setEstados(_estados);
-    }
-
-    //? -------------------- DTATABLE FUNCTIONS -------------------
-    const renderHeader = () => {
-        return (
-            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-                <h4 className="m-0">Lista de Empleados</h4>
-                <IconField iconPosition="left">
-                    <InputIcon className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
-                </IconField>
-            </div>
-        );
-    };
-
-    //? -------------------- DATATABLE INPUT TEMPLATES -------------------
+    //? -------------------- DATATABLE COLUMN TEMPLATES -------------------
     const last_nameBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.last_name}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.last_name} />
     };
 
     const phoneBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.phone}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.phone} />
     };
 
     const identificationBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.identification}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.identification} />
     };
 
     const nitBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.nit}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.nit} />
     };
 
     const igssBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.igss}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.igss} />
     };
 
     const departmentBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span className='bg-gray-200 border-round-3xl px-3 py-2 uppercase font-bold text-center'>{rowData.department.name}</span>
-            </div>
-        );
+        return <ColumnChipBody value={rowData.department.name} />
     };
 
     const areaBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span className='bg-gray-200 border-round-3xl px-3 py-2 uppercase font-bold text-center'>{rowData.area.name}</span>
-            </div>
-        );
+        return <ColumnChipBody value={rowData.area.name} />
+    };
+
+    const statusBodyTemplate = (rowData: Employee) => {
+        return <ColumnStatusBody value={rowData} />
     };
 
     const createdAtBodyTemplate = (rowData: Employee) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span className='bg-gray-200 border-round-2xl px-1 py-2 uppercase font-bold text-center'>
-                    {`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`}
-                </span>
-            </div>
-        );
+        return <ColumnDateBody value={rowData.createdAt} />
     };
 
     const updatedAtBodyTemplate = (rowData: Employee) => {
+        return <ColumnDateBody value={rowData.updatedAt} />
+    };
+
+    const actionBodyTemplate = (rowData: Employee) => {
         return (
-            <div className="flex align-items-center gap-2">
-                <span className='bg-gray-200 border-round-2xl px-1 py-2 uppercase font-bold text-center'>
-                    {`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`}
-                </span>
+            <React.Fragment>
+                <div className="flex align-align-content-center justify-content-evenly">
+                    <Button icon="pi pi-eye" rounded outlined severity='help' onClick={() => seeEmployee(rowData)} />
+                    <Button icon="pi pi-pencil" rounded outlined onClick={() => editEmployee(rowData)} />
+                    <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteEmployee(rowData)} />
+
+                </div>
+            </React.Fragment>
+        );
+    };
+
+    //? -------------------- DTATABLE MAIN ACTIONS -------------------
+    const leftToolbarTemplate = () => {
+        return (
+            <div className="flex flex-wrap gap-2">
+                <Button label="Agregar Empleado" icon="pi pi-plus" severity="success" onClick={openNew} />
             </div>
         );
     };
 
-    //? -------------------- LOADING DATA -------------------
-    const header = renderHeader();
-    // useEffect(() => {
-    //     getEmployees();
-    //     getActiveDepartments();
-    //     setLoading(false);
-    //     console.log('dId' + dId)
-
-    //     if (dId !== 0) {
-    //         getAreasById(dId);
-    //     }
-    // }, [employee, dId]);
-
-
-
-
-
+    //? -------------------- DATA LOADING -------------------
     useEffect(() => {
         getEmployees();
         getActiveDepartments();
         setLoading(false);
     }, [employee]);
 
-
+    //? -------------------- HANDLE CHANGE -------------------
     const handleDepartmentChange = (e, handleChange, setFieldTouched, setFieldValue) => {
         const department = e.value;
         setSelectedDepartment(department);
@@ -387,6 +329,7 @@ export default function EmployeesPage() {
     const editEmployee = (employee) => {
         setEmployee({ ...employee });
         setEmployeeDialog(true);
+
         // setDepartments([]);
         // resetFormOnOpen();
     };
@@ -410,59 +353,6 @@ export default function EmployeesPage() {
         setDeleteEmployeeDialog(false);
         setEmployee(emptyEmployee);
     };
-
-    //? -------------------- DTATABLE ACTIONS -------------------
-    const leftToolbarTemplate = () => {
-        return (
-            <div className="flex flex-wrap gap-2">
-                <Button label="Agregar Empleado" icon="pi pi-plus" severity="success" onClick={openNew} />
-            </div>
-        );
-    };
-
-    const statusBodyTemplate = (rowData: Employee) => {
-        return <Tag className="text-sm font-bold" value={getDatoStatus(rowData)} severity={getSeverity(rowData)}></Tag>;
-    };
-
-    const actionBodyTemplate = (rowData: Employee) => {
-        return (
-            <React.Fragment>
-                <div className="flex align-align-content-center justify-content-evenly">
-                    <Button icon="pi pi-eye" rounded outlined severity='help' onClick={() => seeEmployee(rowData)} />
-                    <Button icon="pi pi-pencil" rounded outlined onClick={() => editEmployee(rowData)} />
-                    <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteEmployee(rowData)} />
-
-                </div>
-            </React.Fragment>
-        );
-    };
-
-    const getDatoStatus = (employee: Employee) => {
-        switch (employee.status) {
-            case true:
-                return 'ACTIVO';
-
-            case false:
-                return 'INACTIVO';
-
-            default:
-                return null;
-        }
-    };
-
-    const getSeverity = (employee: Employee) => {
-        switch (employee.status) {
-            case true:
-                return 'success';
-
-            case false:
-                return 'danger';
-
-            default:
-                return null;
-        }
-    };
-
 
     //? -------------------- MODAL BUTTONS -------------------
     const deleteEmployeeDialogFooter = (
@@ -513,40 +403,22 @@ export default function EmployeesPage() {
                 <Toolbar className="my-4" left={leftToolbarTemplate}></Toolbar>
 
                 {/* //? -------------------- DATATABLE ------------------- */}
-                <DataTable ref={dt} dataKey="id" value={employees} filters={filters} loading={loading}
-                    paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} empleados"
-                    // rowsPerPageOptions={[5, 10, 25]}
-                    globalFilterFields={['name', 'last_name', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']} header={header} emptyMessage="No se encontraron empleados."
-                    filterDisplay="row"
-                    stripedRows
-                    scrollable
-                >
-
-                    <Column header="ID" body={(rowData) => <span>{employees.indexOf(rowData) + 1}</span>} />
-
-                    <Column sortable field="name" header="NOMBRES" filter filterPlaceholder="Filtrar por nombres" style={{ minWidth: '12rem' }} />
-
-                    <Column sortable field="last_name" header="APELLIDOS" filterField="last_name" style={{ minWidth: '12rem' }} body={last_nameBodyTemplate} filter filterPlaceholder="Filtrar por apellidos" />
-
-                    <Column sortable field="phone" header="TELEFONO" filterField="phone" style={{ minWidth: '12rem' }} body={phoneBodyTemplate} filter filterPlaceholder="Filtrar por telefono" />
-
-                    <Column sortable field="identification" header="IDENTIFICACION" filterField="identification" style={{ minWidth: '12rem' }} body={identificationBodyTemplate} filter filterPlaceholder="Filtrar por identificacion" />
-
-                    <Column sortable field="nit" header="NIT" filterField="nit" style={{ minWidth: '12rem' }} body={nitBodyTemplate} filter filterPlaceholder="Filtrar por NIT" />
-
-                    <Column sortable field="igss" header="IGSS" filterField="igss" style={{ minWidth: '12rem' }} body={igssBodyTemplate} filter filterPlaceholder="Filtrar por IGSS" />
-
-                    <Column sortable field="department.name" header="DEPARTAMENTO" filterField="department.name" style={{ minWidth: '12rem' }} body={departmentBodyTemplate} filter filterPlaceholder="Filtrar por departamento" />
-
-                    <Column sortable field="area.name" header="AREA" filterField="area.name" style={{ minWidth: '12rem' }} body={areaBodyTemplate} filter filterPlaceholder="Filtrar por area" />
-
-
-                    <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable />
-                    <Column header="CREADO EL" style={{ minWidth: '12rem' }} body={createdAtBodyTemplate} />
-                    <Column header="ULTIMA ACTUALIZACION" style={{ minWidth: '12rem' }} body={updatedAtBodyTemplate} />
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '15rem' }} alignFrozen='right' frozen></Column>
-                </DataTable>
+                <DataTableCrud
+                    //? -------------------- HEADER -------------------
+                    globalFilterValue={globalFilterValue}
+                    onGlobalFilterChange={onGlobalFilterChange}
+                    message="empleados"
+                    headerMessage="Lista de Empleados"
+                    ref={dt}
+                    value={employees}
+                    filters={filters}
+                    loading={loading}
+                    globalFilterFields={['name', 'last_name', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']}
+                    //? -------------------- COLUMNS -------------------
+                    actionBodyTemplate={actionBodyTemplate}
+                    size='15rem'
+                    columns={[{ field: 'name', header: 'Nombres' }, { field: 'last_name', header: 'Apellidos', body: last_nameBodyTemplate }, { field: 'phone', header: 'Telefono', body: phoneBodyTemplate }, { field: 'identification', header: 'Identificacion', body: identificationBodyTemplate }, { field: 'nit', header: 'NIT', body: nitBodyTemplate }, { field: 'igss', header: 'IGSS', body: igssBodyTemplate }, { field: 'department.name', header: 'Departamento', body: departmentBodyTemplate }, { field: 'area.name', header: 'Area', body: areaBodyTemplate }, { field: 'status', header: 'Estado', body: statusBodyTemplate }, { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate }, { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate }]}
+                />
             </div>
 
             {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
@@ -578,7 +450,7 @@ export default function EmployeesPage() {
                             errors.phone = 'El numero de telefono no puede ser negativo';
                         } else if (values.phone.length < 8) {
                             errors.phone = 'El numero de telefono debe tener al menos 8 digitos';
-                        } else if (!/^(?:\+?(?:502)?[\s-]?)?[1-9]\d{3}[\s-]?\d{4}$/.test(values.phone)) {
+                        } else if (!/^\d{8}$/.test(values.phone)) {
                             errors.phone = 'El numero de telefono es invalido';
                         }
 
@@ -616,7 +488,7 @@ export default function EmployeesPage() {
                         else if (!/^[a-zA-Z0-9.,\- áéíóúÁÉÍÓÚ]+$/.test(values.address)) {
                             errors.address = 'La direccion no es valida';
                         }
-                        
+
                         if (!values.department) {
                             errors.department = 'El departamento es requerido';
                         }
@@ -703,208 +575,314 @@ export default function EmployeesPage() {
                     {({ values, errors, touched, dirty, isValid, handleChange, handleBlur, resetForm, setFieldTouched, setFieldValue }) => (
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <TabView style={{ flex: 1, overflow: 'auto' }}>
+
                                 <TabPanel className='w-full' header="Header I" headerTemplate={tab1HeaderTemplate}>
-                                    <div className="formgrid grid mt-5">
-                                        <div className="p-fluid grid">
-                                            <div className="field col-4">
-                                                <label htmlFor="name" className="font-bold">Nombres del Empleado <span className='text-red-600'>*</span></label>
-                                                <InputText id="name" name='name' type='text' value={values.name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.name && touched.name} />
-                                                <ErrorMessage name="name" component={() => (<small className="p-error">{errors.name}</small>)} />
-                                            </div>
-                                            <div className="field col-4">
-                                                <label htmlFor="last_name" className="font-bold">Apellidos del Empleado <span className='text-red-600'>*</span></label>
-                                                <InputText id="last_name" name='last_name' type='text' value={values.last_name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.last_name && touched.last_name} />
-                                                <ErrorMessage name="last_name" component={() => (<small className="p-error">{errors.last_name}</small>)} />
-                                            </div>
-                                            <div className="field col-4">
-                                                <label htmlFor="phone" className="font-bold">Número de Teléfono <span className='text-red-600'>*</span></label>
-                                                <InputText id="phone" name='phone' type='number' value={values.phone || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.phone && touched.phone} />
-                                                <ErrorMessage name="phone" component={() => (<small className="p-error">{errors.phone}</small>)} />
-                                            </div>
+                                    <Formulario>
+                                        <div className="grid">
+                                            <FormInput
+                                                id="name"
+                                                name="name"
+                                                type="text"
+                                                placeholder="Ingrese los nombres"
+                                                label="Nombre del Empleado"
+                                                span="*"
+                                                value={values.name}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.name && touched.name}
+                                                errorText={errors.name}
+                                            />
+                                            <FormInput
+                                                id="last_name"
+                                                name="last_name"
+                                                type="text"
+                                                placeholder="Ingrese los apellidos"
+                                                label="Apellidos del Empleado"
+                                                span="*"
+                                                value={values.last_name}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.last_name && touched.last_name}
+                                                errorText={errors.last_name}
+                                            />
 
-                                            {!employee.id ? (<>
-                                                <div className="field col-4">
-                                                    <label htmlFor="country" className="font-bold">País <span className='text-red-600'>*</span>
-                                                    </label>
-                                                    <Dropdown id='country' name='country' value={selectedCountry} onChange={(e: DropdownChangeEvent) => { setSelectedCountry(e.value); handleChange(e) }} onBlur={handleBlur} options={typeCountry} optionLabel="name" placeholder="Selecciona un país"
-                                                        invalid={!!errors.country && touched.country} className="w-full uppercase" emptyMessage="No se encontraron países" />
-                                                    <ErrorMessage name="country" component={() => (<small className="p-error">{errors.country}</small>)} />
-                                                </div>
+                                            <FormInput
+                                                id="phone"
+                                                name="phone"
+                                                type="number"
+                                                placeholder="Ingrese el No. Telefono"
+                                                label="No. Teléfono"
+                                                span="*"
+                                                value={values.phone}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.phone && touched.phone}
+                                                errorText={errors.phone}
+                                            />
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="gender" className="font-bold">Género <span className='text-red-600'>*</span>
-                                                    </label>
-                                                    <Dropdown id='gender' name='gender' value={selectedGender} onChange={(e: DropdownChangeEvent) => { setSelectedGender(e.value); handleChange(e) }} onBlur={handleBlur} options={typeGender} optionLabel="name" placeholder="Selecciona un género"
-                                                        invalid={!!errors.gender && touched.gender} className="w-full uppercase" emptyMessage="No se encontraron generos" />
-                                                    <ErrorMessage name="gender" component={() => (<small className="p-error">{errors.gender}</small>)} />
-                                                </div>
+                                            <FormDropDown
+                                                id="country"
+                                                name="country"
+                                                placeholder="Seleccione un país"
+                                                label="País"
+                                                value={selectedCountry}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron países"
+                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedCountry(e.value) }}
+                                                onBlur={handleBlur}
+                                                options={typeCountry}
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="identification_type" className="font-bold">Tipo Identificación <span className='text-red-600'>*</span>
-                                                    </label>
-                                                    <Dropdown id='identification_type' name='identification_type' value={selectedTypeIdentification} onChange={(e: DropdownChangeEvent) => { setSelectedTypeIdentification(e.value); handleChange(e) }} onBlur={handleBlur} options={typeIdentification} optionLabel="name" placeholder="Selecciona un tipo"
-                                                        invalid={!!errors.identification_type && touched.identification_type} className="w-full uppercase" emptyMessage="No se encontraron tipos" />
-                                                    <ErrorMessage name="identification_type" component={() => (<small className="p-error">{errors.identification_type}</small>)} />
-                                                </div>
-                                            </>) : (<>
-                                                <div className="field col-4">
-                                                    <label htmlFor="country" className="font-bold">País
-                                                    </label>
-                                                    <Dropdown id='country' name='country' value={selectedCountry} onChange={(e: DropdownChangeEvent) => { setSelectedCountry(e.value); handleChange(e) }} onBlur={handleBlur} options={typeCountry} optionLabel="name" placeholder="Selecciona un país" className="w-full uppercase" emptyMessage="No se encontraron países" />
-                                                </div>
+                                                span={!employee.id ? "*" : ""}
+                                                invalid={!employee.id ? !!errors.country && touched.country : false}
+                                                errorText={!employee.id ? errors.country : ""}
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="gender" className="font-bold">Género
-                                                    </label>
-                                                    <Dropdown id='gender' name='gender' value={selectedGender} onChange={(e: DropdownChangeEvent) => { setSelectedGender(e.value); handleChange(e) }} onBlur={handleBlur} options={typeGender} optionLabel="name" placeholder="Selecciona un género" className="w-full uppercase" emptyMessage="No se encontraron generos" />
-                                                </div>
+                                                disabled={false}
+                                            />
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="identification_type" className="font-bold">Tipo Identificación
-                                                    </label>
-                                                    <Dropdown id='identification_type' name='identification_type' value={selectedTypeIdentification} onChange={(e: DropdownChangeEvent) => { setSelectedTypeIdentification(e.value); handleChange(e) }} onBlur={handleBlur} options={typeIdentification} optionLabel="name" placeholder="Selecciona un tipo" className="w-full uppercase" emptyMessage="No se encontraron tipos" />
-                                                </div>
-                                            </>)}
+                                            <FormDropDown
+                                                id="gender"
+                                                name="gender"
+                                                placeholder="Seleccione un género"
+                                                label="Género"
+                                                value={selectedGender}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron géneros"
+                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedGender(e.value) }}
+                                                onBlur={handleBlur}
+                                                options={typeGender}
 
-                                            <div className="field col-4">
-                                                <label htmlFor="nit" className="font-bold">Número de NIT <span className='text-red-600'>*</span></label>
-                                                <InputText id="nit" name='nit' type='text' value={values.nit || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.nit && touched.nit} />
-                                                <ErrorMessage name="nit" component={() => (<small className="p-error">{errors.nit}</small>)} />
-                                            </div>
-                                            <div className="field col-4">
-                                                <label htmlFor="igss" className="font-bold">Número de IGSS <span className='text-red-600'>*</span></label>
-                                                <InputText id="igss" name='igss' type='number' value={values.igss || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.igss && touched.igss} />
-                                                <ErrorMessage name="igss" component={() => (<small className="p-error">{errors.igss}</small>)} />
-                                            </div>
-                                            <div className="field col-4">
-                                                <label htmlFor="identification" className="font-bold">Número de Identificación <span className='text-red-600'>*</span></label>
-                                                <InputText id="identification" name='identification' type='number' value={values.identification || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.identification && touched.identification} />
-                                                <ErrorMessage name="identification" component={() => (<small className="p-error">{errors.identification}</small>)} />
-                                            </div>
-                                            <div className="field col-4">
-                                                <label htmlFor="birthdate" className="font-bold">Fecha Nacimiento <span className='text-red-600'>*</span></label>
-                                                {/* <Calendar id='birthdate' name='birthdate' value={values.birthdate} onChange={(e) => { e.stopPropagation(); setDate(e.value); handleChange(e); }} onBlur={handleBlur} invalid={!!errors.birthdate && touched.birthdate} touchUI /> */}
-                                                <InputText id="birthdate" name='birthdate' type='date' value={values.birthdate || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.birthdate && touched.birthdate} />
-                                                <ErrorMessage name="birthdate" component={() => (<small className="p-error">{errors.birthdate}</small>)} />
-                                            </div>
-                                            <div className="field col-8">
-                                                <label htmlFor="address" className="font-bold">Dirección <span className='text-red-600'>*</span></label>
-                                                <InputTextarea id="address" name='address' autoResize rows={1} value={values.address || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.address && touched.address} />
-                                                <ErrorMessage name="address" component={() => (<small className="p-error">{errors.address}</small>)} />
-                                            </div>
+                                                span={!employee.id ? "*" : ""}
+                                                invalid={!employee.id ? !!errors.gender && touched.gender : false}
+                                                errorText={!employee.id ? errors.gender : ""}
+
+                                                disabled={false}
+                                            />
+
+                                            <FormDropDown
+                                                id="identification_type"
+                                                name="identification_type"
+                                                placeholder="Seleccione un tipo"
+                                                label="Tipo Identificación"
+                                                value={selectedTypeIdentification}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron tipos"
+                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedTypeIdentification(e.value) }}
+                                                onBlur={handleBlur}
+                                                options={typeIdentification}
+
+                                                span={!employee.id ? "*" : ""}
+                                                invalid={!employee.id ? !!errors.identification_type && touched.identification_type : false}
+                                                errorText={!employee.id ? errors.identification_type : ""}
+
+                                                disabled={false}
+                                            />
+
+                                            <FormInput
+                                                id="identification"
+                                                name="identification"
+                                                type="number"
+                                                placeholder="Ingrese el No. dentificación"
+                                                label="No. Identificación"
+                                                span="*"
+                                                value={values.identification}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.identification && touched.identification}
+                                                errorText={errors.identification}
+                                            />
+
+                                            <FormInput
+                                                id="nit"
+                                                name="nit"
+                                                type="text"
+                                                placeholder="Ingrese el No. NIT"
+                                                label="No. NIT"
+                                                span="*"
+                                                value={values.nit}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.nit && touched.nit}
+                                                errorText={errors.nit}
+                                            />
+
+                                            <FormInput
+                                                id="igss"
+                                                name="igss"
+                                                type="number"
+                                                placeholder="Ingrese el No. Igss"
+                                                label="No. IGSS"
+                                                span="*"
+                                                value={values.igss}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.igss && touched.igss}
+                                                errorText={errors.igss}
+                                            />
+
+                                            <FormInput
+                                                id="birthdate"
+                                                name="birthdate"
+                                                type="date"
+                                                placeholder=""
+                                                label="Fecha Nacimiento"
+                                                span="*"
+                                                value={values.birthdate}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.birthdate && touched.birthdate}
+                                                errorText={errors.birthdate}
+                                            />
+
+                                            <FormTextArea
+                                                id="address"
+                                                name="address"
+                                                placeholder="Ingrese la dirección"
+                                                label="Dirección"
+                                                span="*"
+                                                value={values.address}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.address && touched.address}
+                                                errorText={errors.address}
+                                            />
                                         </div>
-                                    </div>
+                                    </Formulario>
                                 </TabPanel>
+
                                 <TabPanel className='w-full' header="Header II" headerTemplate={tab2HeaderTemplate}>
-                                    <div className="formgrid grid mt-5">
-                                        <div className="p-fluid grid">
-                                            <div className="field col-4">
-                                                <label htmlFor="hire_date" className="font-bold">Fecha Contratación <span className='text-red-600'>*</span></label>
-                                                {/* <Calendar id='hire_date' name='hire_date' value={values.hire_date} onChange={(e) => { e.stopPropagation(); setDate(e.value); handleChange(e); }} onBlur={handleBlur} invalid={!!errors.hire_date && touched.hire_date} touchUI /> */}
-                                                <InputText id="hire_date" name='hire_date' type='date' value={values.hire_date || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.hire_date && touched.hire_date} />
-                                                <ErrorMessage name="hire_date" component={() => (<small className="p-error">{errors.hire_date}</small>)} />
-                                            </div>
-                                            {!employee.id ? (<>
-                                                <div className="field col-4">
-                                                    <label htmlFor="contract_type" className="font-bold">Tipo Contrato <span className='text-red-600'>*</span>
-                                                    </label>
-                                                    <Dropdown id='contract_type' name='contract_type' value={selectedContractType} onChange={(e: DropdownChangeEvent) => { setSelectedContractType(e.value); handleChange(e) }} onBlur={handleBlur} options={typeContract} optionLabel="name" placeholder="Selecciona el tipo de contrato"
-                                                        invalid={!!errors.contract_type && touched.contract_type} className="w-full uppercase" emptyMessage="No se encontraron tipos" />
-                                                    <ErrorMessage name="contract_type" component={() => (<small className="p-error">{errors.contract_type}</small>)} />
-                                                </div>
+                                    <Formulario>
+                                        <div className="grid">
+                                            <FormInput
+                                                id="hire_date"
+                                                name="hire_date"
+                                                type="date"
+                                                placeholder=""
+                                                label="Fecha Contratación"
+                                                span="*"
+                                                value={values.hire_date}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.hire_date && touched.hire_date}
+                                                errorText={errors.hire_date}
+                                            />
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="work_day" className="font-bold">Jornada Laboral <span className='text-red-600'>*</span>
-                                                    </label>
-                                                    <Dropdown id='work_day' name='work_day' value={selectedWorkDay} onChange={(e: DropdownChangeEvent) => { setSelectedWorkDay(e.value); handleChange(e) }} onBlur={handleBlur} options={typeWorkDay} optionLabel="name" placeholder="Selecciona una jornada"
-                                                        invalid={!!errors.work_day && touched.work_day} className="w-full uppercase" emptyMessage="No se encontraron jornadas" />
-                                                    <ErrorMessage name="work_day" component={() => (<small className="p-error">{errors.work_day}</small>)} />
-                                                </div>
+                                            <FormDropDown
+                                                id="contract_type"
+                                                name="contract_type"
+                                                placeholder="Seleccione un tipo"
+                                                label="Tipo Contrato"
+                                                value={selectedContractType}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron tipos"
+                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedContractType(e.value) }}
+                                                onBlur={handleBlur}
+                                                options={typeContract}
 
+                                                span={!employee.id ? "*" : ""}
+                                                invalid={!employee.id ? !!errors.contract_type && touched.contract_type : false}
+                                                errorText={!employee.id ? errors.contract_type : ""}
 
+                                                disabled={false}
+                                            />
 
-                                            </>) : (<>
-                                                <div className="field col-4">
-                                                    <label htmlFor="contract_type" className="font-bold">Tipo Contrato
-                                                    </label>
-                                                    <Dropdown id='contract_type' name='contract_type' value={selectedContractType} onChange={(e: DropdownChangeEvent) => { setSelectedContractType(e.value); handleChange(e) }} onBlur={handleBlur} options={typeContract} optionLabel="name" placeholder="Selecciona el tipo de contrato" className="w-full uppercase" emptyMessage="No se encontraron tipos" />
-                                                </div>
+                                            <FormDropDown
+                                                id="work_day"
+                                                name="work_day"
+                                                placeholder="Seleccione una jornada"
+                                                label="Jornada Laboral"
+                                                value={selectedWorkDay}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron jornadas"
+                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedWorkDay(e.value) }}
+                                                onBlur={handleBlur}
+                                                options={typeWorkDay}
 
-                                                <div className="field col-4">
-                                                    <label htmlFor="work_day" className="font-bold">Jornada Laboral
-                                                    </label>
-                                                    <Dropdown id='work_day' name='work_day' value={selectedWorkDay} onChange={(e: DropdownChangeEvent) => { setSelectedWorkDay(e.value); handleChange(e) }} onBlur={handleBlur} options={typeWorkDay} optionLabel="name" placeholder="Selecciona una jornada" className="w-full uppercase" emptyMessage="No se encontraron jornadas" />
-                                                </div>
-                                            </>)}
-                                            <div className="field col-4">
-                                                <label htmlFor="department" className="font-bold">Departamento<span className='text-red-600'>*</span></label>
+                                                span={!employee.id ? "*" : ""}
+                                                invalid={!employee.id ? !!errors.work_day && touched.work_day : false}
+                                                errorText={!employee.id ? errors.work_day : ""}
+                                                disabled={false}
+                                            />
 
-                                                <Dropdown id="department" name="department"
-                                                    value={selectedDepartment}
-                                                    onChange={(e) => handleDepartmentChange(e, handleChange, setFieldTouched, setFieldValue)}
-                                                    onBlur={handleBlur}
-                                                    options={departments}
-                                                    optionLabel="name"
-                                                    placeholder="Selecciona un Departamento"
-                                                    emptyMessage="No se encontraron departamentos"
-                                                    className="w-full uppercase"
-                                                    invalid={!!errors.department && touched.department}
-                                                />
-                                                <ErrorMessage name="department" component={() => (<small className="p-error">{errors.department}</small>)} />
-                                            </div>
+                                            <FormDropDown
+                                                id="department"
+                                                name="department"
+                                                placeholder="Seleccione un departamento"
+                                                label="Departamento"
+                                                value={selectedDepartment}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron departamentos"
+                                                onChange={(e) => handleDepartmentChange(e, handleChange, setFieldTouched, setFieldValue)}
+                                                onBlur={handleBlur}
+                                                options={departments}
 
+                                                span="*"
+                                                invalid={!!errors.department && touched.department}
+                                                errorText={errors.department}
 
-                                            <div className="field col-4">
-                                                <label htmlFor="area" className="font-bold">Area <span className='text-red-600'>*</span></label>
+                                                disabled={false}
+                                            />
 
-                                                <Dropdown
-                                                    id="area"
-                                                    name="area"
-                                                    value={selectedArea}
-                                                    onChange={(e) => {
-                                                        handleChange(e);
-                                                        setSelectedArea(e.value);
-                                                    }}
-                                                    onBlur={handleBlur}
-                                                    options={areas}
-                                                    optionLabel="name"
-                                                    placeholder="Selecciona un Área"
-                                                    emptyMessage="No se encontraron áreas"
-                                                    className="w-full uppercase"
-                                                    disabled={!areas.length}
-                                                    invalid={!!errors.area && touched.area}
-                                                />
-                                                <ErrorMessage name="area" component={() => (<small className="p-error">{errors.area}</small>)} />
-                                            </div>
+                                            <FormDropDown
+                                                id="area"
+                                                name="area"
+                                                placeholder="Seleccione un area"
+                                                label="Area"
+                                                value={selectedArea}
+                                                optionLabel="name"
+                                                emptyMessage="No se encontraron areas"
+                                                onChange={(e) => {
+                                                    handleChange(e);
+                                                    setSelectedArea(e.value);
+                                                }}
+                                                onBlur={handleBlur}
+                                                options={areas}
+
+                                                span="*"
+                                                invalid={!!errors.area && touched.area}
+                                                errorText={errors.area}
+                                                disabled={!areas.length}
+                                            />
                                         </div>
-                                    </div>
+                                    </Formulario>
                                 </TabPanel>
+
                                 {employee.id ? (
                                     <TabPanel className='w-full' header="Header III" headerTemplate={tab3HeaderTemplate}>
-                                        <div className="formgrid grid mt-5">
-                                            <div className="p-fluid grid">
-                                                <div className="field col-12">
-                                                    <label htmlFor="status" className="font-bold my-3">
-                                                        Estado
-                                                    </label>
-                                                    <Dropdown value={selectedStatus} onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)} options={typeStatus} optionLabel="name" placeholder="Selecciona un estado" className="w-full uppercase" emptyMessage="No se encontraron estados" />
-                                                </div>
+                                        <Formulario>
+                                            <div className="grid">
+                                                <FormDropDown
+                                                    id="status"
+                                                    name="status"
+                                                    placeholder="Seleccione un estado"
+                                                    label="Estado"
+                                                    value={selectedStatus}
+                                                    optionLabel="name"
+                                                    emptyMessage="No se encontraron estados"
+                                                    onChange={(e: DropdownChangeEvent) => setSelectedStatus(e.value)}
+                                                    onBlur={handleBlur}
+                                                    options={typeStatus}
+
+                                                    span=""
+                                                    invalid={false}
+                                                    errorText={""}
+                                                    disabled={false}
+                                                />
                                             </div>
-                                        </div>
-                                        <div className="field">
-                                            <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                                            <div className="formgrid grid">
-                                                <div className="col-12">
-                                                    <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                                        <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(employee)}`} severity={getSeverity(employee)}></Tag>
-                                                        <Chip label={`Creado el: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                                        <Chip label={`Ultima Actualización: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                            <div className="field">
+                                                <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                                <div className="formgrid grid">
+                                                    <div className="col-12">
+                                                        <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                                            <ColumnStatusBody value={employee} />
+                                                            <Chip label={`Creado el: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                            <Chip label={`Ultima Actualización: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Formulario>
                                     </TabPanel>
-                                ) : (<></>)}
+                                ) : (null)}
                             </TabView>
 
                             <div className="flex mb-0 pt-3">
@@ -976,7 +954,7 @@ export default function EmployeesPage() {
                                                         <Chip label={`CARGO(PUESTO) - ${employee.area?.name}`} className="text-lg font-bold uppercase" />
                                                         <Chip label={`CREADO EL: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-lg font-bold' />
                                                         <Chip label={`ULTIMA ACTUALIZACION: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-lg font-bold' />
-                                                        <Tag className="text-lg font-bold" value={`ESTADO ${getDatoStatus(employee)}`} severity={getSeverity(employee)}></Tag>
+                                                        <ColumnStatusBody value={employee} />
                                                     </div>
                                                 </div>
                                             </div>
