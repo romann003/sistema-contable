@@ -3,6 +3,7 @@ export interface Employee {
     id: number | null;
     name: string;
     last_name: string;
+    fullName: string;
     phone: string | null;
     country: string | null;
     identification_type: string | null;
@@ -23,6 +24,31 @@ export interface Employee {
     employee: string | null;
     area: string;
     areaId: number | null;
+}
+
+export interface Nomina {
+    id: number | null;
+    bonificacion: number | null;
+    horas_extras: number | null;
+    vacaciones_pagadas: number | null;
+    aguinaldo: number | null;
+    total_percepciones: number | null;
+    isr: number | null;
+    igss_patronal: number | null;
+    igss_laboral: number | null;
+    prestamos: number | null;
+    total_deducciones: number | null;
+    liquido_percibir: number | null;
+    periodo_liquidacion_inicio: string;
+    periodo_liquidacion_final: string;
+    fecha_pago: string;
+    status: boolean;
+    createdAt: string;
+    updatedAt: string;
+    employee: string;
+    employeeId: number | null;
+    company: string;
+    companyId: number | null;
 }
 
 //? ------------------------ Types ------------------------
@@ -56,6 +82,7 @@ export const emptyEmployee: Employee = {
     id: null,
     name: '',
     last_name: '',
+    fullName: '',
     phone: '',
     country: '',
     identification_type: '',
@@ -76,6 +103,31 @@ export const emptyEmployee: Employee = {
     employee: '',
     area: '',
     areaId: null
+};
+
+export const emptyNomina: Nomina = {
+    id: null,
+    bonificacion: null,
+    horas_extras: null,
+    vacaciones_pagadas: null,
+    aguinaldo: null,
+    total_percepciones: null,
+    isr: null,
+    igss_patronal: null,
+    igss_laboral: null,
+    prestamos: null,
+    total_deducciones: null,
+    liquido_percibir: null,
+    periodo_liquidacion_inicio: '',
+    periodo_liquidacion_final: '',
+    fecha_pago: '',
+    status: true,
+    createdAt: '',
+    updatedAt: '',
+    employee: '',
+    employeeId: null,
+    company: '',
+    companyId: null,
 };
 
 //? ------------------------ Initial Data ------------------------

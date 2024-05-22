@@ -35,8 +35,13 @@ export const login = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-    res.cookie("token", "", { expires: new Date(0) });
-    return res.status(200).json({ message: "Sesión finalizada" });
+    try {
+        res.cookie("token", "", { expires: new Date(0) });
+        return res.status(200).json({ message: "Sesión finalizada" });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
 }
 
 export const verifyToken = async (req, res) => {
@@ -47,7 +52,7 @@ export const verifyToken = async (req, res) => {
         jwt.verify(token, config.SECRET, async (err, decoded) => {
             if (err) return res.status(401).json({ message: "No autorizado - Token no valido" })
             // req.userId = decoded.id
-            const userFound = await UserSchema.findByPk(decoded.id, {attributes: { exclude: ['password'] }})
+            const userFound = await UserSchema.findByPk(decoded.id, { attributes: { exclude: ['password'] } })
             if (!userFound) return res.status(401).json({ message: "No autorizado - Usuario no encontrado" })
             return res.json({
                 id: userFound.id,

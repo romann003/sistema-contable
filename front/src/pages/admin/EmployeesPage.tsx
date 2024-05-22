@@ -67,8 +67,7 @@ export default function EmployeesPage() {
     const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
     const [filters, setFilters] = useState<DataTableFilterMeta>({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        last_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        fullName: { value: null, matchMode: FilterMatchMode.CONTAINS },
         phone: { value: null, matchMode: FilterMatchMode.EQUALS },
         identification: { value: null, matchMode: FilterMatchMode.CONTAINS },
         nit: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -89,8 +88,8 @@ export default function EmployeesPage() {
     };
 
     //? -------------------- DATATABLE COLUMN TEMPLATES -------------------
-    const last_nameBodyTemplate = (rowData: Employee) => {
-        return <ColumnTextBody value={rowData.last_name} />
+    const fullNameBodyTemplate = (rowData: Employee) => {
+        return <ColumnTextBody value={rowData.fullName} />
     };
 
     const phoneBodyTemplate = (rowData: Employee) => {
@@ -156,6 +155,7 @@ export default function EmployeesPage() {
         getEmployees();
         getActiveDepartments();
         setLoading(false);
+        console.log(employees)
     }, [employee]);
 
     //? -------------------- HANDLE CHANGE -------------------
@@ -312,10 +312,10 @@ export default function EmployeesPage() {
                     value={employees}
                     filters={filters}
                     loading={loading}
-                    globalFilterFields={['name', 'last_name', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']}
+                    globalFilterFields={['fullName', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']}
                     //? -------------------- COLUMNS -------------------
                     size='15rem'
-                    columns={[{ field: 'name', header: 'Nombres' }, { field: 'last_name', header: 'Apellidos', body: last_nameBodyTemplate }, { field: 'phone', header: 'Telefono', body: phoneBodyTemplate }, { field: 'identification', header: 'Identificacion', body: identificationBodyTemplate }, { field: 'nit', header: 'NIT', body: nitBodyTemplate }, { field: 'igss', header: 'IGSS', body: igssBodyTemplate }, { field: 'department.name', header: 'Departamento', body: departmentBodyTemplate }, { field: 'area.name', header: 'Area', body: areaBodyTemplate }, { field: 'status', header: 'Estado', body: statusBodyTemplate }, { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate }, { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate }]}
+                    columns={[{ field: 'fullName', header: 'Empleado', body: fullNameBodyTemplate }, { field: 'phone', header: 'Telefono', body: phoneBodyTemplate }, { field: 'identification', header: 'Identificacion', body: identificationBodyTemplate }, { field: 'nit', header: 'NIT', body: nitBodyTemplate }, { field: 'igss', header: 'IGSS', body: igssBodyTemplate }, { field: 'department.name', header: 'Departamento', body: departmentBodyTemplate }, { field: 'area.name', header: 'Area', body: areaBodyTemplate }, { field: 'status', header: 'Estado', body: statusBodyTemplate }, { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate }, { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate }]}
                     actionBodyTemplate={actionBodyTemplate}
                 />
             </div>

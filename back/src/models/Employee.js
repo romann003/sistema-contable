@@ -90,7 +90,12 @@ export const EmployeeSchema = sequelize.define("employee", {
         defaultValue: true
     }
 }, {
-    timestamps: true //DESACTIVA LOS CAMPOS POR DEFECTO DE CREATEDAT Y UPDATEDAT
+    timestamps: true,
+    getterMethods: {
+        fullName() {
+            return `${this.name} ${this.last_name}`;
+        }
+    }
 });
 
 EmployeeSchema.belongsTo(DepartmentSchema, {

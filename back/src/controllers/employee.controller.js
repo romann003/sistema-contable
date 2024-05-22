@@ -47,14 +47,21 @@ export const createEmployee = async (req, res) => {
 
 export const getEmployees = async (req, res) => {
     try {
-        const employees = await EmployeeSchema.findAll({ include: [{ association: 'department'}, {association: 'area'}], order: [['createdAt' && 'updatedAt', 'DESC']]});
-
+        const employees = await EmployeeSchema.findAll({ include: [{ association: 'department' }, { association: 'area' }], order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] });
+        
         if (employees.length === 0) return res.status(404).json({ message: "Empleados no encontrados" });
-        res.status(200).json(employees);
+
+        const employeesWithFullName = employees.map(employee => ({
+            ...employee.toJSON(),
+            fullName: `${employee.name} ${employee.last_name}`
+        }));
+
+        res.status(200).json(employeesWithFullName);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-}
+};
+
 
 export const getEmployeeById = async (req, res) => {
     try {

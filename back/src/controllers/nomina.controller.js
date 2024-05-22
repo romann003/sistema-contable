@@ -44,7 +44,17 @@ export const createNomina = async (req, res) => {
 
 export const getNominas = async (req, res) => {
     try {
-        const nominas = await NominaSchema.findAll({ include: [{ association: 'employee' }, { association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']]});
+        const nominas = await NominaSchema.findAll(
+            {
+                include: [
+                    {
+                        association: 'employee',
+                        include: [
+                            { association: 'department' },
+                            { association: 'area' }]
+                    },
+                    { association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']]
+            });
         if (nominas.length === 0) return res.status(404).json({ message: "Nominas no encontradas" });
         res.status(200).json(nominas);
     } catch (error) {
