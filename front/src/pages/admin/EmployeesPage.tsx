@@ -11,26 +11,37 @@ import { DataTableFilterMeta } from 'primereact/datatable';
 import { Formik, Form } from 'formik';
 import { TabView, TabPanel, TabPanelHeaderTemplateOptions } from 'primereact/tabview';
 import { Divider } from 'primereact/divider';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc'
 import { useDepartments } from '../../api/context/DepartmentContext';
 import { useAreas } from '../../api/context/AreaContext';
 import { useEmployees } from '../../api/context/EmployeeContext';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { MenuItem } from 'primereact/menuitem';
 import { Link } from 'react-router-dom';
-
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'
+dayjs.extend(utc);
 import { Formulario } from '../../layout/elements/Formularios.js';
 import {
     emptyEmployee, typeStatus, typeGender, typeCountry, typeIdentification, typeContract, typeWorkDay,
     Status, Country, Gender, Identification_type, Contract_type, Work_day, Employee
-}
-    from '../../layout/elements/InitialData';
-import { FormInput, FormTextArea, FormDropDown } from '../../layout/components/FormComponent.js';
+} from '../../layout/elements/InitialData';
+import { ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
 import DataTableCrud from '../../layout/components/DataTableCrud.js';
-import { ColumnChipBody, ColumnDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
+import { FormInput, FormTextArea, FormDropDown } from '../../layout/components/FormComponent.js';
+import { DeleteModal } from '../../layout/components/Modals.js';
 
-dayjs.extend(utc);
+
+const defaultFilters: DataTableFilterMeta = {
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    fullName: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    phone: { value: null, matchMode: FilterMatchMode.EQUALS },
+    identification: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    nit: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    igss: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'department.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'area.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    birthdate: { value: null, matchMode: FilterMatchMode.CONTAINS },
+}
 
 export default function EmployeesPage() {
 
@@ -63,29 +74,9 @@ export default function EmployeesPage() {
     const [deleteEmployeeDialog, setDeleteEmployeeDialog] = useState<boolean>(false);
     //? -------------------- DATATABLE STATES -------------------
     const dt = useRef<DataTable<Employee[]>>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters);
+    const [loading, setLoading] = useState<boolean>(false);
     const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
-    const [filters, setFilters] = useState<DataTableFilterMeta>({
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        fullName: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        phone: { value: null, matchMode: FilterMatchMode.EQUALS },
-        identification: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        nit: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        igss: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'department.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'area.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    });
-
-    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        const _filters = { ...filters };
-
-        // @ts-ignore
-        _filters['global'].value = value;
-
-        setFilters(_filters);
-        setGlobalFilterValue(value);
-    };
 
     //? -------------------- DATATABLE COLUMN TEMPLATES -------------------
     const fullNameBodyTemplate = (rowData: Employee) => {
@@ -115,6 +106,10 @@ export default function EmployeesPage() {
     const areaBodyTemplate = (rowData: Employee) => {
         return <ColumnChipBody value={rowData.area.name} />
     };
+
+    const birthdateBodyTemplate = (rowData: Employee) => {
+        return <ColumnOnlyDateBody value={rowData.birthdate} />
+    }
 
     const statusBodyTemplate = (rowData: Employee) => {
         return <ColumnStatusBody value={rowData} />
@@ -155,7 +150,6 @@ export default function EmployeesPage() {
         getEmployees();
         getActiveDepartments();
         setLoading(false);
-        console.log(employees)
     }, [employee]);
 
     //? -------------------- HANDLE CHANGE -------------------
@@ -304,18 +298,30 @@ export default function EmployeesPage() {
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTableCrud
                     //? -------------------- HEADER -------------------
-                    globalFilterValue={globalFilterValue}
-                    onGlobalFilterChange={onGlobalFilterChange}
                     message="empleados"
                     headerMessage="Lista de Empleados"
                     refe={dt}
                     value={employees}
                     filters={filters}
                     loading={loading}
-                    globalFilterFields={['fullName', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name']}
+                    setFilters={setFilters}
+                    setGlobalFilterValue={setGlobalFilterValue}
+                    globalFilterValue={globalFilterValue}
+                    globalFilterFields={['fullName', 'phone', 'identification', 'nit', 'igss', 'department.name', 'area.name', 'birthdate']}
                     //? -------------------- COLUMNS -------------------
+                    columns={[
+                        { field: 'fullName', header: 'Empleado', body: fullNameBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'phone', header: 'Telefono', body: phoneBodyTemplate, dataType: 'numeric', filter: true },
+                        { field: 'identification', header: 'Identificacion', body: identificationBodyTemplate, dataType: 'numeric', filter: true },
+                        { field: 'nit', header: 'NIT', body: nitBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'igss', header: 'IGSS', body: igssBodyTemplate, dataType: 'numeric', filter: true },
+                        { field: 'department.name', header: 'Departamento', body: departmentBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'area.name', header: 'Area', body: areaBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'birthdate', header: 'Fecha Cumple', body: birthdateBodyTemplate, dataType: 'date', filter: true },
+                        { field: 'status', header: 'Estado', body: statusBodyTemplate, dataType: 'boolean', filter: false },
+                        { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
+                        { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate, dataType: 'date', filter: false }]}
                     size='15rem'
-                    columns={[{ field: 'fullName', header: 'Empleado', body: fullNameBodyTemplate }, { field: 'phone', header: 'Telefono', body: phoneBodyTemplate }, { field: 'identification', header: 'Identificacion', body: identificationBodyTemplate }, { field: 'nit', header: 'NIT', body: nitBodyTemplate }, { field: 'igss', header: 'IGSS', body: igssBodyTemplate }, { field: 'department.name', header: 'Departamento', body: departmentBodyTemplate }, { field: 'area.name', header: 'Area', body: areaBodyTemplate }, { field: 'status', header: 'Estado', body: statusBodyTemplate }, { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate }, { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate }]}
                     actionBodyTemplate={actionBodyTemplate}
                 />
             </div>
@@ -479,6 +485,7 @@ export default function EmployeesPage() {
                                     <Formulario>
                                         <div className="grid">
                                             <FormInput
+                                                col={4}
                                                 id="name"
                                                 name="name"
                                                 type="text"
@@ -492,6 +499,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.name}
                                             />
                                             <FormInput
+                                                col={4}
                                                 id="last_name"
                                                 name="last_name"
                                                 type="text"
@@ -506,6 +514,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormInput
+                                                col={4}
                                                 id="phone"
                                                 name="phone"
                                                 type="number"
@@ -520,6 +529,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="country"
                                                 name="country"
                                                 placeholder="Seleccione un país"
@@ -539,6 +549,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="gender"
                                                 name="gender"
                                                 placeholder="Seleccione un género"
@@ -558,6 +569,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="identification_type"
                                                 name="identification_type"
                                                 placeholder="Seleccione un tipo"
@@ -577,6 +589,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormInput
+                                                col={4}
                                                 id="identification"
                                                 name="identification"
                                                 type="number"
@@ -591,6 +604,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormInput
+                                                col={4}
                                                 id="nit"
                                                 name="nit"
                                                 type="text"
@@ -605,6 +619,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormInput
+                                                col={4}
                                                 id="igss"
                                                 name="igss"
                                                 type="number"
@@ -619,6 +634,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormInput
+                                                col={4}
                                                 id="birthdate"
                                                 name="birthdate"
                                                 type="date"
@@ -633,6 +649,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormTextArea
+                                                col={8}
                                                 id="address"
                                                 name="address"
                                                 placeholder="Ingrese la dirección"
@@ -652,6 +669,7 @@ export default function EmployeesPage() {
                                     <Formulario>
                                         <div className="grid">
                                             <FormInput
+                                                col={4}
                                                 id="hire_date"
                                                 name="hire_date"
                                                 type="date"
@@ -666,6 +684,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="contract_type"
                                                 name="contract_type"
                                                 placeholder="Seleccione un tipo"
@@ -685,6 +704,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="work_day"
                                                 name="work_day"
                                                 placeholder="Seleccione una jornada"
@@ -703,6 +723,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="department"
                                                 name="department"
                                                 placeholder="Seleccione un departamento"
@@ -722,6 +743,7 @@ export default function EmployeesPage() {
                                             />
 
                                             <FormDropDown
+                                                col={4}
                                                 id="area"
                                                 name="area"
                                                 placeholder="Seleccione un area"
@@ -750,6 +772,7 @@ export default function EmployeesPage() {
                                         <Formulario>
                                             <div className="grid">
                                                 <FormDropDown
+                                                    col={4}
                                                     id="status"
                                                     name="status"
                                                     placeholder="Seleccione un estado"
@@ -867,16 +890,17 @@ export default function EmployeesPage() {
             </Dialog>
 
             {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
-            <Dialog visible={deleteEmployeeDialog} style={{ width: '32rem', minWidth: '32rem', maxWidth: '40rem', minHeight: '16rem', maxHeight: '16rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal className='p-fluid' footer={deleteEmployeeDialogFooter} onHide={hideDeleteEmployeeDialog}>
-                <div className="confirmation-content flex">
-                    <i className="pi pi-exclamation-triangle mr-4 mb-2" style={{ fontSize: '2rem' }} />
-                    {employee && (
-                        <span>
-                            ¿Estas seguro que deseas eliminar al empleado: <b className="font-bold">{employee.name}</b>?
-                        </span>
-                    )}
-                </div>
-            </Dialog>
+            <DeleteModal
+                visible={deleteEmployeeDialog}
+                header="Confirmar"
+                data={employee}
+                message1="Estas seguro que deseas eliminar al empleado"
+                message1Bold={employee.fullName}
+                message2={`con el numero de identificacion ${employee.identification_type}:`}
+                message2Bold={employee.identification}
+                footer={deleteEmployeeDialogFooter}
+                onHide={hideDeleteEmployeeDialog}
+            ></DeleteModal>
         </div>
     );
 }

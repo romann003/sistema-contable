@@ -107,7 +107,7 @@ export function EmployeeProvider({ children }) {
     return (
         <EmployeeContext.Provider
             value={{
-                errors, employees, getEmployees, getEmployee, createEmployee, updateEmployee, deleteEmployee
+                errors, employees, setEmployees, getEmployees, getEmployee, createEmployee, updateEmployee, deleteEmployee
             }}
         >
             <Toast ref={toast} />

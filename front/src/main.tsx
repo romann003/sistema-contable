@@ -7,7 +7,7 @@ moment.tz.setDefault('America/Guatemala');
 import { LayoutProvider } from "./layout/context/layoutcontext";
 import { PrimeReactProvider } from 'primereact/api'
 
-import 'primereact/resources/themes/lara-light-indigo/theme.css'; //theme
+import 'primereact/resources/themes/lara-light-blue/theme.css'; //theme /blue-indigo
 import 'primereact/resources/primereact.min.css'; //core css
 import 'primeicons/primeicons.css'; //icons
 import 'primeflex/primeflex.css'; // flex

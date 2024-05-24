@@ -1,4 +1,9 @@
 import { Tag } from "primereact/tag";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'
+
+dayjs.extend(utc);
+
 
 const ColumnStatusBody = ({ value }) => {
     const getDatoStatus = (value) => {
@@ -53,8 +58,10 @@ const ColumnChipBody = ({ value }) => {
 const ColumnDateBody = ({ value }) => {
     return (
         <div className="w-full flex align-items-center justify-content-start gap-2">
-                <span className='bg-gray-200 border-round-2xl px-1 py-2 uppercase font-bold text-center'>
+                <span className='bg-gray-200 border-round-2xl px-2 py-2 uppercase font-bold text-center'>
                     {`${new Date(value).toLocaleDateString()} - ${new Date(value).toLocaleTimeString()}`}
+                    {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
+                    {/* {dayjs.utc(value).format('DD/MM/YYYY')} */}
                 </span>
             </div>
     )
@@ -63,12 +70,32 @@ const ColumnDateBody = ({ value }) => {
 const ColumnOnlyDateBody = ({ value }) => {
     return (
         <div className="w-full flex align-items-center justify-content-start gap-2">
-                <span className='bg-gray-200 border-round-2xl px-3 py-2 uppercase font-bold text-center'>
-                    {/* {`${new Date(value).toLocaleDateString()}`} */}
-                    {value}
+                <span className='bg-gray-200 border-round-2xl px-2 py-2 uppercase font-bold text-center'>
+                    {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
+                    {dayjs.utc(value).format('DD/MM/YYYY')}
                 </span>
             </div>
     )
 }
 
-export { ColumnTextBody, ColumnStatusBody, ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody }
+const ColumnOnlyDateBodyWithClass = ({ value, className }) => {
+    return (
+        <div className="w-full flex align-items-center justify-content-start gap-2">
+                <span className={`uppercase font-bold text-center px-2 py-2 ${className}`}>
+                    {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
+                    {dayjs.utc(value).format('DD/MM/YYYY')}
+                </span>
+            </div>
+    )
+}
+
+const ColumnOnlyDateBodyText = ({ value, className}) => {
+    return (
+                <span className={`${className}`}>
+                    {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
+                    {dayjs.utc(value).format('DD/MM/YYYY')}
+                </span>
+    )
+}
+
+export { ColumnTextBody, ColumnStatusBody, ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnOnlyDateBodyText, ColumnOnlyDateBodyWithClass }

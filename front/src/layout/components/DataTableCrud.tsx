@@ -1,11 +1,14 @@
-import { textAlign } from "html2canvas/dist/types/css/property-descriptors/text-align";
-import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
+import { useEffect } from "react";
 
-export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, size, headerMessage }) {
+
+export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, size, headerMessage
+//  ,useEffect1, useEffect2, useEffectLoad
+}) {
 
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -18,13 +21,19 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
         setGlobalFilterValue(value);
     };
 
+    // useEffect(() => {
+    //     useEffect1();
+    //     useEffect2(false)
+    // }, [useEffectLoad]);
+
+
     const header = () => {
         return (
             <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
                 <h4 className="m-0">{headerMessage}</h4>
                 <IconField iconPosition="left">
                     <InputIcon className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
+                    <InputText type="text" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
                 </IconField>
             </div>
         );
@@ -41,12 +50,12 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
     //     );
     // };
 
-    const footer = `En total hay ${value ? value.length : 0} nominas.`;
+    const footer = `En total hay ${value ? value.length : 0} ${message}.`;
 
     return (
         <DataTable
             dataKey="id"
-            scrollable scrollHeight="500px" virtualScrollerOptions={{ itemSize: 46 }}
+            scrollable scrollHeight="550px"
             stripedRows
             sortMode="multiple"
             resizableColumns={true}
@@ -62,7 +71,7 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
             paginator rows={15}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate={`Mostrando {first} - {last} de {totalRecords} ${message}`}
-            // rowsPerPageOptions={[5, 10, 25]}
+        // rowsPerPageOptions={[5, 10, 25]}
         >
             <Column header="ID" body={(rowData) => <span>{value.indexOf(rowData) + 1}</span>} />
             {columns.map((col, index) => {
@@ -81,7 +90,7 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
                         showFilterMenu={false}
                         showFilterMenuOptions={false}
                         alignHeader={'left'}
-                        style={{ minWidth: '13rem', textTransform: 'capitalize' }}
+                        style={{ minWidth: '13rem', textTransform: 'capitalize', maxWidth: '20rem' }}
                     />
                 )
             }

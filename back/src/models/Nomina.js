@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../database.js";
 import { CompanySchema } from "./Company.js";
 import { EmployeeSchema } from "./Employee.js";
+import { PeriodoSchema, BonificacionSchema } from "./NominaDatos.js";
 
 export const NominaSchema = sequelize.define("nomina", {
     id: {
@@ -9,82 +10,56 @@ export const NominaSchema = sequelize.define("nomina", {
         primaryKey: true,
         autoIncrement: true
     },
-    bonificacion: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false,
-    },
     horas_extra: {
         type: DataTypes.DECIMAL,
         required: true,
         allowNull: false
     },
-    vacaciones_pagadas: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    aguinaldo: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false,
-    },
-    total_percepciones: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    isr: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    igss_patronal: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    igss_laboral: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    prestamos: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    total_deducciones: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    liquido_percibir: {
-        type: DataTypes.DECIMAL,
-        required: true,
-        allowNull: false
-    },
-    periodo_liquidacion_inicio: {
-        type: DataTypes.DATEONLY,
-        required: true,
-        allowNull: false
-    },
-    periodo_liquidacion_final: {
-        type: DataTypes.DATEONLY,
-        required: true,
-        allowNull: false
-    },
-    fecha_pago: {
-        type: DataTypes.DATEONLY,
-        required: true,
-        allowNull: false
-    },
-    status: {
-        type: DataTypes.BOOLEAN,
-        required: true,
-        allowNull: false,
-        defaultValue: true
-    }
+    // vacaciones_pagadas: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // aguinaldo: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false,
+    // },
+    // total_percepciones: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // isr: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // igss_patronal: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // igss_laboral: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // prestamos: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // total_deducciones: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // },
+    // liquido_percibir: {
+    //     type: DataTypes.DECIMAL,
+    //     required: true,
+    //     allowNull: false
+    // }
 }, {
     timestamps: true //DESACTIVA LOS CAMPOS POR DEFECTO DE CREATEDAT Y UPDATEDAT
 });
@@ -106,5 +81,25 @@ NominaSchema.belongsTo(EmployeeSchema, {
 
 EmployeeSchema.hasMany(NominaSchema, {
     foreignKey: "employeeId",
+    sourceKey: "id"
+})
+
+NominaSchema.belongsTo(PeriodoSchema, {
+    foreignKey: "periodoId",
+    targetId: "id"
+})
+
+PeriodoSchema.hasMany(NominaSchema, {
+    foreignKey: "periodoId",
+    sourceKey: "id"
+})
+
+NominaSchema.hasMany(BonificacionSchema, {
+    foreignKey: "nominaId",
+    targetId: "id"
+})
+
+BonificacionSchema.belongsTo(NominaSchema, {
+    foreignKey: "nominaId",
     sourceKey: "id"
 })

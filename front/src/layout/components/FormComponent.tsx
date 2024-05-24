@@ -1,9 +1,9 @@
 import { Input, Textarea, Label, Span, ErrorText, Group, DropDown } from '../elements/Formularios.js';
 import { ErrorMessage } from 'formik';
 
-const FormInput = ({ label, span, type, name, id, placeholder, errorText, onChange, onBlur, invalid, value }) => {
+const FormInput = ({ label, span, type, name, id, placeholder, errorText, onChange, onBlur, invalid, value, col }) => {
     return (
-        <div className='col-4'>
+        <div className={`col-${col}`}>
             <Group>
                 <Label htmlFor={id}>{label} <Span>{span}</Span></Label>
                 <Input
@@ -25,9 +25,9 @@ const FormInput = ({ label, span, type, name, id, placeholder, errorText, onChan
     )
 }
 
-const FormTextArea = ({ label, span, name, id, placeholder, errorText, onChange, onBlur, invalid, value }) => {
+const FormTextArea = ({ label, span, name, id, placeholder, errorText, onChange, onBlur, invalid, value, col }) => {
     return (
-        <div className='col-8'>
+        <div className={`col-${col}`}>
             <Group>
                 <Label htmlFor={id}>{label} <Span>{span}</Span></Label>
                 <Textarea
@@ -49,7 +49,7 @@ const FormTextArea = ({ label, span, name, id, placeholder, errorText, onChange,
     )
 }
 
-const FormDropDown = ({ label, span, name, id, placeholder, errorText, onChange, onBlur, invalid, value, options, optionLabel, emptyMessage, disabled }) => {
+const FormDropDown = ({ label, span, name, id, placeholder, errorText, onChange, onBlur, invalid, value, options, optionLabel, emptyMessage, disabled, col }) => {
 
     // const handleDropDownChange = (e: DropdownChangeEvent) => {
     //     if (isRequired) {
@@ -61,7 +61,7 @@ const FormDropDown = ({ label, span, name, id, placeholder, errorText, onChange,
     // }
 
     return (
-        <div className='col-4'>
+        <div className={`col-${col}`}>
             <Group>
                 <Label htmlFor={id}>{label} <Span>{span}</Span></Label>
                 <DropDown

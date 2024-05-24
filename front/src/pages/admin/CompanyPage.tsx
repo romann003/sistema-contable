@@ -17,15 +17,19 @@ import { useCompany } from '../../api/context/CompanyContext';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { MenuItem } from 'primereact/menuitem';
 import { Link } from 'react-router-dom';
-interface Company {
-    id: number | null;
-    business_name: string;
-    nit: string | null;
-    phone: string | null;
-    address: string;
-    status: boolean;
-    createdAt: string;
-    updatedAt: string;
+
+import { Formulario } from '../../layout/elements/Formularios.js';
+import { Company, emptyCompany, Status, typeStatus } from '../../layout/elements/InitialData';
+import { ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
+import DataTableCrud from '../../layout/components/DataTableCrud.js';
+import { FormDropDown, FormInput, FormTextArea } from '../../layout/components/FormComponent.js';
+
+const defaultFilters: DataTableFilterMeta = {
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    business_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    nit: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    phone: { value: null, matchMode: FilterMatchMode.EQUALS },
+    address: { value: null, matchMode: FilterMatchMode.CONTAINS },
 }
 
 export default function CompanyPage() {
@@ -34,18 +38,6 @@ export default function CompanyPage() {
     const home: MenuItem = {
         template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
     }
-
-    //? -------------------- INITIAL STATES -------------------
-    const emptyCompany: Company = {
-        id: null,
-        business_name: '',
-        nit: null,
-        phone: null,
-        address: '',
-        status: true,
-        createdAt: '',
-        updatedAt: ''
-    };
 
     //? -------------------- CONTEXT API -------------------
     const { companies, getCompanies, updateCompany } = useCompany();
@@ -56,79 +48,50 @@ export default function CompanyPage() {
     const [companyDialog, setCompanyDialog] = useState<boolean>(false);
     //? -------------------- DATATABLE STATES -------------------
     const dt = useRef<DataTable<Company[]>>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters);
+    const [loading, setLoading] = useState<boolean>(false);
     const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
-    const [filters, setFilters] = useState<DataTableFilterMeta>({
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        business_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        nit: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        phone: { value: null, matchMode: FilterMatchMode.EQUALS },
-        address: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    });
-
-    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        const _filters = { ...filters };
-
-        // @ts-ignore
-        _filters['global'].value = value;
-
-        setFilters(_filters);
-        setGlobalFilterValue(value);
-    };
-
-    //? -------------------- DTATABLE FUNCTIONS -------------------
-    const renderHeader = () => {
-        return (
-            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-                <h4 className="m-0">Todas mis Empresas</h4>
-                <IconField iconPosition="left">
-                    <InputIcon className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
-                </IconField>
-            </div>
-        );
-    };
 
     //? -------------------- DATATABLE INPUT TEMPLATES -------------------
     const businessBodyTemplate = (rowData: Company) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.business_name}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.business_name} />
     };
 
     const nitBodyTemplate = (rowData: Company) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.nit}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.nit} />
     };
 
     const phoneBodyTemplate = (rowData: Company) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.phone}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.phone} />
     };
 
     const addressBodyTemplate = (rowData: Company) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.address}</span>
-            </div>
-        );
+        return <ColumnTextBody value={rowData.address} />
     };
 
     const statusBodyTemplate = (rowData: Company) => {
-        return <Tag className="text-sm font-bold" value={getDatoStatus(rowData)} severity={getSeverity(rowData)}></Tag>;
+        return <ColumnStatusBody value={rowData} />
+    };
+
+    const createdAtBodyTemplate = (rowData: Company) => {
+        return <ColumnDateBody value={rowData.createdAt} />
+    };
+
+    const updatedAtBodyTemplate = (rowData: Company) => {
+        return <ColumnDateBody value={rowData.updatedAt} />
+    };
+
+    const actionBodyTemplate = (rowData: Company) => {
+        return (
+            <React.Fragment>
+                <div className="flex align-align-content-center justify-content-evenly">
+                    <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editCompany(rowData)} />
+                </div>
+            </React.Fragment>
+        );
     };
 
     //? -------------------- LOADING DATA -------------------
-    const header = renderHeader();
     useEffect(() => {
         getCompanies();
         setLoading(false);
@@ -146,42 +109,7 @@ export default function CompanyPage() {
         setCompanyDialog(true);
     };
 
-    //? -------------------- DTATABLE ACTIONS -------------------
-    const actionBodyTemplate = (rowData: Company) => {
-        return (
-            <React.Fragment>
-                <div className="flex align-align-content-center justify-content-evenly">
-                    <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editCompany(rowData)} />
-                </div>
-            </React.Fragment>
-        );
-    };
 
-    const getDatoStatus = (company: Company) => {
-        switch (company.status) {
-            case true:
-                return 'ACTIVO';
-
-            case false:
-                return 'INACTIVO';
-
-            default:
-                return null;
-        }
-    };
-
-    const getSeverity = (company: Company) => {
-        switch (company.status) {
-            case true:
-                return 'success';
-
-            case false:
-                return 'danger';
-
-            default:
-                return null;
-        }
-    };
 
     //? -------------------- RENDER -------------------
     return (
@@ -191,29 +119,35 @@ export default function CompanyPage() {
                 <h3>Mi Empresa</h3>
                 <BreadCrumb model={items} home={home} className='mb-4' />
                 {/* //? -------------------- DATATABLE ------------------- */}
-                <DataTable ref={dt} dataKey="id" value={companies} filters={filters} loading={loading}
-                    paginator rows={15} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} empresas"
-                    // rowsPerPageOptions={[5, 10, 25]}
-                    globalFilterFields={['business_name', 'nit', 'phone', 'address']} header={header} emptyMessage="No se encontraron empresas."
-                    filterDisplay="row"
-                    stripedRows
-                    scrollable
-                >
-                    <Column header="ID" body={(rowData) => <span>{companies.indexOf(rowData) + 1}</span>} />
-                    <Column sortable field='business_name' header="RAZON SOCIAL" filterField="business_name" style={{ minWidth: '12rem' }} body={businessBodyTemplate} filter filterPlaceholder="Filtrar por razon social" />
-                    <Column sortable field='nit' header="NUMERO DE NIT" filterField="nit" style={{ minWidth: '12rem' }} body={nitBodyTemplate} filter filterPlaceholder="Filtrar por nit" />
-                    <Column sortable field='phone' header="NUMERO DE TELEFONO" filterField="phone" style={{ minWidth: '12rem' }} body={phoneBodyTemplate} filter filterPlaceholder="Filtrar por telefono" />
-                    <Column sortable field='address' header="DIRECCION" filterField="address" style={{ minWidth: '12rem' }} body={addressBodyTemplate} filter filterPlaceholder="Filtrar por direccion" />
-                    {/* <Column field="status" header="ESTADO" style={{ minWidth: '4rem' }} body={statusBodyTemplate} sortable /> */}
-                    <Column style={{ minWidth: '12rem' }} header="CREADO EL" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.createdAt).toLocaleDateString()} - ${new Date(rowData.createdAt).toLocaleTimeString()}`} />} />
-                    <Column style={{ minWidth: '12rem' }} header="ULTIMA ACTUALIZACION" body={(rowData) => <Chip className='font-bold' label={`${new Date(rowData.updatedAt).toLocaleDateString()} - ${new Date(rowData.updatedAt).toLocaleTimeString()}`} />} />
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '5rem' }} alignFrozen='right' frozen></Column>
-                </DataTable>
+                <DataTableCrud
+                    //? -------------------- HEADER -------------------
+                    message="empresas"
+                    headerMessage="Todas mis Empresas"
+                    refe={dt}
+                    value={companies}
+                    filters={filters}
+                    loading={loading}
+                    setFilters={setFilters}
+                    setGlobalFilterValue={setGlobalFilterValue}
+                    globalFilterValue={globalFilterValue}
+                    globalFilterFields={['business_name', 'nit', 'phone', 'address']}
+                    //? -------------------- COLUMNS -------------------
+                    columns={[
+                        { field: 'business_name', header: 'Razon Social', body: businessBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'nit', header: 'NIT', body: nitBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'phone', header: 'Telefono', body: phoneBodyTemplate, dataType: 'text', filter: true },
+                        { field: 'address', header: 'Direccion', body: addressBodyTemplate, dataType: 'text', filter: true },
+                        // { field: 'status', header: 'Estado', body: statusBodyTemplate, dataType: 'boolean', filter: false },
+                        { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
+                        { field: 'updatedAt', header: 'Ultima Actualización', body: updatedAtBodyTemplate, filter: false, dataType: 'date' },
+                    ]}
+                    size='12rem'
+                    actionBodyTemplate={actionBodyTemplate}
+                />
             </div>
 
             {/* //? -------------------- MODAL DIALOG (UPDATE) ------------------- */}
-            <Dialog visible={companyDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles de la Empresa" modal className="p-fluid" onHide={hideDialog}>
+            <Dialog visible={companyDialog} style={{ width: '30rem', minWidth: '30rem', maxWidth: '30vw', height: '42rem', minHeight: '42rem', maxHeight: '42rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles de la Empresa" modal className="p-fluid" onHide={hideDialog}>
                 <Formik
                     initialValues={{ business_name: '' || company.business_name, nit: '' || company.nit, phone: '' || company.phone, address: '' || company.address }}
                     validate={values => {
@@ -264,49 +198,95 @@ export default function CompanyPage() {
                     }}
                 >
                     {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
-                        <Form>
-                            <div className="field">
-                                <label htmlFor="business_name" className="font-bold">Nombre de la Empresa</label>
-                                <InputText id="business_name" name='business_name' type='text' value={values.business_name} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.business_name && touched.business_name} />
-                                <ErrorMessage name="business_name" component={() => (<small className="p-error">{errors.business_name}</small>)} />
-                            </div>
-                            <div className="field">
-                                <label htmlFor="nit" className="font-bold">Numero de NIT</label>
-                                <InputText id="nit" name='nit' type='text' value={values.nit || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.nit && touched.nit} />
-                                <ErrorMessage name="nit" component={() => (<small className="p-error">{errors.nit}</small>)} />
-                            </div>
-                            <div className="field">
-                                <label htmlFor="phone" className="font-bold">Numero de Telefono</label>
-                                <InputText id="phone" name='phone' type='number' value={values.phone || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.phone && touched.phone} />
-                                <ErrorMessage name="phone" component={() => (<small className="p-error">{errors.phone}</small>)} />
-                            </div>
-                            <div className="field">
-                                <label htmlFor="address" className="font-bold">Dirección</label>
-                                <InputTextarea id="address" name='address' autoResize rows={1} value={values.address || ''} onChange={handleChange} onBlur={handleBlur} invalid={!!errors.address && touched.address} />
-                                <ErrorMessage name="address" component={() => (<small className="p-error">{errors.address}</small>)} />
-                            </div>
-                            <div className="field">
-                                {company.id ? (
-                                    <>
-                                        <div className="field">
-                                            <label className="mb-3 mt-5 font-bold">Otros Datos</label>
-                                            <div className="formgrid grid">
-                                                <div className="col-12">
-                                                    <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                                        {/* <Chip label={`${company.business_name}`} className="text-lg font-bold uppercase" /> */}
-                                                        <Tag className="text-sm font-bold" value={`ESTADO ${getDatoStatus(company)}`} severity={getSeverity(company)}></Tag>
-                                                        <Chip label={`Creado el: ${new Date(company.createdAt).toLocaleDateString()} - ${new Date(company.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
-                                                        <Chip label={`Ultima Actualización: ${new Date(company.updatedAt).toLocaleDateString()} - ${new Date(company.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                        <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <div style={{ flex: 1, overflow: 'auto' }}>
+                                <Formulario>
+                                    <FormInput
+                                        col={12}
+                                        id="business_name"
+                                        name="business_name"
+                                        type="text"
+                                        placeholder="Ingrese la razon social"
+                                        label="Razon Social"
+                                        span="*"
+                                        value={values.business_name}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        invalid={!!errors.business_name && touched.business_name}
+                                        errorText={errors.business_name}
+                                    />
+
+                                    <FormInput
+                                        col={12}
+                                        id="nit"
+                                        name="nit"
+                                        type="text"
+                                        placeholder="Ingrese el NIT"
+                                        label="NIT"
+                                        span="*"
+                                        value={values.nit}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        invalid={!!errors.nit && touched.nit}
+                                        errorText={errors.nit}
+                                    />
+
+                                    <FormInput
+                                        col={12}
+                                        id="phone"
+                                        name="phone"
+                                        type="number"
+                                        placeholder="Ingrese el numero de telefono"
+                                        label="Telefono"
+                                        span="*"
+                                        value={values.phone}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        invalid={!!errors.phone && touched.phone}
+                                        errorText={errors.phone}
+                                    />
+
+                                    <FormTextArea
+                                        col={12}
+                                        id="address"
+                                        name="address"
+                                        placeholder="Ingrese la direccion"
+                                        label="Direccion"
+                                        span="*"
+                                        value={values.address}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        invalid={!!errors.address && touched.address}
+                                        errorText={errors.address}
+                                    />
+                                    {/* {company.id ? (
+                                        <>
+                                        <div className="w-full">
+
+                                            <div className="field">
+                                                <label className="mb-3 mt-5 font-bold">Otros Datos</label>
+                                                <div className="formgrid grid">
+                                                    <div className="col-12">
+                                                        <div className="card flex flex-wrap gap-2 justify-content-evenly">
+                                                            <div className="flex">
+                                                                <ColumnStatusBody value={company} />
+                                                            </div>
+                                                            <Chip label={`Creado el: ${new Date(company.createdAt).toLocaleDateString()} - ${new Date(company.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                            <Chip label={`Ultima Actualización: ${new Date(company.updatedAt).toLocaleDateString()} - ${new Date(company.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </>
-                                ) : (
-                                    <></>
-                                )}
+                                        </>
+                                    ) : (
+                                        <></>
+                                    )} */}
+                                </Formulario>
                             </div>
-                            <div className="field flex mt-7 mb-0 align-content-between justify-content-between">
+
+
+                            <div className="flex mb-0 pt-3">
                                 <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideDialog} className='mx-1' />
                                 <Button label="Actualizar Empresa" icon="pi pi-check" type='submit' className='mx-1' disabled={company.id ? false : !(isValid && dirty)} />
                             </div>

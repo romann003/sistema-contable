@@ -18,6 +18,7 @@ import ErrorAccessPage from "./pages/errors/ErrorAccessPage";
 import { GeneralProvider } from "./api/context/GeneralContext";
 import ReportDepartmentPage from "./pages/admin/reports/ReportDepartmentPage";
 import ReportAreasPage from "./pages/admin/reports/ReportAreasPage";
+import PeriodoLiquidacionPage from "./pages/admin/PeriodoLiquidacionPage";
 
 
 export default function App() {
@@ -36,7 +37,9 @@ export default function App() {
               <Route path="users" element={<UsersPage />} />
               <Route path="company" element={<CompanyPage />} />
               <Route path="employees" element={<EmployeesPage />} />
-              <Route path="nomina" element={<NominaPage />} />
+
+              <Route path="rc/periodo-liquidacion" element={<PeriodoLiquidacionPage />} />
+              <Route path="rc/nomina" element={<NominaPage />} />
 
               <Route path="reports/departments" element={<ReportDepartmentPage />} />
               <Route path="reports/areas" element={<ReportAreasPage />} />

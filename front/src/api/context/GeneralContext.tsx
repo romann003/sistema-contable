@@ -7,6 +7,7 @@ import { AreaProvider } from "./AreaContext";
 import { AuthProvider } from "./AuthContext";
 import { EmployeeProvider } from "./EmployeeContext";
 import { NominaProvider } from "./NominaContext";
+import { NominaDatosProvider } from "./nominaDatosContext";
 
 const GeneralContext = createContext();
 
@@ -29,7 +30,9 @@ export function GeneralProvider({ children }) {
                                 <AreaProvider>
                                     <EmployeeProvider>
                                         <NominaProvider>
-                                            {children}
+                                                <NominaDatosProvider>
+                                                    {children}
+                                                </NominaDatosProvider>
                                         </NominaProvider>
                                     </EmployeeProvider>
                                 </AreaProvider>

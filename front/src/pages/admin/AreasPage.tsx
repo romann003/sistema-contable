@@ -65,7 +65,7 @@ export default function AreasPage() {
 
     //? -------------------- CONTEXT API -------------------
     const { departments, getActiveDepartments } = useDepartments();
-    const { areas, getAreas, createArea, deleteArea, updateArea, setAreas, errors: areaErrors } = useAreas();
+    const { areas, getAreas, createArea, deleteArea, updateArea } = useAreas();
     //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
     const [estados, setEstados] = useState<string[]>([]);

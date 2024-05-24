@@ -1,11 +1,13 @@
+import { parse, format } from 'date-fns';
 import { EmployeeSchema } from "../models/Employee.js";
+
+const timeZone = 'America/Guatemala';
 
 export const createEmployee = async (req, res) => {
     const { name, last_name, phone, country, identification_type, identification, nit, igss, gender, birthdate, address, hire_date, contract_type, work_day, status, departmentId, areaId } = req.body;
     try {
         const identificationFound = await EmployeeSchema.findOne({ where: { identification } });
         if (identificationFound) return res.status(400).json(['El documento de identificación ya existe']);
-
 
         const newEmployee = new EmployeeSchema({
             name,
@@ -38,8 +40,8 @@ export const createEmployee = async (req, res) => {
         }
 
         const savedEmployee = await newEmployee.save();
-
         res.status(200).json({ savedEmployee });
+        // res.status(200).json({ todayFormat});
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -77,7 +79,6 @@ export const getEmployeeById = async (req, res) => {
 
 export const updateEmployeeById = async (req, res) => {
     try {
-        // const { name, last_name, phone, country, identification_type, identification, nit, igss, gender, birthdate, address, hire_date, contract_type, work_day, status, departmentId, areaId } = req.body;
         const updatedEmployee = await EmployeeSchema.findByPk(req.params.employeeId);
         if (!updatedEmployee) return res.status(404).json({ message: "Empleado no encontrado" });
 
@@ -91,30 +92,8 @@ export const updateEmployeeById = async (req, res) => {
         //     if (nitFound) return res.status(400).json(['El nit ya existe']);
         // }
 
-
         updatedEmployee.set(req.body);
         await updatedEmployee.save();
-
-        // updatedEmployee.name = name;
-        // updatedEmployee.last_name = last_name;
-        // updatedEmployee.phone = phone;
-        // updatedEmployee.country = country;
-        // updatedEmployee.identification_type = identification_type;
-        // updatedEmployee.identification = identification;
-        // updatedEmployee.nit = nit;
-        // updatedEmployee.igss = igss;
-        // updatedEmployee.gender = gender;
-        // updatedEmployee.birthdate = birthdate;
-        // updatedEmployee.address = address;
-        // updatedEmployee.hire_date = hire_date;
-        // updatedEmployee.contract_type = contract_type;
-        // updatedEmployee.work_day = work_day;
-        // updatedEmployee.status = status;
-        // updatedEmployee.departmentId = departmentId;
-        // updatedEmployee.areaId = areaId;
-        // await updatedEmployee.save();
-
-
         res.status(200).json(updatedEmployee);
     } catch (error) {
         return res.status(500).json({ message: error.message });

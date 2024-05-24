@@ -2,25 +2,31 @@ import { NominaSchema } from "../models/Nomina.js";
 
 export const createNomina = async (req, res) => {
     try {
-        const { bonificacion, horas_extra, vacaciones_pagadas, aguinaldo, total_percepciones, isr, igss_patronal, igss_laboral, prestamos, total_deducciones, liquido_percibir, periodo_liquidacion_inicio, periodo_liquidacion_final, fecha_pago, status, employeeId, companyId } = req.body;
+        const { bonificacion, horas_extra, vacaciones_pagadas, aguinaldo, total_percepciones, isr, igss_patronal, igss_laboral, prestamos, total_deducciones, liquido_percibir, periodo_liquidacion_inicio, periodo_liquidacion_final, fecha_pago, status, employeeId, companyId, periodoId } = req.body;
 
         const newNomina = new NominaSchema({
-            bonificacion,
+            // bonificacion,
             horas_extra,
-            vacaciones_pagadas,
-            aguinaldo,
-            total_percepciones,
-            isr,
-            igss_patronal,
-            igss_laboral,
-            prestamos,
-            total_deducciones,
-            liquido_percibir,
-            periodo_liquidacion_inicio,
-            periodo_liquidacion_final,
-            fecha_pago,
-            status,
+            // vacaciones_pagadas,
+            // aguinaldo,
+            // total_percepciones,
+            // isr,
+            // igss_patronal,
+            // igss_laboral,
+            // prestamos,
+            // total_deducciones,
+            // liquido_percibir,
+            // periodo_liquidacion_inicio,
+            // periodo_liquidacion_final,
+            // fecha_pago,
+            // status,
         });
+
+        if (periodoId) {
+            newNomina.periodoId = periodoId;
+        } else {
+            return res.status(400).json(['Debes de seleccionar un periodo']);
+        }
 
         if (employeeId) {
             newNomina.employeeId = employeeId;
@@ -51,8 +57,10 @@ export const getNominas = async (req, res) => {
                         association: 'employee',
                         include: [
                             { association: 'department' },
-                            { association: 'area' }]
+                            { association: 'area' }
+                        ]
                     },
+                    { association: 'periodo' },
                     { association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']]
             });
         if (nominas.length === 0) return res.status(404).json({ message: "Nominas no encontradas" });

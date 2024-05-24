@@ -59,7 +59,7 @@ export const EmployeeSchema = sequelize.define("employee", {
         allowNull: false
     },
     birthdate: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         required: true,
         allowNull: false
     },
@@ -69,7 +69,7 @@ export const EmployeeSchema = sequelize.define("employee", {
         allowNull: false
     },
     hire_date: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         required: true,
         allowNull: false
     },

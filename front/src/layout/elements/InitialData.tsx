@@ -1,4 +1,14 @@
 //? ------------------------ Model Types ------------------------
+export interface Company {
+    id: number | null;
+    business_name: string;
+    nit: string | null;
+    phone: string | null;
+    address: string;
+    status: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
 export interface Employee {
     id: number | null;
     name: string;
@@ -28,27 +38,48 @@ export interface Employee {
 
 export interface Nomina {
     id: number | null;
-    bonificacion: number | null;
-    horas_extras: number | null;
-    vacaciones_pagadas: number | null;
-    aguinaldo: number | null;
-    total_percepciones: number | null;
-    isr: number | null;
-    igss_patronal: number | null;
-    igss_laboral: number | null;
-    prestamos: number | null;
-    total_deducciones: number | null;
-    liquido_percibir: number | null;
-    periodo_liquidacion_inicio: string;
-    periodo_liquidacion_final: string;
-    fecha_pago: string;
-    status: boolean;
+    // bonificacion: number | null;
+    horas_extra: number | null;
+    // vacaciones_pagadas: number | null;
+    // aguinaldo: number | null;
+    // total_percepciones: number | null;
+    // isr: number | null;
+    // igss_patronal: number | null;
+    // igss_laboral: number | null;
+    // prestamos: number | null;
+    // total_deducciones: number | null;
+    // liquido_percibir: number | null;
+    // periodo_liquidacion_inicio: string;
+    // periodo_liquidacion_final: string;
+    // fecha_pago: string;
+    // status: boolean;
     createdAt: string;
     updatedAt: string;
     employee: string;
     employeeId: number | null;
     company: string;
     companyId: number | null;
+    periodo: string;
+    periodoId: number | null;
+}
+export interface Periodo {
+    id: number | null;
+    periodo_liquidacion_inicio: string;
+    periodo_liquidacion_final: string;
+    fecha_pago: string;
+    status: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Bonificacion {
+    id: number | null;
+    descripcion: string;
+    cantidad: number | null;
+    createdAt: string;
+    updatedAt: string;
+    nomina: string;
+    nominaId: number | null;
 }
 
 //? ------------------------ Types ------------------------
@@ -78,6 +109,17 @@ export interface Work_day {
 }
 
 //? ------------------------ Initial Model Data ------------------------
+export const emptyCompany: Company = {
+    id: null,
+    business_name: '',
+    nit: null,
+    phone: null,
+    address: '',
+    status: true,
+    createdAt: '',
+    updatedAt: ''
+};
+
 export const emptyEmployee: Employee = {
     id: null,
     name: '',
@@ -107,27 +149,49 @@ export const emptyEmployee: Employee = {
 
 export const emptyNomina: Nomina = {
     id: null,
-    bonificacion: null,
-    horas_extras: null,
-    vacaciones_pagadas: null,
-    aguinaldo: null,
-    total_percepciones: null,
-    isr: null,
-    igss_patronal: null,
-    igss_laboral: null,
-    prestamos: null,
-    total_deducciones: null,
-    liquido_percibir: null,
-    periodo_liquidacion_inicio: '',
-    periodo_liquidacion_final: '',
-    fecha_pago: '',
-    status: true,
+    // bonificacion: null,
+    horas_extra: null,
+    // vacaciones_pagadas: null,
+    // aguinaldo: null,
+    // total_percepciones: null,
+    // isr: null,
+    // igss_patronal: null,
+    // igss_laboral: null,
+    // prestamos: null,
+    // total_deducciones: null,
+    // liquido_percibir: null,
+    // periodo_liquidacion_inicio: '',
+    // periodo_liquidacion_final: '',
+    // fecha_pago: '',
+    // status: true,
     createdAt: '',
     updatedAt: '',
     employee: '',
     employeeId: null,
     company: '',
     companyId: null,
+    periodo: '',
+    periodoId: null
+};
+
+export const emptyPeriodo: Periodo = {
+    id: null,
+    periodo_liquidacion_inicio: '',
+    periodo_liquidacion_final: '',
+    fecha_pago: '',
+    status: true,
+    createdAt: '',
+    updatedAt: ''
+};
+
+export const emptyBonificacion: Bonificacion = {
+    id: null,
+    descripcion: '',
+    cantidad: null,
+    createdAt: '',
+    updatedAt: '',
+    nomina: '',
+    nominaId: null
 };
 
 //? ------------------------ Initial Data ------------------------

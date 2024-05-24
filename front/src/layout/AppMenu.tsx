@@ -35,8 +35,14 @@ const AppMenu = () => {
         {
             label: 'Otras Acciones',
             items: [
-                { label: 'Empleados', icon: 'pi pi-fw pi-user', to: '/dashboard/employees'},
-                { label: 'Nomina', icon: 'pi pi-inbox', to: '/dashboard/nomina'},
+                { label: 'Empleados', icon: 'pi pi-fw pi-user', to: '/dashboard/employees' },
+                {
+                    label: 'Registros Contables',
+                    items: [
+                        { label: 'Periodo Liquidación', icon: 'pi pi-calendar', to: '/dashboard/rc/periodo-liquidacion' },
+                        { label: 'Nomina', icon: 'pi pi-inbox', to: '/dashboard/rc/nomina' },
+                    ]
+                }
             ]
         },
         {
