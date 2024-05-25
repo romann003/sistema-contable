@@ -22,7 +22,7 @@ import { Formulario } from '../../layout/elements/Formularios.js';
 import { Company, emptyCompany, Status, typeStatus } from '../../layout/elements/InitialData';
 import { ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
 import DataTableCrud from '../../layout/components/DataTableCrud.js';
-import { FormDropDown, FormInput, FormTextArea } from '../../layout/components/FormComponent.js';
+import * as fI from '../../layout/components/FormComponent.js';
 
 const defaultFilters: DataTableFilterMeta = {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -201,7 +201,7 @@ export default function CompanyPage() {
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <div style={{ flex: 1, overflow: 'auto' }}>
                                 <Formulario>
-                                    <FormInput
+                                    <fI.InputT
                                         col={12}
                                         id="business_name"
                                         name="business_name"
@@ -216,7 +216,7 @@ export default function CompanyPage() {
                                         errorText={errors.business_name}
                                     />
 
-                                    <FormInput
+                                    <fI.InputT
                                         col={12}
                                         id="nit"
                                         name="nit"
@@ -231,7 +231,7 @@ export default function CompanyPage() {
                                         errorText={errors.nit}
                                     />
 
-                                    <FormInput
+                                    <fI.InputT
                                         col={12}
                                         id="phone"
                                         name="phone"
@@ -246,7 +246,7 @@ export default function CompanyPage() {
                                         errorText={errors.phone}
                                     />
 
-                                    <FormTextArea
+                                    <fI.TextArea
                                         col={12}
                                         id="address"
                                         name="address"

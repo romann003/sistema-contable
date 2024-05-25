@@ -97,7 +97,7 @@ export function NominaDatosProvider({ children }) {
         try {
             const res = await deletePeriodoRequest(id);
             handleRequestSuccess(res.status, 'Periodo de liquidación eliminado exitosamente');
-            setPeriodos(periodos.filter(periodo => periodo.id !== id));
+            setPeriodos(periodos.filter((val) => val.id !== id));
         } catch (error) {
             handleRequestError(error);
         }
@@ -106,14 +106,22 @@ export function NominaDatosProvider({ children }) {
     //! ------------------------ BONIFICACIONES ------------------------
 
     //?------------------------ get ------------------------
-    const getBonificaciones = async () => {
+    const getBonificaciones = async (nominaId) => {
         try {
-            const res = await getBonificacionesRequest();
+            const res = await getBonificacionesRequest(nominaId);
             setBonificaciones(res.data);
         } catch (error) {
             handleRequestError(error);
         }
     }
+    // const getBonificaciones = async () => {
+    //     try {
+    //         const res = await getBonificacionesRequest();
+    //         setBonificaciones(res.data);
+    //     } catch (error) {
+    //         handleRequestError(error);
+    //     }
+    // }
 
     //?------------------------ create ------------------------
     const createBonificacion = async (bonificacion) => {

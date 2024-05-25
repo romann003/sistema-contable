@@ -6,11 +6,11 @@ export const createNuevoPeriodo = async (req, res) => {
     try {
         const { periodo_liquidacion_inicio, periodo_liquidacion_final, fecha_pago, status } = req.body;
 
-        const isPeriodo = await PeriodoSchema.findOne({
-            where: { periodo_liquidacion_inicio, periodo_liquidacion_final }
-        });
+        // const isPeriodo = await PeriodoSchema.findOne({
+        //     where: { periodo_liquidacion_inicio, periodo_liquidacion_final }
+        // });
 
-        if (isPeriodo) return res.status(400).json({ message: "El periodo de liquidacion ya existe" });
+        // if (isPeriodo) return res.status(400).json({ message: "El periodo de liquidacion ya existe" });
 
         const newPeriodo = new PeriodoSchema({
             periodo_liquidacion_inicio,
@@ -47,44 +47,43 @@ export const createNuevoPeriodo = async (req, res) => {
 
 export const getPeriodos = async (req, res) => {
     try {
-        const periodosLiquidacion = await PeriodoSchema.findAll({ order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] });
-        if (periodosLiquidacion.length === 0) return res.status(404).json({ message: "Periodos de liquidacion no encontrados" });
+        const periodos = await PeriodoSchema.findAll({ order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] });
+        if (periodos.length === 0) return res.status(404).json({ message: "Periodos de liquidacion no encontrados" });
 
-        // const periodosWithRange = periodosLiquidacion.map(periodoL => ({
+        // const periodosWithRange = periodos.map(periodoL => ({
         //     ...periodoL.toJSON(),
         //     rangoFechas: `${periodoL.periodo_liquidacion_inicio} ${periodoL.periodo_liquidacion_final}`
         // }));
 
-        res.status(200).json(periodosLiquidacion);
+        res.status(200).json(periodos);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 }
 
-export const updatePeriodo = async (req, res) => {
+export const updatePeriodoById = async (req, res) => {
     try {
-        const periodoLiquidacion = await PeriodoSchema.findByPk(req.params.periodoLiquidacionId);
-        if (!periodoLiquidacion) return res.status(404).json({ message: "Periodo de liquidacion no encontrado" });
+        const updatedPeriodo = await PeriodoSchema.findByPk(req.params.periodoId);
+        if (!updatedPeriodo) return res.status(404).json({ message: "Periodo de liquidacion no encontrado" });
 
-        periodoLiquidacion.set(req.body);
-        await periodoLiquidacion.save();
+        updatedPeriodo.set(req.body);
+        await updatedPeriodo.save();
 
-        res.status(200).json(periodoLiquidacion);
+        res.status(200).json(updatedPeriodo);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 }
 
-export const deletePeriodo = async (req, res) => {
+export const deletePeriodoById = async (req, res) => {
     try {
-        const periodoLiquidacion = await PeriodoSchema.findByPk(req.params.periodoLiquidacionId,
-            { include: [{ association: 'nominas' }] }
+        const deletePeriodo = await PeriodoSchema.findByPk(req.params.periodoId, { include: [{ association: 'nominas' }] }
         );
-        if (!periodoLiquidacion) return res.status(404).json({ message: "Periodo de liquidacion no encontrado" });
+        if (!deletePeriodo) return res.status(404).json({ message: "Periodo de liquidacion no encontrado" });
 
-        if (periodoLiquidacion.nominas.length > 0) { res.status(400).json({ message: "No se puede eliminar este periodo porque tiene registros contables asociados" }) }
+        if (deletePeriodo.nominas.length > 0) { res.status(400).json({ message: "No se puede eliminar este periodo porque tiene registros contables asociados" }) }
         else {
-            await periodoLiquidacion.destroy();
+            await deletePeriodo.destroy();
             res.status(200).json({ message: "Periodo de liquidación eliminado correctamente" });
         }
     } catch (error) {
@@ -104,6 +103,15 @@ export const createBonificaciones = async (req, res) => {
             nominaId
         });
 
+        if (!descripcion || !cantidad || !nominaId) return res.status(400).json({ message: "Todos los campos son requeridos" });
+
+        if (cantidad <= 0) return res.status(400).json({ message: "La cantidad no puede ser menor o igual a 0" });
+
+        //verifica que el campo descripcion no se repita en la base de datos
+        const descriptionFound = await BonificacionSchema.findOne({ where: { descripcion: req.body.descripcion } });
+        if (descriptionFound) return res.status(400).json({ message: "La bonificacion con esta descripcion ya existe" });
+
+        //verifica que la nomina exista
         const isNomina = await NominaSchema.findOne({ where: { id: req.body.nominaId } });
         if (!isNomina) return res.status(404).json({ message: "Nomina no encontrada" });
 
@@ -117,11 +125,13 @@ export const createBonificaciones = async (req, res) => {
 
 export const getBonificaciones = async (req, res) => {
     try {
-        const bonificaciones = await BonificacionSchema.findAll({ order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] });
-        if (bonificaciones.length === 0) return res.status(404).json({ message: "Bonificaciones no encontradas" });
+        const bonificaciones = await BonificacionSchema.findAll({ where: { nominaId: req.params.nominaId }, order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] });
+        const isNomina = await NominaSchema.findOne({ where: { id: req.params.nominaId } });
+        if (!isNomina) return res.status(404).json({ message: "Nomina no encontrada" });
+        if (isNomina && bonificaciones.length === 0) return res.status(404).json({ message: "Bonificaciones no encontradas" });
         res.status(200).json(bonificaciones);
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        // return res.status(500).json({ message: error.message });
     }
 }
 

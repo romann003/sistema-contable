@@ -4,10 +4,12 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 import { useEffect } from "react";
+import { Button } from "primereact/button";
+import { Toolbar } from "primereact/toolbar";
 
 
-export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, size, headerMessage
-//  ,useEffect1, useEffect2, useEffectLoad
+export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, size, headerMessage, buscador, dtSize, openNew, btActive, btnSize, btnColor, btnText
+    //  ,useEffect1, useEffect2, useEffectLoad
 }) {
 
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,20 +23,28 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
         setGlobalFilterValue(value);
     };
 
-    // useEffect(() => {
-    //     useEffect1();
-    //     useEffect2(false)
-    // }, [useEffectLoad]);
-
-
     const header = () => {
         return (
-            <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-                <h4 className="m-0">{headerMessage}</h4>
-                <IconField iconPosition="left">
-                    <InputIcon className="pi pi-search" />
-                    <InputText type="text" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
-                </IconField>
+            <div className="flex flex-grid gap-2 align-items-center justify-content-between mb-2">
+                {btActive && (
+                    <div className="col-auto">
+
+                        <Button label={btnText} icon="pi pi-plus" severity={btnColor} size={btnSize} onClick={openNew} />
+                    </div>
+                )}
+                <div className="col-auto">
+                    <h4 className="m-0">{headerMessage}</h4>
+                </div>
+                {buscador && (
+                    <div className="col-auto">
+                        <IconField iconPosition="left">
+                            <InputIcon className="pi pi-search" />
+                            <InputText type="text" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
+                        </IconField>
+
+                    </div>
+                )
+                }
             </div>
         );
     };
@@ -54,6 +64,7 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
 
     return (
         <DataTable
+            size={dtSize}
             dataKey="id"
             scrollable scrollHeight="550px"
             stripedRows

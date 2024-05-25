@@ -15,6 +15,7 @@ export const useNominas = () => {
 export function NominaProvider({ children }) {
     const [errors, setErrors] = useState([]);
     const [nominas, setNominas] = useState([]);
+    const [nominaId, setNominaId] = useState(null);
     const toast = useRef<Toast>(null);
 
     const handleRequestError = (error) => {
@@ -52,9 +53,9 @@ export function NominaProvider({ children }) {
         }
     }
 
-    const getNomina = async (id) => {
+    const getNomina = async () => {
         try {
-            const res = await getNominaRequest(id);
+            const res = await getNominaRequest(nominaId);
             return res.data;
         } catch (error) {
             handleRequestError(error);
@@ -66,7 +67,8 @@ export function NominaProvider({ children }) {
         try {
             const res = await createNominaRequest(nomina);
             handleRequestSuccess(res.status, 'Nomina creada con exito');
-            // setNominas([...nominas, res.data]);
+            setNominaId(res.data.id);
+            // console.log(res.data);
         } catch (error) {
             handleRequestError(error);
         }
@@ -97,7 +99,8 @@ export function NominaProvider({ children }) {
     useEffect(handleErrorsLifeCycle, [errors]);
 
     return (
-        <NominaContext.Provider value={{ nominas, setNominas, getNominas, getNomina, createNomina, updateNomina, deleteNomina }}>
+        <NominaContext.Provider value={{ nominaId, setNominaId,
+            nominas, setNominas, getNominas, getNomina, createNomina, updateNomina, deleteNomina }}>
             <Toast ref={toast} />
             {children}
         </NominaContext.Provider>

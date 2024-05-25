@@ -36,51 +36,51 @@ export interface Employee {
     areaId: number | null;
 }
 
-export interface Nomina {
-    id: number | null;
-    // bonificacion: number | null;
-    horas_extra: number | null;
-    // vacaciones_pagadas: number | null;
-    // aguinaldo: number | null;
-    // total_percepciones: number | null;
-    // isr: number | null;
-    // igss_patronal: number | null;
-    // igss_laboral: number | null;
-    // prestamos: number | null;
-    // total_deducciones: number | null;
-    // liquido_percibir: number | null;
-    // periodo_liquidacion_inicio: string;
-    // periodo_liquidacion_final: string;
-    // fecha_pago: string;
-    // status: boolean;
-    createdAt: string;
-    updatedAt: string;
-    employee: string;
-    employeeId: number | null;
-    company: string;
-    companyId: number | null;
-    periodo: string;
-    periodoId: number | null;
-}
-export interface Periodo {
-    id: number | null;
-    periodo_liquidacion_inicio: string;
-    periodo_liquidacion_final: string;
-    fecha_pago: string;
-    status: boolean;
-    createdAt: string;
-    updatedAt: string;
-}
+// export interface Nomina {
+//     id: number | null;
+//     // bonificacion: number | null;
+//     horas_extra: number | null;
+//     // vacaciones_pagadas: number | null;
+//     // aguinaldo: number | null;
+//     // total_percepciones: number | null;
+//     // isr: number | null;
+//     // igss_patronal: number | null;
+//     // igss_laboral: number | null;
+//     // prestamos: number | null;
+//     // total_deducciones: number | null;
+//     // liquido_percibir: number | null;
+//     // periodo_liquidacion_inicio: string;
+//     // periodo_liquidacion_final: string;
+//     // fecha_pago: string;
+//     // status: boolean;
+//     createdAt: string;
+//     updatedAt: string;
+//     employee: string;
+//     employeeId: number | null;
+//     company: string;
+//     companyId: number | null;
+//     periodo: string;
+//     periodoId: number | null;
+// }
+// export interface Periodo {
+//     id: number | null;
+//     periodo_liquidacion_inicio: string;
+//     periodo_liquidacion_final: string;
+//     fecha_pago: string;
+//     status: boolean;
+//     createdAt: string;
+//     updatedAt: string;
+// }
 
-export interface Bonificacion {
-    id: number | null;
-    descripcion: string;
-    cantidad: number | null;
-    createdAt: string;
-    updatedAt: string;
-    nomina: string;
-    nominaId: number | null;
-}
+// export interface Bonificacion {
+//     id: number | null;
+//     descripcion: string;
+//     cantidad: number | null;
+//     createdAt: string;
+//     updatedAt: string;
+//     nomina: string;
+//     nominaId: number | null;
+// }
 
 //? ------------------------ Types ------------------------
 export interface Status {
@@ -147,54 +147,55 @@ export const emptyEmployee: Employee = {
     areaId: null
 };
 
-export const emptyNomina: Nomina = {
-    id: null,
-    // bonificacion: null,
-    horas_extra: null,
-    // vacaciones_pagadas: null,
-    // aguinaldo: null,
-    // total_percepciones: null,
-    // isr: null,
-    // igss_patronal: null,
-    // igss_laboral: null,
-    // prestamos: null,
-    // total_deducciones: null,
-    // liquido_percibir: null,
-    // periodo_liquidacion_inicio: '',
-    // periodo_liquidacion_final: '',
-    // fecha_pago: '',
-    // status: true,
-    createdAt: '',
-    updatedAt: '',
-    employee: '',
-    employeeId: null,
-    company: '',
-    companyId: null,
-    periodo: '',
-    periodoId: null
-};
+// export const emptyNomina: Nomina = {
+//     id: null,
+//     // bonificacion: null,
+//     horas_extra: null,
+//     // vacaciones_pagadas: null,
+//     // aguinaldo: null,
+//     // total_percepciones: null,
+//     // isr: null,
+//     // igss_patronal: null,
+//     // igss_laboral: null,
+//     // prestamos: null,
+//     // total_deducciones: null,
+//     // liquido_percibir: null,
+//     // periodo_liquidacion_inicio: '',
+//     // periodo_liquidacion_final: '',
+//     // fecha_pago: '',
+//     // status: true,
+//     createdAt: '',
+//     updatedAt: '',
+//     employee: '',
+//     employeeId: null,
+//     company: '',
+//     companyId: null,
+//     periodo: '',
+//     periodoId: null
+// };
 
-export const emptyPeriodo: Periodo = {
-    id: null,
-    periodo_liquidacion_inicio: '',
-    periodo_liquidacion_final: '',
-    fecha_pago: '',
-    status: true,
-    createdAt: '',
-    updatedAt: ''
-};
+// export const emptyPeriodo: Periodo = {
+//     id: null,
+//     periodo_liquidacion_inicio: '',
+//     periodo_liquidacion_final: '',
+//     fecha_pago: '',
+//     status: true,
+//     createdAt: '',
+//     updatedAt: ''
+// };
 
-export const emptyBonificacion: Bonificacion = {
-    id: null,
-    descripcion: '',
-    cantidad: null,
-    createdAt: '',
-    updatedAt: '',
-    nomina: '',
-    nominaId: null
-};
+// export const emptyBonificacion: Bonificacion = {
+//     id: null,
+//     descripcion: '',
+//     cantidad: null,
+//     createdAt: '',
+//     updatedAt: '',
+//     nomina: '',
+//     nominaId: null
+// };
 
 //? ------------------------ Initial Data ------------------------
+
 export const typeStatus: Status[] = [
     { name: 'Activo', code: true },
     { name: 'Inactivo', code: false }

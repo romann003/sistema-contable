@@ -97,15 +97,9 @@ export const createArea = async () => {
 
         const values = await Promise.all([
             AreaSchema.create({
-                name: 'Jefe de Marketing',
-                description: 'Jefe de marketing de la empresa',
-                salary: 10000,
-                departmentId: 1
-            }),
-            AreaSchema.create({
-                name: 'Investigacion de Mercados',
-                description: 'Investigador de mercados de la empresa',
-                salary: 8000,
+                name: 'Publicidad',
+                description: 'Publicidad de la empresa',
+                salary: 5000,
                 departmentId: 1
             })
         ])

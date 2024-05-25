@@ -27,7 +27,7 @@ import {
 } from '../../layout/elements/InitialData';
 import { ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
 import DataTableCrud from '../../layout/components/DataTableCrud.js';
-import { FormInput, FormTextArea, FormDropDown } from '../../layout/components/FormComponent.js';
+import * as fI from '../../layout/components/FormComponent.js';
 import { DeleteModal } from '../../layout/components/Modals.js';
 
 
@@ -484,7 +484,7 @@ export default function EmployeesPage() {
                                 <TabPanel className='w-full' header="Header I" headerTemplate={tab1HeaderTemplate}>
                                     <Formulario>
                                         <div className="grid">
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="name"
                                                 name="name"
@@ -498,7 +498,7 @@ export default function EmployeesPage() {
                                                 invalid={!!errors.name && touched.name}
                                                 errorText={errors.name}
                                             />
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="last_name"
                                                 name="last_name"
@@ -513,7 +513,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.last_name}
                                             />
 
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="phone"
                                                 name="phone"
@@ -528,7 +528,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.phone}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="country"
                                                 name="country"
@@ -548,7 +548,7 @@ export default function EmployeesPage() {
                                                 disabled={false}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="gender"
                                                 name="gender"
@@ -568,7 +568,7 @@ export default function EmployeesPage() {
                                                 disabled={false}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="identification_type"
                                                 name="identification_type"
@@ -588,7 +588,7 @@ export default function EmployeesPage() {
                                                 disabled={false}
                                             />
 
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="identification"
                                                 name="identification"
@@ -603,7 +603,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.identification}
                                             />
 
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="nit"
                                                 name="nit"
@@ -618,7 +618,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.nit}
                                             />
 
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="igss"
                                                 name="igss"
@@ -633,7 +633,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.igss}
                                             />
 
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="birthdate"
                                                 name="birthdate"
@@ -648,7 +648,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.birthdate}
                                             />
 
-                                            <FormTextArea
+                                            <fI.TextArea
                                                 col={8}
                                                 id="address"
                                                 name="address"
@@ -668,7 +668,7 @@ export default function EmployeesPage() {
                                 <TabPanel className='w-full' header="Header II" headerTemplate={tab2HeaderTemplate}>
                                     <Formulario>
                                         <div className="grid">
-                                            <FormInput
+                                            <fI.InputT
                                                 col={4}
                                                 id="hire_date"
                                                 name="hire_date"
@@ -683,7 +683,7 @@ export default function EmployeesPage() {
                                                 errorText={errors.hire_date}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="contract_type"
                                                 name="contract_type"
@@ -703,7 +703,7 @@ export default function EmployeesPage() {
                                                 disabled={false}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="work_day"
                                                 name="work_day"
@@ -722,7 +722,7 @@ export default function EmployeesPage() {
                                                 disabled={false}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="department"
                                                 name="department"
@@ -742,7 +742,7 @@ export default function EmployeesPage() {
                                                 disabled={false}
                                             />
 
-                                            <FormDropDown
+                                            <fI.DropDownD
                                                 col={4}
                                                 id="area"
                                                 name="area"
@@ -771,7 +771,7 @@ export default function EmployeesPage() {
                                     <TabPanel className='w-full' header="Header III" headerTemplate={tab3HeaderTemplate}>
                                         <Formulario>
                                             <div className="grid">
-                                                <FormDropDown
+                                                <fI.DropDownD
                                                     col={4}
                                                     id="status"
                                                     name="status"

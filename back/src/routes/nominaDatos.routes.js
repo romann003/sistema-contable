@@ -8,13 +8,12 @@ const router = Router();
 // Nuevo periodo liquidacion
 router.post('/periodos', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.createNuevoPeriodo);
 router.get('/periodos', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.getPeriodos);
-// router.get('/periodos/:periodoLiquidacionId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.getNuevoPeriodoLiquidacionById);
-router.put('/periodos/:periodoLiquidacionId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.updatePeriodo);
-router.delete('/periodos/:periodoLiquidacionId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.deletePeriodo);
+router.put('/periodos/:periodoId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.updatePeriodoById);
+router.delete('/periodos/:periodoId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.deletePeriodoById);
 
 // Bonificaciones
 router.post('/bonificaciones', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.createBonificaciones);
-router.get('/bonificaciones', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.getBonificaciones);
+router.get('/bonificaciones/:nominaId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.getBonificaciones);
 // router.get('/bonificaciones/:bonificacionId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.getBonificacionById);
 router.put('/bonificaciones/:bonificacionId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.updateBonificacionById);
 router.delete('/bonificaciones/:bonificacionId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.deleteBonificacionById);

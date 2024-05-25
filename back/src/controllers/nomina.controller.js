@@ -1,48 +1,42 @@
 import { NominaSchema } from "../models/Nomina.js";
+import { BonificacionSchema } from "../models/NominaDatos.js";
 
 export const createNomina = async (req, res) => {
     try {
-        const { bonificacion, horas_extra, vacaciones_pagadas, aguinaldo, total_percepciones, isr, igss_patronal, igss_laboral, prestamos, total_deducciones, liquido_percibir, periodo_liquidacion_inicio, periodo_liquidacion_final, fecha_pago, status, employeeId, companyId, periodoId } = req.body;
+        const { cantidad_horas_extra, sueldo_horas_extra, vacaciones_pagadas, isr, igss_patronal, igss_laboral, prestamos, anticipo_salario, employeeId, companyId, periodoId } = req.body;
 
-        const newNomina = new NominaSchema({
-            // bonificacion,
-            horas_extra,
-            // vacaciones_pagadas,
-            // aguinaldo,
-            // total_percepciones,
-            // isr,
-            // igss_patronal,
-            // igss_laboral,
-            // prestamos,
-            // total_deducciones,
-            // liquido_percibir,
-            // periodo_liquidacion_inicio,
-            // periodo_liquidacion_final,
-            // fecha_pago,
-            // status,
-        });
-
-        if (periodoId) {
-            newNomina.periodoId = periodoId;
-        } else {
+        if (!periodoId)  {
             return res.status(400).json(['Debes de seleccionar un periodo']);
         }
 
-        if (employeeId) {
-            newNomina.employeeId = employeeId;
-        } else {
+        if (!employeeId) {
             return res.status(400).json(['Debes de ingresar un empleado']);
         }
 
-        if (companyId) {
-            newNomina.companyId = companyId;
-        } else {
+        if (!companyId) {
             return res.status(400).json(['Debes de ingresar una empresa']);
         }
 
+        let newNomina = new NominaSchema({
+            cantidad_horas_extra,
+            sueldo_horas_extra,
+            vacaciones_pagadas,
+
+            isr,
+            igss_patronal,
+            igss_laboral,
+            prestamos,
+            anticipo_salario,
+            periodoId,
+            employeeId,
+            companyId
+        });
+
+        // await calcularTotales(newNomina);
+        
         const savedNomina = await newNomina.save();
 
-        res.status(200).json({ savedNomina });
+        res.status(200).json( savedNomina );
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -60,6 +54,7 @@ export const getNominas = async (req, res) => {
                             { association: 'area' }
                         ]
                     },
+                    { association: 'bonificacions'},
                     { association: 'periodo' },
                     { association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']]
             });
@@ -69,6 +64,29 @@ export const getNominas = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+
+// export const getNominas = async (req, res) => {
+//     try {
+//         const nominas = await NominaSchema.findAll(
+//             {
+//                 include: [
+//                     {
+//                         association: 'employee',
+//                         include: [
+//                             { association: 'department' },
+//                             { association: 'area' }
+//                         ]
+//                     },
+//                     { association: 'bonificacions'},
+//                     { association: 'periodo' },
+//                     { association: 'company' }], order: [['createdAt' && 'updatedAt', 'DESC']]
+//             });
+//         if (nominas.length === 0) return res.status(404).json({ message: "Nominas no encontradas" });
+//         res.status(200).json(nominas);
+//     } catch (error) {
+//         return res.status(500).json({ message: error.message });
+//     }
+// }
 
 export const getNominaById = async (req, res) => {
     try {
@@ -84,10 +102,17 @@ export const getNominaById = async (req, res) => {
 
 export const updateNominaById = async (req, res) => {
     try {
-        const updatedNomina = await NominaSchema.findByPk(req.params.nominaId);
+        const updatedNomina = await NominaSchema.findByPk(req.params.nominaId, { include: [{ association: 'bonificacions' }] });
         if (!updatedNomina) return res.status(404).json({ message: "Nomina no encontrada" });
 
+        // if (updatedNomina.bonificacions.length > 0) {
+        //     const bonificaciones = await BonificacionSchema.destroy({ where: { nominaId: req.params.nominaId } });
+        // }
+
+        
+
         updatedNomina.set(req.body);
+        // await calcularTotales(updatedNomina);
         await updatedNomina.save();
 
         res.status(200).json(updatedNomina);
@@ -99,8 +124,21 @@ export const updateNominaById = async (req, res) => {
 export const deleteNominaById = async (req, res) => {
     try {
         const { nominaId } = req.params;
-        const deletedNomina = await NominaSchema.destroy({ where: { id: nominaId } });
+        const deletedNomina = await NominaSchema.findByPk(nominaId, { include: [{ association: 'bonificacions' }] });
         if (!deletedNomina) return res.status(404).json({ message: "Nomina no encontrada" });
+
+        if (deletedNomina.bonificacions.length > 0) {
+            const bonificaciones = await BonificacionSchema.destroy({ where: { nominaId: nominaId } });
+            
+            // .findAll({ where: { nominaId: nominaId } });
+            // bonificaciones.map(async (bonificacion) => {
+            //     await bonificacion.destroy();
+            // });
+        }
+
+        await deletedNomina.destroy();
+        // return res.status(400).json({ message: "No se puede eliminar la nomina porque tiene bonificaciones asociadas" });
+        
         res.status(200).json({ message: "Nomina eliminada correctamente" });
     } catch (error) {
         return res.status(500).json({ message: error.message });

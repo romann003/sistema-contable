@@ -11,8 +11,8 @@ import areaRoutes from './routes/area.routes.js'
 import employeeRoutes from './routes/employee.routes.js'
 import rolRoutes from './routes/rol.routes.js'
 import nominaRoutes from './routes/nomina.routes.js'
-import dbRoutes from './routes/db.routes.js'
 import nominaDatos from './routes/nominaDatos.routes.js'
+import dbRoutes from './routes/db.routes.js'
 import { createRoles, createCompany, createArea, createDepartment, createUser } from './libs/initialSetup.js'
 
 //Initial setup

@@ -1,37 +1,26 @@
-//? -------------------- COMPONENTES Y LIBRERIAS --------------------
 import React, { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
+import { Toolbar } from 'primereact/toolbar';
 import { Dialog } from 'primereact/dialog';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { Formik, Form } from 'formik';
+import { BreadCrumb } from 'primereact/breadcrumb';
+import { MenuItem } from 'primereact/menuitem';
+import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
 dayjs.extend(utc);
-
-//? -------------------- COMPONENTES PERSONALIZADOS -------------------
-import * as fI from '../../layout/components/FormComponent.js';
-import * as cdT from '../../layout/components/ColumnBody.js';
-import * as m from '../../layout/components/Modals.js';
-import { BreadComp } from '../../layout/components/BreadComp.js';
 import { Formulario } from '../../layout/elements/Formularios.js';
+import { Periodo, emptyPeriodo, Status, typeStatus } from '../../layout/elements/InitialData';
+import { ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnStatusBody, ColumnTextBody, ColumnOnlyDateBodyText } from '../../layout/components/ColumnBody.js';
 import DataTableCrud from '../../layout/components/DataTableCrud.js';
-
-//? -------------------- API -------------------
+import { FormInput, FormTextArea, FormDropDown } from '../../layout/components/FormComponent.js';
+import { DeleteModal } from '../../layout/components/Modals.js';
 import { useNominaDatos } from '../../api/context/nominaDatosContext';
 
-//? -------------------- DEFINICION DE CAMPOS -------------------
-interface Periodo {
-    id: number | null;
-    periodo_liquidacion_inicio: string;
-    periodo_liquidacion_final: string;
-    fecha_pago: string;
-    status: boolean;
-    createdAt: string;
-    updatedAt: string;
-}
 
 const defaultFilters: DataTableFilterMeta = {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -42,25 +31,21 @@ const defaultFilters: DataTableFilterMeta = {
 
 export default function PeriodoLiquidacionPage() {
 
-    const emptyPeriodo: Periodo = {
-        id: null,
-        periodo_liquidacion_inicio: '',
-        periodo_liquidacion_final: '',
-        fecha_pago: '',
-        status: true,
-        createdAt: '',
-        updatedAt: ''
-    };
+    const items: MenuItem[] = [{ template: () => <Link to=""><span className="text-primary font-semibold">Periodo Liquidación</span></Link> }];
+    const home: MenuItem = {
+        template: () => <Link to="/dashboard"><span className="text-primary font-semibold">Inicio</span></Link>
+    }
+
 
     //? -------------------- CONTEXT API -------------------
-    const { periodos, getPeriodos, createPeriodo, deletePeriodo, updatePeriodo } = useNominaDatos();
-    const [periodo, setPeriodo] = useState<Periodo>(emptyPeriodo);
+    const {periodos, getPeriodos, createPeriodo, deletePeriodo, updatePeriodo} = useNominaDatos();
     //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
+    const [periodo, setPeriodo] = useState<Periodo>(emptyPeriodo);
     const toast = useRef<Toast>(null);
     //? -------------------- DIALOG STATES -------------------
-    const [createDialog, setCreateDialog] = useState<boolean>(false);
-    const [infoDialog, setInfoDialog] = useState<boolean>(false);
+    const [dialog, setDialog] = useState<boolean>(false);
+    const [seeDialog, setSeeDialog] = useState<boolean>(false);
     const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
     //? -------------------- DATATABLE STATES -------------------
     const dt = useRef<DataTable<Periodo[]>>(null);
@@ -70,35 +55,48 @@ export default function PeriodoLiquidacionPage() {
 
     //? -------------------- DATATABLE COLUMN TEMPLATES -------------------
     const fechaPagoBodyTemplate = (rowData: Periodo) => {
-        return <cdT.ColumnOnlyDateBodyWithClass value={rowData.fecha_pago} className={'text-orange-500'} />
+        return <ColumnOnlyDateBody value={rowData.fecha_pago} />
     };
 
     const plInicioBodyTemplate = (rowData: Periodo) => {
-        return <cdT.ColumnOnlyDateBody value={rowData.periodo_liquidacion_inicio} />
+        return <ColumnOnlyDateBody value={rowData.periodo_liquidacion_inicio} />
     };
 
     const plFinalBodyTemplate = (rowData: Periodo) => {
-        return <cdT.ColumnOnlyDateBody value={rowData.periodo_liquidacion_final} />
+        return <ColumnOnlyDateBody value={rowData.periodo_liquidacion_final} />
     };
 
+    const statusBodyTemplate = (rowData: Periodo) => {
+        return <ColumnStatusBody value={rowData} />
+    }
+
     const createdAtBodyTemplate = (rowData: Periodo) => {
-        return <cdT.ColumnDateBody value={rowData.createdAt} />
+        return <ColumnDateBody value={rowData.createdAt} />
     };
 
     const updatedAtBodyTemplate = (rowData: Periodo) => {
-        return <cdT.ColumnDateBody value={rowData.updatedAt} />
+        return <ColumnDateBody value={rowData.updatedAt} />
     };
 
     const actionBodyTemplate = (rowData: Periodo) => {
         return (
             <React.Fragment>
                 <div className="flex align-align-content-center justify-content-evenly">
-                    <Button icon="pi pi-eye" rounded outlined severity='help' onClick={() => watchData(rowData)} />
+                    <Button icon="pi pi-eye" rounded outlined severity='help' onClick={() => seeData(rowData)} />
                     <Button icon="pi pi-pencil" rounded outlined onClick={() => editData(rowData)} />
                     <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteData(rowData)} />
 
                 </div>
             </React.Fragment>
+        );
+    };
+
+    //? -------------------- DTATABLE MAIN ACTIONS -------------------
+    const leftToolbarTemplate = () => {
+        return (
+            <div className="flex flex-wrap gap-2">
+                <Button label="Agregar Periodo de Liquidación" icon="pi pi-plus" severity="success" onClick={openNew} />
+            </div>
         );
     };
 
@@ -111,27 +109,27 @@ export default function PeriodoLiquidacionPage() {
     //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
         setPeriodo(emptyPeriodo);
-        setCreateDialog(true);
+        setDialog(true);
     };
 
     const hideDialog = () => {
         setSelectedStatus(null);
-        setCreateDialog(false);
+        setDialog(false);
     };
 
-    const hideInfoDialog = () => {
+    const hideSeeDialog = () => {
         setSelectedStatus(null);
-        setInfoDialog(false);
+        setSeeDialog(false);
     };
 
     const editData = (periodo: Periodo) => {
         setPeriodo({ ...periodo });
-        setCreateDialog(true);
+        setDialog(true);
     };
 
-    const watchData = (periodo: Periodo) => {
+    const seeData = (periodo: Periodo) => {
         setPeriodo({ ...periodo });
-        setInfoDialog(true);
+        setSeeDialog(true);
     };
 
     const hideDeleteDialog = () => {
@@ -157,9 +155,9 @@ export default function PeriodoLiquidacionPage() {
         </React.Fragment>
     );
 
-    const infoDialogFooter = (
+    const seeDialogFooter = (
         <React.Fragment>
-            <Button label="Salir de la vista" icon="pi pi-times" outlined onClick={hideInfoDialog} />
+            <Button label="Salir de la vista" icon="pi pi-times" outlined onClick={hideSeeDialog} />
         </React.Fragment>
     );
 
@@ -169,20 +167,14 @@ export default function PeriodoLiquidacionPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Periodo de Liquidación</h3>
-                <BreadComp texto="Periodo de Liquidación" />
+                <BreadCrumb model={items} home={home} />
+                <Toolbar className="my-4" left={leftToolbarTemplate}></Toolbar>
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTableCrud
-                    dtSize="small"
-                    buscador={true}
-                    btActive={true}
-                    btnSize="small"
-                    btnColor="primary"
-                    btnText="Agregar Periodo de Liquidación"
-                    openNew={openNew}
                     //? -------------------- HEADER -------------------
                     message="periodos de liquidación"
-                    headerMessage=""
+                    headerMessage="Lista de Periodos de Liquidación"
                     refe={dt}
                     value={periodos}
                     filters={filters}
@@ -193,21 +185,25 @@ export default function PeriodoLiquidacionPage() {
                     globalFilterFields={['fecha_pago', 'periodo_liquidacion_inicio', 'periodo_liquidacion_final']}
                     //? -------------------- COLUMNS -------------------
                     columns={[
+                        { field: 'fecha_pago', header: 'Fecha Pago', body: fechaPagoBodyTemplate, dataType: 'date', filter: true },
                         { field: 'periodo_liquidacion_inicio', header: 'Fecha Li. Inicio', body: plInicioBodyTemplate, dataType: 'date', filter: true },
                         { field: 'periodo_liquidacion_final', header: 'Fecha Li. Final', body: plFinalBodyTemplate, dataType: 'date', filter: true },
-                        { field: 'fecha_pago', header: 'Fecha Pago', body: fechaPagoBodyTemplate, dataType: 'date', filter: true },
+                        { field: 'status', header: 'Estado', body: statusBodyTemplate, dataType: 'boolean', filter: false },
                         { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
                         { field: 'updatedAt', header: 'Ultima Actualizacion', body: updatedAtBodyTemplate, dataType: 'date', filter: false }]}
                     size='15rem'
                     actionBodyTemplate={actionBodyTemplate}
+                    // useEffect1={getPeriodos}
+                    // useEffect2={setLoading}
+                    // useEffectLoad={periodo}
                 />
             </div>
 
             {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
-            <Dialog visible={createDialog} style={{ width: '30rem', minWidth: '30rem', maxWidth: '30vw', height: '40rem', minHeight: '40rem', maxHeight: '40rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Periodo de liquidación" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={false} closeOnEscape={true}
+            <Dialog visible={dialog} style={{ width: '30rem', minWidth: '30rem', maxWidth: '30vw', height: '40rem', minHeight: '40rem', maxHeight: '40rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Periodo de liquidación" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={false} closeOnEscape={true}
             >
                 <Formik
-                    initialValues={{ periodo_liquidacion_inicio: '' || periodo.periodo_liquidacion_inicio, periodo_liquidacion_final: '' || periodo.periodo_liquidacion_final, fecha_pago: '' || periodo.fecha_pago, status: '' || periodo.status }}
+                    initialValues={{ periodo_liquidacion_inicio: '' || periodo.periodo_liquidacion_inicio, periodo_liquidacion_final: '' || periodo.periodo_liquidacion_final, fecha_pago: '' || periodo.fecha_pago, status: '' || periodo.status}}
                     validate={values => {
                         const errors = {};
 
@@ -275,7 +271,7 @@ export default function PeriodoLiquidacionPage() {
                                 if (values.fecha_pago !== "") { values.fecha_pago = dayjs.utc(values.fecha_pago).format() } else { values.fecha_pago = periodo.fecha_pago }
 
                                 updatePeriodo(periodo.id, values);
-                                setCreateDialog(false);
+                                setDialog(false);
                                 setPeriodo(emptyPeriodo);
                                 resetForm();
                             } else {
@@ -284,7 +280,7 @@ export default function PeriodoLiquidacionPage() {
                                 // values.fecha_pago = dayjs.utc(values.fecha_pago).format()
                                 // values.status = true;
                                 createPeriodo(values);
-                                setCreateDialog(false);
+                                setDialog(false);
                                 setPeriodo(emptyPeriodo);
                                 resetForm();
                             }
@@ -297,7 +293,7 @@ export default function PeriodoLiquidacionPage() {
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <div style={{ flex: 1, overflow: 'auto' }}>
                                 <Formulario>
-                                    <fI.InputT
+                                    <FormInput
                                         col={12}
                                         id="periodo_liquidacion_inicio"
                                         name="periodo_liquidacion_inicio"
@@ -311,7 +307,7 @@ export default function PeriodoLiquidacionPage() {
                                         invalid={!!errors.periodo_liquidacion_inicio && touched.periodo_liquidacion_inicio}
                                         errorText={errors.periodo_liquidacion_inicio}
                                     />
-                                    <fI.InputT
+                                    <FormInput
                                         col={12}
                                         id="periodo_liquidacion_final"
                                         name="periodo_liquidacion_final"
@@ -326,7 +322,7 @@ export default function PeriodoLiquidacionPage() {
                                         errorText={errors.periodo_liquidacion_final}
                                     />
 
-                                    <fI.InputT
+                                    <FormInput
                                         col={12}
                                         id="fecha_pago"
                                         name="fecha_pago"
@@ -353,60 +349,26 @@ export default function PeriodoLiquidacionPage() {
             </Dialog>
 
             {/* //? -------------------- MODAL DIALOG (ONLY READ) ------------------- */}
-            <m.InfoModal
-                visible={infoDialog}
-                header={'Información del Periodo de Liquidación'}
-                
-                //? -------------------- TB1 -------------------
-                tb1={true}
-                tbHeader1={'Periodo de Liquidación'}
-                tb1Titulo1={'Fecha de Inicio'}
-                tb1Dato1={<cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_inicio} className={'text-primary'} />}
-                tb1Titulo4={'Fecha de Finalización'}
-                tb1Dato4={<cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_final} className={'text-primary'} />}
-                tb1Titulo8={'Fecha de Pago'}
-                tb1Dato8={<cdT.ColumnOnlyDateBodyText value={periodo.fecha_pago} className={'text-primary'} />}
-                tb1Divisor1={false}
-                tb1Divisor2={true}
-                tb1Divisor2Text={'Otros Datos'}
-                tb1Titulo9={'Creado el:'}
-                tb1Dato9={<cdT.ColumnDateBodyText value={periodo.createdAt} className={'text-primary'}/>}
-                tb1Titulo10={'Ultima Actualización'}
-                tb1Dato10={<cdT.ColumnDateBodyText value={periodo.updatedAt} className={'text-orange-500'}/>}
-                //? -------------------- TB2 -------------------
-                tb2={false}
-                tbHeader2={''}
-
-                //? -------------------- TB3 -------------------
-                tb3={false}
-                tbHeader3={''}
-
-                footer={infoDialogFooter}
-                onHide={hideInfoDialog}
-                data={periodo}
-            >
-
-            </m.InfoModal>
-
+            
 
             {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
-            <m.DeleteModal
+            <DeleteModal
                 visible={deleteDialog}
                 header="Confirmar"
                 data={periodo}
                 message1="¿Estas seguro que deseas eliminar el periodo de liquidación del: "
                 message1Bold={
-                    <>
-                        <cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_inicio} className={'text-primary'} />
-                        <span> AL </span>
-                        <cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_final} className={'text-primary'} />
-                    </>
-                }
+                <>
+                <ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_inicio} className={'text-primary'} /> 
+                <span> AL </span>
+                <ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_final} className={'text-primary'} />
+                </>
+            }
                 message2={`con fecha de pago:`}
-                message2Bold={<cdT.ColumnOnlyDateBodyText value={periodo.fecha_pago} className={''} />}
+                message2Bold={<ColumnOnlyDateBodyText value={periodo.fecha_pago} className={''} />}
                 footer={deleteDialogFooter}
                 onHide={hideDeleteDialog}
-            ></m.DeleteModal>
+            ></DeleteModal>
         </div>
     );
 }
