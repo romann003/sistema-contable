@@ -101,13 +101,11 @@ BonificacionSchema.prototype.calcularYActualizarTotales = async function () {
             salarioBase +
             // parseFloat(nomina.cantidad_horas_extra || 0) +
             parseFloat(nomina.sueldo_horas_extra || 0) +
-            parseFloat(nomina.vacaciones_pagadas || 0) +
             totalBonificaciones;
 
         const totalDeducciones =
             parseFloat(nomina.isr || 0) +
-            parseFloat(nomina.igss_patronal || 0) +
-            parseFloat(nomina.igss_laboral || 0) +
+            parseFloat(nomina.total_igss || 0) +
             parseFloat(nomina.prestamos || 0) +
             parseFloat(nomina.anticipo_salario || 0);
 

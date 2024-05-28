@@ -218,10 +218,15 @@ export const typeIdentification: Identification_type[] = [
 ];
 
 export const typeContract: Contract_type[] = [
-    { name: 'Contrato', code: 'contrato' },
-    { name: 'Indefinido', code: 'indefinido' },
+    { name: 'Contrato', code: 'Contrato' },
+    { name: 'Indefinido', code: 'Indefinido' },
+    { name: 'Tiempo Completo', code: 'Tiempo Completo' },
 ];
 
 export const typeWorkDay: Work_day[] = [
-    { name: '8 Horas Diarias', code: '8 horas diarias' },
+    { name: 'Ordinaria (8 Hrs/día - 48 Hrs/sem)', code: 'Ordinaria' },
+    { name: 'Medio Tiempo (4 Hrs/día - 20 Hrs/sem)', code: 'Medio Tiempo' },
+    { name: 'Continua (8 Hrs/día - 48 Hrs/sem)', code: 'Continua' },
+    { name: 'Nocturna (8 Hrs/día - 48 Hrs/sem)', code: 'Nocturna' },
+    { name: 'Mixta (8 Hrs/día - 48 Hrs/sem)', code: 'Mixta' },
 ];

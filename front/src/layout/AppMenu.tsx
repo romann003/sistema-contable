@@ -27,7 +27,7 @@ const AppMenu = () => {
             label: 'Mi Empresa',
             items: [
                 { label: 'Departamentos', icon: 'pi pi-fw pi-clone', to: '/dashboard/departments' },
-                { label: 'Areas (Cargos)', icon: 'pi pi-fw pi-table', to: '/dashboard/areas' },
+                { label: 'Puestos', icon: 'pi pi-fw pi-table', to: '/dashboard/puestos' },
                 { label: 'Usuarios', icon: 'pi pi-verified pi-fw', to: '/dashboard/users' },
                 { label: 'Mi empresa', icon: 'pi pi-fw pi-cog', to: '/dashboard/company' },
             ]
@@ -54,10 +54,10 @@ const AppMenu = () => {
                     items:
                         [
                             { label: 'Departamentos', icon: 'pi pi-chart-pie', to: '/dashboard/reports/departments' },
-                            { label: 'Areas (Cargos)', icon: 'pi pi-chart-pie', to: '/dashboard/reports/areas' },
+                            { label: 'Puestos', icon: 'pi pi-chart-pie', to: '/dashboard/reports/puestos' },
                             { label: 'Empleados', icon: 'pi pi-chart-pie', to: '/dashboard/reports/employees' },
                             { label: 'Usuarios', icon: 'pi pi-chart-pie', to: '/dashboard/reports/users' },
-                            { label: 'Nomina', icon: 'pi pi-chart-pie', to: '/dashboard/reports/nomina' },
+                            { label: 'Nominas', icon: 'pi pi-chart-pie', to: '/dashboard/reports/nominas' },
                         ]
                 },
             ]

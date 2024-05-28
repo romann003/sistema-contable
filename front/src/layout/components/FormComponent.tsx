@@ -2,7 +2,9 @@ import { Button } from 'primereact/button';
 import { Input, Textarea, Label, Span, ErrorText, Group, DropDown } from '../elements/Formularios.js';
 import { ErrorMessage } from 'formik';
 
-export const InputT = ({ label, span, type, name, id, placeholder, errorText, onChange, onBlur, invalid, value, col }) => {
+export const InputT = ({ label, span, type, name, id, placeholder, errorText, onChange, onBlur, invalid, value, col, disabled
+    // , readonly, onKeyUp 
+}) => {
     return (
         <div className={`col-${col}`}>
             <Group>
@@ -17,6 +19,9 @@ export const InputT = ({ label, span, type, name, id, placeholder, errorText, on
                     onBlur={onBlur}
                     onKeyUp={onBlur}
                     invalid={invalid}
+                    disabled={disabled}
+                    // readonly={readonly}
+                    // onKeyUp={onKeyUp}
                 />
                 {/* <ErrorText>{errorText}</ErrorText> */}
                 <ErrorMessage name={name} component={() => (<small className="p-error mt-1">{errorText}</small>)} />
@@ -77,7 +82,6 @@ export const DropDownD = ({ label, span, name, id, placeholder, errorText, onCha
                     invalid={invalid}
                     options={options}
                     disabled={disabled}
-                    autoResize rows={1}
                 />
                 {/* <ErrorText>{errorText}</ErrorText> */}
                 <ErrorMessage name={name} component={() => (<small className="p-error mt-1">{errorText}</small>)} />

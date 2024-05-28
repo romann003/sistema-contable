@@ -33,7 +33,7 @@ export default function App() {
             <Route path="/dashboard" element={<LayoutDashboard />} >
               <Route index element={<Dashboard />} />
               <Route path="departments" element={<DepartmentsPage />} />
-              <Route path="areas" element={<AreasPage />} />
+              <Route path="puestos" element={<AreasPage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="company" element={<CompanyPage />} />
               <Route path="employees" element={<EmployeesPage />} />
@@ -42,11 +42,11 @@ export default function App() {
               <Route path="rc/nomina" element={<NominaPage />} />
 
               <Route path="reports/departments" element={<ReportDepartmentPage />} />
-              <Route path="reports/areas" element={<ReportAreasPage />} />
+              <Route path="reports/puestos" element={<ReportAreasPage />} />
               <Route path="reports/users" element={<UsersPage />} />
               <Route path="reports/company" element={<CompanyPage />} />
               <Route path="reports/employees" element={<EmployeesPage />} />
-              <Route path="reports/nomina" element={<NominaPage />} />
+              <Route path="reports/nominas" element={<NominaPage />} />
             </Route>
           </Route>
           <Route path="/access-denied" element={<ErrorAccessPage />} />

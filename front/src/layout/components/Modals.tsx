@@ -19,6 +19,20 @@ export const DeleteModal = ({ visible, header, data, message1, message1Bold, mes
     );
 };
 
+export const ComfirmHideModal = ({ visible, header, message1, message1Bold, message2, message2Bold, footer, onHide }) => {
+
+    return (
+        <Dialog visible={visible} style={{ width: '32rem', minWidth: '32rem', maxWidth: '40rem', minHeight: '16rem', maxHeight: '16rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
+            <div className="confirmation-content flex">
+                <i className="pi pi-exclamation-triangle mr-4 mb-2" style={{ fontSize: '2rem' }} />
+                    <span>
+                        {message1} <b className="font-bold capitalize">{message1Bold}</b> {message2} <b className="font-bold">{message2Bold}</b>
+                    </span>
+            </div>
+        </Dialog>
+    );
+};
+
 export const InfoModal = ({ tbHeader1, tbHeader2, tbHeader3, visible, header, footer, onHide, data, tb1, tb2, tb3,
 
     tb1Titulo1, tb1Dato1, tb1Titulo2, tb1Dato2, tb1Titulo3, tb1Dato3, tb1Titulo4, tb1Dato4, tb1Titulo5, tb1Dato5, tb1Titulo6, tb1Dato6, tb1Titulo7, tb1Dato7, tb1Titulo8, tb1Dato8, tb1Divisor1, tb1Titulo9, tb1Dato9, tb1Titulo10, tb1Dato10, tb1Divisor2, tb1Divisor2Text,
@@ -176,3 +190,11 @@ export const InfoModal = ({ tbHeader1, tbHeader2, tbHeader3, visible, header, fo
     );
 
 }
+
+export const TabHeaderTemplate = (options: TabPanelHeaderTemplateOptions, detalles) => {
+    return (
+        <div className="flex align-items-center gap-2 p-3 justify-content-center" style={{ cursor: 'pointer' }} onClick={options.onClick}>
+            <span className="font-bold white-space-nowrap">{detalles}</span>
+        </div>
+    )
+};

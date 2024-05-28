@@ -169,7 +169,7 @@ export default function PeriodoLiquidacionPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Periodo de Liquidación</h3>
-                <BreadComp texto="Periodo de Liquidación" />
+                <BreadComp texto="Periodos de Liquidación" />
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTableCrud

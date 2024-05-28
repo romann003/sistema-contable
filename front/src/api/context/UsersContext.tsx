@@ -17,16 +17,38 @@ export function UserProvider({ children }) {
     const [users, setUsers] = useState([]);
     const toast = useRef<Toast>(null);
 
+    const handleRequestError = (error) => {
+        if (Array.isArray(error.response.data)) {
+            setErrors(error.response.data);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data, life: 5000 });
+        } else {
+            setErrors(error.response.data.message);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data.message, life: 5000 });
+        }
+    };
+
+    const handleRequestSuccess = (status, successMessage) => {
+        if (status === 200) {
+            toast.current?.show({ severity: 'success', summary: 'Exito', detail: successMessage, life: 3000 });
+        }
+    };
+
+    const handleErrorsLifeCycle = () => {
+        if (errors.length > 0) {
+            const timer = setTimeout(() => {
+                setErrors([]);
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    };
+
     //?------------------------ get ------------------------
     const getUsers = async () => {
         try {
             const res = await getUsersRequest();
             setUsers(res.data);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
         }
     }
 
@@ -36,10 +58,7 @@ export function UserProvider({ children }) {
             const res = await getUserRequest(id);
             setUsers(res.data);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
         }
     }
 
@@ -47,17 +66,10 @@ export function UserProvider({ children }) {
     const createUser = async (user) => {
         try {
             const res = await createUserRequest(user);
-
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Creado Exitosamente', life: 3000 });
-                // window.location.reload();
-                setUsers(users);
-            }
+            handleRequestSuccess(res.status, 'Usuario Creado Exitosamente');
+            // setUsers(users);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
         }
     }
 
@@ -65,16 +77,10 @@ export function UserProvider({ children }) {
     const updateUser = async (id, user) => {
         try {
             const res = await updateUserRequest(id, user);
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Actualizado Exitosamente', life: 3000 });
-                // window.location.reload();
-                setUsers(users);
-            }
+            handleRequestSuccess(res.status, 'Usuario Actualizado Exitosamente');
+
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
         }
     }
 
@@ -82,27 +88,16 @@ export function UserProvider({ children }) {
     const deleteUser = async (id) => {
         try {
             const res = await deleteUserRequest(id);
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Usuario Eliminado Exitosamente', life: 3000 });
-                setUsers(users.filter((val) => val.id !== id));
-            }
+            handleRequestSuccess(res.status, 'Usuario Eliminado Exitosamente');
+            setUsers(users.filter((val) => val.id !== id));
+
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
         }
     }
 
     //?------------------------ useEffect (errors) ------------------------
-    useEffect(() => {
-        if (errors.length > 0) {
-            const timer = setTimeout(() => {
-                setErrors([]);
-            }, 200);
-            return () => clearTimeout(timer);
-        }
-    }, [errors]);
+    useEffect(handleErrorsLifeCycle, [errors]);
 
 
 
@@ -110,10 +105,6 @@ export function UserProvider({ children }) {
         <UserContext.Provider value={{
             users, setUsers, getUsers, getUser, createUser, deleteUser, updateUser, errors
         }}>
-            <Toast ref={toast} />
-            {errors.map((error) => (
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
-            ))}
             {children}
         </UserContext.Provider>
     )

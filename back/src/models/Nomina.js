@@ -23,12 +23,6 @@ export const NominaSchema = sequelize.define("nomina", {
         allowNull: true,
         defaultValue: 0
     },
-    vacaciones_pagadas: {
-        type: DataTypes.DECIMAL,
-        required: false,
-        allowNull: true,
-        defaultValue: 0
-    },
     total_percepciones: {
         type: DataTypes.DECIMAL,
         required: false,
@@ -40,13 +34,7 @@ export const NominaSchema = sequelize.define("nomina", {
         allowNull: true,
         defaultValue: 0
     },
-    igss_patronal: {
-        type: DataTypes.DECIMAL,
-        required: false,
-        allowNull: true,
-        defaultValue: 0
-    },
-    igss_laboral: {
+    total_igss: {
         type: DataTypes.DECIMAL,
         required: false,
         allowNull: true,
@@ -125,14 +113,12 @@ async function calcularTotales(nomina) {
             salarioBase +
             // parseFloat(nomina.cantidad_horas_extra || 0) +
             parseFloat(nomina.sueldo_horas_extra || 0) +
-            parseFloat(nomina.vacaciones_pagadas || 0) +
             totalBonificaciones;
 
         // Calcula el total de deducciones
         const totalDeducciones =
             parseFloat(nomina.isr || 0) +
-            parseFloat(nomina.igss_patronal || 0) +
-            parseFloat(nomina.igss_laboral || 0) +
+            parseFloat(nomina.total_igss || 0) +
             parseFloat(nomina.prestamos || 0) +
             parseFloat(nomina.anticipo_salario || 0);
 

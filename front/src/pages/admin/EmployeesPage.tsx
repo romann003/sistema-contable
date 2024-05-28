@@ -187,7 +187,6 @@ export default function EmployeesPage() {
         }
     };
 
-
     //? -------------------- MODAL DIALOGS -------------------
     const openNew = () => {
         setEmployee(emptyEmployee);

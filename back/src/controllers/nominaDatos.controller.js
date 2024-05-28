@@ -104,11 +104,10 @@ export const createBonificaciones = async (req, res) => {
         });
 
         if (!descripcion || !cantidad || !nominaId) return res.status(400).json({ message: "Todos los campos son requeridos" });
-
         if (cantidad <= 0) return res.status(400).json({ message: "La cantidad no puede ser menor o igual a 0" });
 
-        //verifica que el campo descripcion no se repita en la base de datos
-        const descriptionFound = await BonificacionSchema.findOne({ where: { descripcion: req.body.descripcion } });
+        //verifica que el campo descripcion no se repita en la base de datos para la nomina seleccionada
+        const descriptionFound = await BonificacionSchema.findOne({ where: { descripcion: req.body.descripcion, nominaId: req.body.nominaId } });
         if (descriptionFound) return res.status(400).json({ message: "La bonificacion con esta descripcion ya existe" });
 
         //verifica que la nomina exista

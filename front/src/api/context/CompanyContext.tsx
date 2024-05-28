@@ -18,18 +18,41 @@ export function CompanyProvider({ children }) {
     const [companies, setCompanies] = useState([]);
     const toast = useRef<Toast>(null);
 
-    //?------------------------ get ------------------------
-const getCompanies = async () => {
-    try {
-        const res = await getCompaniesRequest();
-        setCompanies(res.data);
-    } catch (error) {
+    const handleRequestError = (error) => {
         if (Array.isArray(error.response.data)) {
-            return setErrors(error.response.data);
+            setErrors(error.response.data);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data, life: 5000 });
+        } else {
+            setErrors(error.response.data.message);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data.message, life: 5000 });
         }
-        setErrors([error.response.data.message]);
+    };
+
+    const handleRequestSuccess = (status, successMessage) => {
+        if (status === 200) {
+            toast.current?.show({ severity: 'success', summary: 'Exito', detail: successMessage, life: 3000 });
+        }
+    };
+
+    const handleErrorsLifeCycle = () => {
+        if (errors.length > 0) {
+            const timer = setTimeout(() => {
+                setErrors([]);
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    };
+
+    //?------------------------ get ------------------------
+    const getCompanies = async () => {
+        try {
+            const res = await getCompaniesRequest();
+            setCompanies(res.data);
+        } catch (error) {
+            handleRequestError(error);
+
+        }
     }
-}
 
     //?------------------------ get by id ------------------------
     const getCompany = async (id) => {
@@ -37,10 +60,8 @@ const getCompanies = async () => {
             const res = await getCompanyRequest(id);
             setCompanies(res.data);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
@@ -48,27 +69,20 @@ const getCompanies = async () => {
     const updateCompany = async (id, company) => {
         try {
             const res = await updateCompanyRequest(id, company);
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Empresa Actualizada Exitosamente', life: 3000 });
-                // window.location.reload();
-                setCompanies(companies)
-            }
+            handleRequestSuccess(res.status, 'Empresa Actualizada Exitosamente');
+            // setCompanies(companies)
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
+    useEffect(handleErrorsLifeCycle, [errors]);
 
     return <CompanyContext.Provider value={{
         companies, setCompanies, getCompanies, getCompany, updateCompany, errors
     }}>
         <Toast ref={toast} />
-        {errors.map((error) => (
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
-        ))}
         {children}
     </CompanyContext.Provider>;
 

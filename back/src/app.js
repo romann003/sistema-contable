@@ -13,7 +13,7 @@ import rolRoutes from './routes/rol.routes.js'
 import nominaRoutes from './routes/nomina.routes.js'
 import nominaDatos from './routes/nominaDatos.routes.js'
 import dbRoutes from './routes/db.routes.js'
-import { createRoles, createCompany, createArea, createDepartment, createUser } from './libs/initialSetup.js'
+import { createRoles, createCompany, createArea, createDepartment, createUser, createEmployee } from './libs/initialSetup.js'
 
 //Initial setup
 const app = express()
@@ -22,6 +22,7 @@ createRoles()
 createUser()
 createDepartment()
 createArea()
+createEmployee()
 
 //Middlewares
 app.use(cors({

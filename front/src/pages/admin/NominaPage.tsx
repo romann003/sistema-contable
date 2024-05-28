@@ -30,11 +30,9 @@ interface Nomina {
     id: number | null;
     cantidad_horas_extra: number | null;
     sueldo_horas_extra: number | null;
-    vacaciones_pagadas: number | null;
     total_percepciones: number | null;
     isr: number | null;
-    igss_patronal: number | null;
-    igss_laboral: number | null;
+    total_igss: number | null;
     prestamos: number | null;
     anticipo_salario: number | null;
     total_deducciones: number | null;
@@ -84,11 +82,9 @@ export default function NominaPage() {
         id: null,
         cantidad_horas_extra: null,
         sueldo_horas_extra: null,
-        vacaciones_pagadas: null,
         total_percepciones: null,
         isr: null,
-        igss_patronal: null,
-        igss_laboral: null,
+        total_igss: null,
         prestamos: null,
         anticipo_salario: null,
         total_deducciones: null,
@@ -117,7 +113,6 @@ export default function NominaPage() {
     };
 
     const typeTipoBonificacion: TipoBonificacion[] = [
-        { name: 'Bonificación por Decreto', code: 'bonificacion por decreto' },
         { name: 'Bonificación por Productividad', code: 'bonificacion por productividad' },
         // { name: 'Aguinaldo', code: 'AG' },
         // { name: 'Vacaciones Pagadas', code: 'VP' },
@@ -136,8 +131,11 @@ export default function NominaPage() {
     const { nominas, getNominas, createNomina, deleteNomina, updateNomina, nominaId, setNominaId } = useNominas();
 
     //? -------------------- STATES -------------------
-    // const [selectedDepartment, setSelectedDepartment] = useState(null);
-    // const [selectedArea, setSelectedArea] = useState(null);
+    const [cantidadHorasExtra, setCantidadHorasExtra] = useState<number>(0);
+    const [sueldoBase, setSueldoBase] = useState<number>(0);
+    const [totalHorasExtra, setTotalHorasExtra] = useState<number>(0);
+    const [totalIgss, setTotalIgss] = useState<number>(0);
+
     const [selectedPeriodo, setSelectedPeriodo] = useState(null);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [selectedTipoBonificacion, setSelectedTipoBonificacion] = useState<TipoBonificacion | null>(null);
@@ -146,6 +144,7 @@ export default function NominaPage() {
     const toast = useRef<Toast>(null);
     //? -------------------- DIALOG STATES -------------------
     const [nominaDialog, setNominaDialog] = useState<boolean>(false);
+    const [cNominaDialog, setCNominaDialog] = useState<boolean>(false);
     const [seeNominaDialog, setSeeNominaDialog] = useState<boolean>(false);
     const [deleteNominaDialog, setDeleteNominaDialog] = useState<boolean>(false);
     const [deleteBonificacionDialog, setDeleteBonificacionDialog] = useState<boolean>(false);
@@ -211,9 +210,6 @@ export default function NominaPage() {
         );
     };
 
-
-
-
     //? -------------------- BONIFICACION DATATABLE COLUMN TEMPLATES -------------------
     const descriptionBodyTemplate = (rowData: Bonificacion) => {
         return <cdT.ColumnTextBody value={rowData.descripcion} />
@@ -240,6 +236,8 @@ export default function NominaPage() {
         getPeriodos();
 
         setNominaId(nomina.id);
+        console.log('Nomina.ID: ', nomina.id);
+        console.log('Nomina ID: ', nominaId);
 
         getEmployees();
         setLoading(false);
@@ -258,14 +256,20 @@ export default function NominaPage() {
     const hideDialog = () => {
         setSelectedPeriodo(null);
         setSelectedEmployee(null);
-        setNominaDialog(false);
+        setTotalIgss(0);
+        setTotalHorasExtra(0);
+        setSueldoBase(0);
+        setCantidadHorasExtra(0);
         // setDepartments([]);
         // setSelectedStatus(null);
+        setNominaDialog(false);
     };
 
     const editNomina = (nomina: Nomina) => {
         setNomina({ ...nomina });
         setNominaDialog(true);
+        // setSelectedPeriodo(nomina.periodo);
+        // setSelectedEmployee(nomina.employee);
 
         // setDepartments([]);
         // resetFormOnOpen();
@@ -277,10 +281,29 @@ export default function NominaPage() {
     };
 
     const hideSeeDialog = () => {
-        // setEstados([]);
-        // setSelectedStatus(null);
+        setSelectedPeriodo(null);
+        setSelectedEmployee(null);
+        setTotalIgss(0);
+        setTotalHorasExtra(0);
+        setSueldoBase(0);
+        setCantidadHorasExtra(0);
         setSeeNominaDialog(false);
     };
+
+    const cNomina = () => {
+        setCNominaDialog(true);
+    };
+
+    const hideCNominaDialog = () => {
+        setCNominaDialog(false);
+    };
+
+    const confirmCNomina = () => {
+        setCNominaDialog(false);
+        hideDatosNomina();
+    }
+
+
 
     const hideDeleteNominaDialog = () => {
         setDeleteNominaDialog(false);
@@ -350,6 +373,13 @@ export default function NominaPage() {
         </React.Fragment>
     );
 
+    const closeNominaDatosDialogFooter = (
+        <React.Fragment>
+            <Button label="No" icon="pi pi-times" outlined onClick={hideCNominaDialog} />
+            <Button label="Si, Cerrar" icon="pi pi-check" severity="danger" onClick={confirmCNomina} />
+        </React.Fragment>
+    );
+
     const deleteBonificacionDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteBonificacionDialog} />
@@ -363,30 +393,41 @@ export default function NominaPage() {
         </React.Fragment>
     );
 
-    //? -------------------- TABS (DETAILS DIALOG) -------------------
-    const tab1HeaderTemplate = (options: TabPanelHeaderTemplateOptions) => {
-        return (
-            <div className="flex align-items-center gap-2 p-3 justify-content-center" style={{ cursor: 'pointer' }} onClick={options.onClick}>
-                <span className="font-bold white-space-nowrap">BONIFICACIONES</span>
-            </div>
-        );
-    };
+    //? -------------------- CALCULOS -------------------
+    const calcularTotalHorasExtra = (cantidadHorasExtra, sueldoBase) => {
+        let jornada = 0;
+        if (selectedEmployee.work_day === 'Ordinaria' || selectedEmployee.work_day === 'Continua' || selectedEmployee.work_day === 'Mixta' || selectedEmployee.work_day === 'Nocturna') {
+            jornada = 8;
+        } else if (selectedEmployee.work_day === 'Medio Tiempo') {
+            jornada = 4;
+        }
+        const valorHora = sueldoBase / 30 / jornada;
+        const valorHorasExtra = valorHora * 1.5;
+        const totalHE = cantidadHorasExtra * valorHorasExtra;
+        setTotalHorasExtra(totalHE.toFixed(2));
+        return totalHE.toFixed(2);
+    }
 
-    const tab2HeaderTemplate = (options: TabPanelHeaderTemplateOptions) => {
-        return (
-            <div className="flex align-items-center gap-2 p-3 justify-content-center" style={{ cursor: 'pointer' }} onClick={options.onClick}>
-                <span className="font-bold white-space-nowrap">DATOS DEL TRABAJO</span>
-            </div>
-        )
-    };
+    const calcularIgss = (sueldoBase) => {
+        const igss = sueldoBase * 0.0483;
+        setTotalIgss(igss.toFixed(2));
+    }
 
-    const tab3HeaderTemplate = (options: TabPanelHeaderTemplateOptions) => {
-        return (
-            <div className="flex align-items-center gap-2 p-3 justify-content-center" style={{ cursor: 'pointer' }} onClick={options.onClick}>
-                <span className="font-bold white-space-nowrap">OTROS DATOS</span>
-            </div>
-        )
-    };
+    const handleCantidadHorasChange = (event) => {
+        const horas = parseFloat(event.target.value);
+        setCantidadHorasExtra(horas);
+        const total = calcularTotalHorasExtra(horas, sueldoBase);
+        setTotalHorasExtra(total);
+    }
+
+    useEffect(() => {
+        if (selectedEmployee) {
+            setSueldoBase(selectedEmployee.area.salary);
+            calcularTotalHorasExtra(cantidadHorasExtra, selectedEmployee.area.salary);
+            calcularIgss(selectedEmployee.area.salary);
+        }
+    }, [selectedEmployee]);
+
 
     //? -------------------- RENDER -------------------
     return (
@@ -426,20 +467,22 @@ export default function NominaPage() {
                         { field: 'employee.department.name', header: 'Departamento', body: departmentBodyTemplate, dataType: 'text', filter: true },
                         { field: 'employee.area.name', header: 'Area (Cargo)', body: areaBodyTemplate, dataType: 'text', filter: true },
                         { field: 'employee.area.salary', header: 'Salario Base', body: salaryBodyTemplate, dataType: 'numeric', filter: true },
-                        // { field: 'status', header: 'Estado', body: statusBodyTemplate, dataType: 'boolean', filter: false },
                         { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
                         { field: 'updatedAt', header: 'Ultima Actualización', body: updatedAtBodyTemplate, filter: false, dataType: 'date' },
                     ]}
-                    size='12rem'
+                    size='8rem'
                     actionBodyTemplate={actionBodyTemplate}
                 />
             </div>
 
-            {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
+            {/* //? -------------------- MODAL DIALOG (CREATE) ------------------- */}
             <Dialog visible={nominaDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles de la Nomina" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={true} closeOnEscape={false}
             >
                 <Formik
-                    initialValues={{ sueldo_horas_extra: '' || nomina.sueldo_horas_extra, periodo: nomina.periodo || '', employee: nomina.employee || '' }}
+                    initialValues={{
+                        sueldo_horas_extra: '' || nomina.sueldo_horas_extra, cantidad_horas_extra: '' || nomina.cantidad_horas_extra, isr: '' || nomina.isr, total_igss: '' || nomina.total_igss, prestamos: '' || nomina.prestamos, anticipo_salario: '' || nomina.anticipo_salario,
+                        periodo: nomina.periodo || '', employee: nomina.employee || ''
+                    }}
                     validate={values => {
                         const errors = {};
 
@@ -449,17 +492,37 @@ export default function NominaPage() {
                         if (!values.employee) {
                             errors.employee = 'El empleado es requerido';
                         }
-                        if (!values.sueldo_horas_extra) {
-                            errors.sueldo_horas_extra = 'Las horas extra son requeridas';
-                        } else if (values.sueldo_horas_extra <= 0) {
-                            errors.sueldo_horas_extra = 'Las horas extra no pueden ser negativas';
+
+                        if (values.cantidad_horas_extra < 0) {
+                            errors.cantidad_horas_extra = 'Las horas extra no pueden ser negativas';
                         }
-                        // else if (!/^\d{1,2}$/.test(values.horas_extra)) {
-                        //     errors.horas_extra = 'Las horas extra son invalidas';
+                        // else if (totalHorasExtra > selectedEmployee.area.salary ) {
+                        //     errors.cantidad_horas_extra = 'El total de las horas extra no pueden ser mayores al salario base';
                         // }
 
+                        if (values.sueldo_horas_extra < 0) {
+                            errors.sueldo_horas_extra = 'Las horas extra no pueden ser negativas';
+                        }
 
+                        if (values.vacaciones_pagadas < 0) {
+                            errors.vacaciones_pagadas = 'Las vacaciones pagadas no pueden ser negativas';
+                        }
 
+                        if (values.isr < 0) {
+                            errors.isr = 'El ISR no puede ser negativo';
+                        }
+
+                        if (values.total_igss < 0) {
+                            errors.total_igss = 'El IGSS Patronal no puede ser negativo';
+                        }
+
+                        if (values.prestamos < 0) {
+                            errors.prestamos = 'Los prestamos no pueden ser negativos';
+                        }
+
+                        if (values.anticipo_salario < 0) {
+                            errors.anticipo_salario = 'El anticipo de salario no puede ser negativo';
+                        }
 
 
                         // if (!nomina.id) {
@@ -490,24 +553,28 @@ export default function NominaPage() {
                     onSubmit={(values, { resetForm }) => {
                         if (values) {
                             values.companyId = 1;
-                            if (nomina.id) {
-                                if (values.periodo !== "") { values.periodoId = values.periodo.id } else { values.periodoId = nomina.periodoId }
-                                if (values.employee !== "") { values.employeeId = values.employee.id } else { values.employeeId = nomina.employeeId }
+                            // if (nomina.id) {
+                            //     if (values.periodo !== "") { values.periodoId = values.periodo.id } else { values.periodoId = nomina.periodoId }
+                            //     if (values.employee !== "") { values.employeeId = values.employee.id } else { values.employeeId = nomina.employeeId }
 
-                                updateNomina(nomina.id, values);
-                                setNominaDialog(false);
-                                setNomina(emptyNomina);
-                                resetForm();
-                            } else {
+                            //     updateNomina(nomina.id, values);
+                            //     setNominaDialog(false);
+                            //     setNomina(emptyNomina);
+                            //     resetForm();
+                            // } else {
                                 values.periodoId = values.periodo.id;
                                 values.employeeId = values.employee.id;
 
+
+                                values.sueldo_horas_extra = parseFloat(totalHorasExtra).toFixed(2);
+                                values.total_igss = parseFloat(totalIgss).toFixed(2);
+                                
                                 createNomina(values);
                                 setNominaDialog(false);
                                 setNomina(emptyNomina);
                                 resetForm();
                                 datosNomina();
-                            }
+                            // }
                         } else {
                             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Nomina no registrado', life: 5000 });
                         }
@@ -515,21 +582,27 @@ export default function NominaPage() {
                 >
                     {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                            {/* <div className="flex flex-row justify-content-center align-items-center gap-5">
-                                <div className="flex">
-                                    <cdT.ColumnOnlyDateBodyWithClass value={values.fecha_pago} className={''} />
-                                </div>
-                                <div className="flex">
-                                    <label className="text-md font-bold">al
-                                    </label>
-                                </div>
-                                <div className="flex">
-                                    <cdT.ColumnOnlyDateBodyWithClass value={values.periodo_liquidacion_final} className={''} />
-                                </div>
-
-                            </div> */}
+                            {nomina.id && (
+                                <>
+                                    <div className="flex flex-row justify-content-center align-items-center gap-2">
+                                        <label htmlFor="" className='capitalize font-bold'>{values.employee.fullName}</label>
+                                    </div>
+                                    <div className="flex flex-row justify-content-center align-items-center gap-2">
+                                        <div className="flex">
+                                            <cdT.ColumnOnlyDateBodyWithClass value={values.periodo.periodo_liquidacion_inicio} className={''} />
+                                        </div>
+                                        <div className="flex">
+                                            <label className="text-md font-bold">al
+                                            </label>
+                                        </div>
+                                        <div className="flex">
+                                            <cdT.ColumnOnlyDateBodyWithClass value={values.periodo.periodo_liquidacion_final} className={''} />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             <TabView style={{ flex: 1, overflow: 'auto' }}>
-                                <TabPanel className='w-full' header="Header I" headerTemplate={tab1HeaderTemplate}>
+                                <TabPanel className='w-full' header="Header I" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'EMPLEADO E INGRESOS')}>
                                     <Formulario>
                                         <div className="grid">
                                             <fI.DropDownD
@@ -561,7 +634,7 @@ export default function NominaPage() {
                                                 value={selectedEmployee}
                                                 optionLabel={(option) => `${option.fullName} - ${option.identification_type}: ${option.identification}`}
                                                 emptyMessage="No se encontraron empleados"
-                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedEmployee(e.value) }}
+                                                onChange={(e: DropdownChangeEvent) => { handleChange(e); setSelectedEmployee(e.value); }}
                                                 onBlur={handleBlur}
                                                 options={employees}
 
@@ -573,37 +646,150 @@ export default function NominaPage() {
                                             />
 
                                             <fI.InputT
-                                                col={6}
+                                                col={3}
+                                                id="sueldoBase"
+                                                name="sueldoBase"
+                                                type="number"
+                                                placeholder="Salario Base en Q."
+                                                label="Salario Base"
+                                                span=""
+                                                value={selectedEmployee ? selectedEmployee.area.salary.toFixed(2) : ''}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={null}
+                                                errorText={null}
+                                                disabled={true}
+                                            />
+
+                                            <fI.InputT
+                                                col={3}
+                                                id="work_day"
+                                                name="work_day"
+                                                type="text"
+                                                placeholder="Jornada Laboral"
+                                                label="Jornada Laboral"
+                                                span=""
+                                                value={values.employee.work_day}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={null}
+                                                errorText={null}
+                                                disabled={true}
+                                            />
+
+                                            <fI.InputT
+                                                col={3}
+                                                id="cantidad_horas_extra"
+                                                name="cantidad_horas_extra"
+                                                type="number"
+                                                placeholder="Ingrese las horas extra"
+                                                label="Cantidad de Horas Extra"
+                                                span=""
+                                                value={values.cantidad_horas_extra}
+                                                onChange={(e) => {
+                                                    handleChange(e);
+                                                    handleCantidadHorasChange(e);
+                                                }}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.cantidad_horas_extra && touched.cantidad_horas_extra}
+                                                errorText={errors.cantidad_horas_extra}
+                                                disabled={selectedEmployee ? false : true}
+                                            />
+
+                                            <fI.InputT
+                                                col={3}
                                                 id="sueldo_horas_extra"
                                                 name="sueldo_horas_extra"
                                                 type="number"
                                                 placeholder="Ingrese las horas extra en Q."
-                                                label="Horas Extra"
-                                                span="*"
-                                                value={values.sueldo_horas_extra}
+                                                label="Sueldo Total Horas Extra"
+                                                span=""
+                                                value={totalHorasExtra}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 invalid={!!errors.sueldo_horas_extra && touched.sueldo_horas_extra}
                                                 errorText={errors.sueldo_horas_extra}
+                                                disabled={true}
                                             />
 
-                                            {nomina.id && (
+                                            {/* {nomina.id && ( */}
                                                 <fI.ButtonB label="Modificar o Agregar Bonificaciones" icon="pi pi-plus" type='button' onClick={datosNomina} col={6} color={'warning'} />
-                                            )}
+                                            {/* )} */}
 
                                         </div>
                                     </Formulario>
                                 </TabPanel>
-                                {/* 
-                                <TabPanel className='w-full' header="Header II" headerTemplate={tab2HeaderTemplate}>
-                                    
-                                </TabPanel> */}
 
-                                {/* {nomina.id ? (
-                                    <TabPanel className='w-full' header="Header III" headerTemplate={tab3HeaderTemplate}>
-                            
-                                    </TabPanel>
-                                ) : (null)} */}
+                                <TabPanel className='w-full' header="Header II" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'DEDUCCIONES')
+                                }>
+                                    <Formulario>
+                                        <div className="grid">
+                                            <fI.InputT
+                                                col={6}
+                                                id="isr"
+                                                name="isr"
+                                                type="number"
+                                                placeholder="Ingrese el ISR"
+                                                label="ISR"
+                                                span=""
+                                                value={values.isr}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.isr && touched.isr}
+                                                errorText={errors.isr}
+                                                disabled={false}
+                                            />
+
+                                            <fI.InputT
+                                                col={6}
+                                                id="total_igss"
+                                                name="total_igss"
+                                                type="number"
+                                                placeholder="Ingrese el IGSS Laboral"
+                                                label="Sueldo Total IGSS"
+                                                span=""
+                                                value={totalIgss}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.total_igss && touched.total_igss}
+                                                errorText={errors.total_igss}
+                                                disabled={true}
+                                            />
+
+                                            <fI.InputT
+                                                col={6}
+                                                id="prestamos"
+                                                name="prestamos"
+                                                type="number"
+                                                placeholder="Ingrese los prestamos"
+                                                label="Prestamos"
+                                                span=""
+                                                value={values.prestamos}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.prestamos && touched.prestamos}
+                                                errorText={errors.prestamos}
+                                                disabled={false}
+                                            />
+
+                                            <fI.InputT
+                                                col={6}
+                                                id="anticipo_salario"
+                                                name="anticipo_salario"
+                                                type="number"
+                                                placeholder="Ingrese el anticipo de salario"
+                                                label="Anticipo de Salario"
+                                                span=""
+                                                value={values.anticipo_salario}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                invalid={!!errors.anticipo_salario && touched.anticipo_salario}
+                                                errorText={errors.anticipo_salario}
+                                                disabled={false}
+                                            />
+                                        </div>
+                                    </Formulario>
+                                </TabPanel>
                             </TabView>
 
                             <div className="flex mb-0 pt-3">
@@ -619,7 +805,7 @@ export default function NominaPage() {
             </Dialog>
 
             {/* //? -------------------- MODAL DIALOG (TABLA BONIFICACIONES) ------------------- */}
-            <Dialog visible={datosNominaDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Bonificaciones" modal className="p-fluid" onHide={hideDatosNomina} dismissableMask={false} blockScroll={true} closeOnEscape={false}
+            <Dialog visible={datosNominaDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Bonificaciones" modal className="p-fluid" onHide={cNomina} dismissableMask={false} blockScroll={true} closeOnEscape={false}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <div style={{ flex: 1, overflow: 'auto' }}>
@@ -656,7 +842,7 @@ export default function NominaPage() {
                     <div className="flex mb-0 pt-3 justify-content-end">
                         <div className="">
                             <Button label="Cerrar Ventana" type='button' icon="pi pi-times" outlined
-                                onClick={hideDatosNomina} />
+                                onClick={cNomina} />
                         </div>
                     </div>
                 </div>
@@ -686,10 +872,7 @@ export default function NominaPage() {
                             errors.cantidad = 'La cantidad es requerida';
                         } else if (values.cantidad <= 0) {
                             errors.cantidad = 'La cantidad no puede ser negativa';
-                        } else if (!/^\d{1,10}$/.test(values.cantidad)) {
-                            errors.cantidad = 'La cantidad es invalida';
                         }
-
                         return errors;
                     }}
                     onSubmit={(values, { resetForm }) => {
@@ -769,6 +952,7 @@ export default function NominaPage() {
                                             onBlur={handleBlur}
                                             invalid={!!errors.cantidad && touched.cantidad}
                                             errorText={errors.cantidad}
+                                            disabled={false}
                                         />
                                     </Formulario>
                                 </div>
@@ -793,7 +977,7 @@ export default function NominaPage() {
                         {nomina.id ? (<>
                             <div className="card">
                                 <TabView>
-                                    <TabPanel className='w-full' header="Header I" headerTemplate={tab1HeaderTemplate}>
+                                    <TabPanel className='w-full' header="Header I" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'DATOS DEL EMPLEADO')}>
                                         <div className="field mt-5 mb-3">
                                             <div className="formgrid grid">
                                                 <div className="col-12">
@@ -807,13 +991,13 @@ export default function NominaPage() {
 
                                                         <label className='text-md capitalize'> <b>DEPARTAMENTO:</b> {nomina.employee.department.name}</label>
 
-                                                        <label className='text-md capitalize'> <b>AREA:</b> {nomina.employee.area.name}</label>
+                                                        <label className='text-md capitalize'> <b>PUESTO:</b> {nomina.employee.area.name}</label>
 
-                                                        <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> {nomina.employee.hire_date}</label>
+                                                        <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> <cdT.ColumnDateBodyText value={nomina.employee.hire_date} className={''}/> </label>
 
                                                         <label className='text-md capitalize'> <b>TIPO CONTRATO:</b> {nomina.employee.contract_type}</label>
 
-                                                        <label className='text-md capitalize'> <b>TIPO TRABAJO:</b> {nomina.employee.work_day}</label>
+                                                        <label className='text-md capitalize'> <b>JORNADA LABORAL:</b> {nomina.employee.work_day}</label>
 
 
                                                     </div>
@@ -829,12 +1013,11 @@ export default function NominaPage() {
                                             </div>
                                         </div>
                                     </TabPanel>
-                                    <TabPanel className='w-full' header="Header II" headerTemplate={tab2HeaderTemplate}>
+                                    <TabPanel className='w-full' header="Header II" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'DETALLES DE LA NOMINA')
+                                    }>
                                         <div className="field mt-5 mb-3">
                                             <div className="formgrid grid">
                                                 <div className="col-12">
-
-
 
                                                     <div className="gap-3 justify-content-between -mt-3">
                                                         <div className="flex flex-column gap-2 mb-5">
@@ -854,8 +1037,6 @@ export default function NominaPage() {
                                                         </div>
                                                     </div>
 
-
-
                                                     <Divider align="center">
                                                         <span className="p-tag">PERCEPCIONES</span>
                                                     </Divider>
@@ -864,7 +1045,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'> SALARIO BASE</label>
-                                                                <label className='text-md capitalize'>Q.{nomina.employee.area.salary}</label>
+                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.employee.area.salary).toFixed(2)}</label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
@@ -877,14 +1058,14 @@ export default function NominaPage() {
                                                                                     <span key={index}>{bonificacion.descripcion}</span>
                                                                                 </div>
                                                                                 <div className="">
-                                                                                    <span key={index}>Q.{bonificacion.cantidad}</span>
+                                                                                    <span key={index}>Q.{parseFloat(bonificacion.cantidad).toFixed(2)}</span>
                                                                                 </div>
                                                                             </div>
                                                                         ))
                                                                     }</label>
                                                                     <Divider align="center" className='-mt-1 -mb-1' />
                                                                     <div className="flex justify-content-end">
-                                                                    <label className='text-md capitalize font-bold'>Q.{nomina.total_bonificaciones}</label>
+                                                                        <label className='text-md capitalize font-bold'>Q.{parseFloat(nomina.total_bonificaciones).toFixed(2)}</label>
                                                                     </div>
                                                                 </div>
 
@@ -892,12 +1073,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'> NO. HORAS EXTRA: <b> {nomina.cantidad_horas_extra}</b></label>
-                                                                <label className='text-md capitalize'>Q.{nomina.sueldo_horas_extra}</label>
-                                                            </div>
-
-                                                            <div className="flex justify-content-between">
-                                                                <label className='text-md capitalize'> VACACIONES PAGADAS</label>
-                                                                <label className='text-md capitalize'>Q.{nomina.vacaciones_pagadas}</label>
+                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.sueldo_horas_extra).toFixed(2)}</label>
                                                             </div>
 
                                                             <Divider align="center" className='-mt-1' />
@@ -905,7 +1081,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'><b>TOTAL PERCEPCIONES</b></label>
-                                                                <label className='text-md capitalize'><b>Q.{nomina.total_percepciones}</b></label>
+                                                                <label className='text-md capitalize'><b>Q.{parseFloat(nomina.total_percepciones).toFixed(2)}</b></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -917,22 +1093,22 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'>ISR</label>
-                                                                <label className='text-md capitalize'>Q.{nomina.isr}</label>
+                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.isr).toFixed(2)}</label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
-                                                                <label className='text-md capitalize'>IGSS (PATRONAL)</label>
-                                                                <label className='text-md capitalize'>Q.{nomina.igss_patronal}</label>
-                                                            </div>
-
-                                                            <div className="flex justify-content-between">
-                                                                <label className='text-md capitalize'>IGSS (LABORAL)</label>
-                                                                <label className='text-md capitalize'>Q.{nomina.igss_laboral}</label>
+                                                                <label className='text-md capitalize'>IGSS</label>
+                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.total_igss).toFixed(2)}</label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'>PRESTAMOS</label>
-                                                                <label className='text-md capitalize'>Q.{nomina.prestamos}</label>
+                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.prestamos).toFixed(2)}</label>
+                                                            </div>
+
+                                                            <div className="flex justify-content-between">
+                                                                <label className='text-md capitalize'>SALARIO ANTICIPADO</label>
+                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.anticipo_salario).toFixed(2)}</label>
                                                             </div>
 
                                                             <Divider align="center" className='-mt-1' />
@@ -940,11 +1116,10 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'><b>TOTAL DEDUCCIONES</b></label>
-                                                                <label className='text-md capitalize'><b>Q.{nomina.total_deducciones}</b></label>
+                                                                <label className='text-md capitalize'><b>Q.{parseFloat(nomina.total_deducciones).toFixed(2)}</b></label>
                                                             </div>
                                                         </div>
                                                     </div>
-
 
                                                     <div className="mt-5 gap-3 justify-content-between">
                                                         <div className="flex flex-column gap-3">
@@ -954,7 +1129,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-lg capitalize text-primary'><b>LIQUIDO TOTAL A RECIBIR</b></label>
-                                                                <label className='text-lg capitalize text-primary'><b>Q.{nomina.liquido_percibir}</b></label>
+                                                                <label className='text-lg capitalize text-primary'><b>Q.{parseFloat(nomina.liquido_percibir).toFixed(2)}</b></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -962,7 +1137,7 @@ export default function NominaPage() {
                                             </div>
                                         </div>
                                     </TabPanel>
-                                    <TabPanel className='w-full' header="Header III" headerTemplate={tab3HeaderTemplate}>
+                                    <TabPanel className='w-full' header="Header III" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'OTROS DATOS')}>
                                         <div className="field mt-5 mb-3">
                                             <div className="formgrid grid">
                                                 <div className="col-12">
@@ -1019,6 +1194,19 @@ export default function NominaPage() {
                 footer={deleteBonificacionDialogFooter}
                 onHide={hideDeleteBonificacionDialog}
             ></m.DeleteModal>
+
+            {/* //? -------------------- CONFIRMAR HIDE ------------------- */}
+            <m.ComfirmHideModal
+                visible={cNominaDialog}
+                header="Confirmar"
+                message1="¿Estas seguro que deseas ocultar"
+                message1Bold="la ventana de bonificaciones?"
+                message2="Ya no podrás agregar ni eliminar las bonificaciones"
+                message2Bold="para esta nómina."
+                footer={closeNominaDatosDialogFooter}
+                onHide={hideCNominaDialog}
+            ></m.ComfirmHideModal>
+
         </div>
     );
 }

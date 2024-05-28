@@ -3,7 +3,7 @@ import { BonificacionSchema } from "../models/NominaDatos.js";
 
 export const createNomina = async (req, res) => {
     try {
-        const { cantidad_horas_extra, sueldo_horas_extra, vacaciones_pagadas, isr, igss_patronal, igss_laboral, prestamos, anticipo_salario, employeeId, companyId, periodoId } = req.body;
+        const { cantidad_horas_extra, sueldo_horas_extra, isr, total_igss, prestamos, anticipo_salario, employeeId, companyId, periodoId } = req.body;
 
         if (!periodoId)  {
             return res.status(400).json(['Debes de seleccionar un periodo']);
@@ -20,21 +20,25 @@ export const createNomina = async (req, res) => {
         let newNomina = new NominaSchema({
             cantidad_horas_extra,
             sueldo_horas_extra,
-            vacaciones_pagadas,
-
             isr,
-            igss_patronal,
-            igss_laboral,
+            total_igss,
             prestamos,
             anticipo_salario,
             periodoId,
             employeeId,
             companyId
         });
-
-        // await calcularTotales(newNomina);
         
         const savedNomina = await newNomina.save();
+
+        const findNomina = await NominaSchema.findByPk(savedNomina.id);
+        if (!findNomina) return res.status(404).json({ message: "Nomina no encontrada" });
+        const newBonificacion = new BonificacionSchema({
+            descripcion: "Bonificación por decreto",
+            cantidad: 250,
+            nominaId: savedNomina.id
+        });
+        await newBonificacion.save();
 
         res.status(200).json( savedNomina );
     } catch (error) {

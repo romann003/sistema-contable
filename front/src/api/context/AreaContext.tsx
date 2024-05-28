@@ -17,16 +17,39 @@ export function AreaProvider({ children }) {
     const [areas, setAreas] = useState([]);
     const toast = useRef<Toast>(null);
 
+    const handleRequestError = (error) => {
+        if (Array.isArray(error.response.data)) {
+            setErrors(error.response.data);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data, life: 5000 });
+        } else {
+            setErrors(error.response.data.message);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: error.response.data.message, life: 5000 });
+        }
+    };
+
+    const handleRequestSuccess = (status, successMessage) => {
+        if (status === 200) {
+            toast.current?.show({ severity: 'success', summary: 'Exito', detail: successMessage, life: 3000 });
+        }
+    };
+
+    const handleErrorsLifeCycle = () => {
+        if (errors.length > 0) {
+            const timer = setTimeout(() => {
+                setErrors([]);
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    };
+
     //?------------------------ get ------------------------
     const getAreas = async () => {
         try {
             const res = await getAreasRequest();
             setAreas(res.data);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
@@ -36,10 +59,8 @@ export function AreaProvider({ children }) {
             const res = await getAreasByIdRequest(id);
             setAreas(res.data);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
@@ -48,10 +69,8 @@ export function AreaProvider({ children }) {
             const res = await getAreaRequest(id);
             setAreas(res.data);
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
@@ -59,17 +78,11 @@ export function AreaProvider({ children }) {
     const createArea = async (area) => {
         try {
             const res = await createAreaRequest(area);
-
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Creada Exitosamente', life: 3000 });
-                // window.location.reload();
-                setAreas(areas)
-            }
+            handleRequestSuccess(res.status, 'Puesto Creado Exitosamente');
+            // setAreas(areas)
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
@@ -77,16 +90,11 @@ export function AreaProvider({ children }) {
     const updateArea = async (id, area) => {
         try {
             const res = await updateAreaRequest(id, area);
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Actualizada Exitosamente', life: 3000 });
-                // window.location.reload();
-                setAreas(areas)
-            }
+            handleRequestSuccess(res.status, 'Puesto Actualizado Exitosamente');
+            // setAreas(areas)
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
@@ -94,36 +102,24 @@ export function AreaProvider({ children }) {
     const deleteArea = async (id) => {
         try {
             const res = await deleteAreaRequest(id);
-            if (res.status === 200) {
-                toast.current?.show({ severity: 'success', summary: 'Exito', detail: 'Area Eliminada Exitosamente', life: 3000 });
-                setAreas(areas.filter((val) => val.id !== id));
-            }
+            handleRequestSuccess(res.status, 'Puesto Eliminado Exitosamente');
+            setAreas(areas.filter((val) => val.id !== id));
         } catch (error) {
-            if (Array.isArray(error.response.data)) {
-                return setErrors(error.response.data);
-            }
-            setErrors([error.response.data.message]);
+            handleRequestError(error);
+
         }
     }
 
     //?------------------------ useEffect (errors) ------------------------
-    useEffect(() => {
-        if (errors.length > 0) {
-            const timer = setTimeout(() => {
-                setErrors([]);
-            }, 200);
-            return () => clearTimeout(timer);
-        }
-    }, [errors]);
+    useEffect(handleErrorsLifeCycle, [errors]);
+
 
     return (
         <AreaContext.Provider value={{
             areas, setAreas, getAreas, getAreasById, getArea, createArea, deleteArea, updateArea, errors
         }}>
             <Toast ref={toast} />
-            {errors.map((error) => (
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: error, life: 5000 })
-            ))}
+
             {children}
         </AreaContext.Provider>
     )
