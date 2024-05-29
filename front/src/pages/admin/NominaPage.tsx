@@ -4,7 +4,6 @@ import { Form, Formik } from 'formik';
 import { FilterMatchMode } from 'primereact/api';
 import { Button } from 'primereact/button';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Dialog } from 'primereact/dialog';
 import { Divider } from 'primereact/divider';
 import { DropdownChangeEvent } from 'primereact/dropdown';
 import { TabPanel, TabPanelHeaderTemplateOptions, TabView } from 'primereact/tabview';
@@ -45,18 +44,13 @@ interface Nomina {
     companyId: number | null;
     periodo: string;
     periodoId: number | null;
-    bonificacions: Bonificacion[];
+    bonificaciones: Bonificacion[];
     total_bonificaciones: number | null;
 }
 
 interface Bonificacion {
-    id: number | null;
     descripcion: string;
     cantidad: number | null;
-    createdAt: string;
-    updatedAt: string;
-    nomina: string;
-    nominaId: number | null;
 }
 
 interface TipoBonificacion {
@@ -97,44 +91,33 @@ export default function NominaPage() {
         companyId: null,
         periodo: '',
         periodoId: null,
-        bonificacions: [],
+        bonificaciones: [],
         total_bonificaciones: null
 
     };
 
     const emptyBonificacion: Bonificacion = {
-        id: null,
         descripcion: '',
-        cantidad: null,
-        createdAt: '',
-        updatedAt: '',
-        nomina: '',
-        nominaId: null
+        cantidad: null
     };
 
     const typeTipoBonificacion: TipoBonificacion[] = [
         { name: 'Bonificación por Productividad', code: 'bonificacion por productividad' },
-        // { name: 'Aguinaldo', code: 'AG' },
-        // { name: 'Vacaciones Pagadas', code: 'VP' },
-        // { name: 'Bonificación', code: 'BO' },
-        // { name: 'ISR', code: 'IS' },
-        // { name: 'IGSS Patronal', code: 'IP' },
-        // { name: 'IGSS Laboral', code: 'IL' },
-        // { name: 'Prestamos', code: 'PR' },
+        { name: 'Bonificación por Cumplimiento de objetivos', code: 'bonificacion por cumplimiento de objetivos' },
+        { name: 'Bonificación por Asistencia', code: 'bonificacion por asistencia' },
     ];
 
     //? -------------------- CONTEXT API -------------------
-    const { periodos, getPeriodos,
-        bonificaciones, setBonificaciones, getBonificaciones, createBonificacion, deleteBonificacion, updateBonificacion
-    } = useNominaDatos();
+    const { periodos, getPeriodos } = useNominaDatos();
     const { employees, getEmployees } = useEmployees();
-    const { nominas, getNominas, createNomina, deleteNomina, updateNomina, nominaId, setNominaId } = useNominas();
+    const { nominas, getNominas, createNomina, deleteNomina } = useNominas();
 
     //? -------------------- STATES -------------------
     const [cantidadHorasExtra, setCantidadHorasExtra] = useState<number>(0);
     const [sueldoBase, setSueldoBase] = useState<number>(0);
     const [totalHorasExtra, setTotalHorasExtra] = useState<number>(0);
     const [totalIgss, setTotalIgss] = useState<number>(0);
+    const [bonificacionesT, setBonificacionesT] = useState<Bonificacion[]>([]);
 
     const [selectedPeriodo, setSelectedPeriodo] = useState(null);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -202,7 +185,7 @@ export default function NominaPage() {
             <React.Fragment>
                 <div className="flex align-align-content-center justify-content-evenly">
                     <Button icon="pi pi-eye" rounded outlined severity='help' onClick={() => seeNomina(rowData)} />
-                    <Button icon="pi pi-pencil" rounded outlined onClick={() => editNomina(rowData)} />
+                    {/* <Button icon="pi pi-pencil" rounded outlined onClick={() => editNomina(rowData)} /> */}
                     <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteNomina(rowData)} />
 
                 </div>
@@ -223,7 +206,7 @@ export default function NominaPage() {
         return (
             <React.Fragment>
                 <div className="flex align-align-content-center justify-content-evenly">
-                    <Button icon="pi pi-pencil" rounded outlined onClick={() => editBonificacion(rowData)} />
+                    {/* <Button icon="pi pi-pencil" rounded outlined onClick={() => editBonificacion(rowData)} /> */}
                     <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteBonificacion(rowData)} />
                 </div>
             </React.Fragment>
@@ -234,23 +217,17 @@ export default function NominaPage() {
     useEffect(() => {
         getNominas();
         getPeriodos();
-
-        setNominaId(nomina.id);
-        console.log('Nomina.ID: ', nomina.id);
-        console.log('Nomina ID: ', nominaId);
-
         getEmployees();
         setLoading(false);
-    }, [nomina, bonificacion]);
+    }, [nomina]);
 
-
+    //Nomina
     const openNew = () => {
         setSelectedPeriodo(null);
         setSelectedEmployee(null);
         setNomina(emptyNomina);
         setNominaDialog(true);
-        // setDepartments([]);
-        // resetFormOnOpen();
+        setBonificacionesT([]);
     };
 
     const hideDialog = () => {
@@ -260,50 +237,9 @@ export default function NominaPage() {
         setTotalHorasExtra(0);
         setSueldoBase(0);
         setCantidadHorasExtra(0);
-        // setDepartments([]);
-        // setSelectedStatus(null);
         setNominaDialog(false);
+        // setNomina(emptyNomina);
     };
-
-    const editNomina = (nomina: Nomina) => {
-        setNomina({ ...nomina });
-        setNominaDialog(true);
-        // setSelectedPeriodo(nomina.periodo);
-        // setSelectedEmployee(nomina.employee);
-
-        // setDepartments([]);
-        // resetFormOnOpen();
-    };
-
-    const seeNomina = (nomina: Nomina) => {
-        setNomina({ ...nomina });
-        setSeeNominaDialog(true);
-    };
-
-    const hideSeeDialog = () => {
-        setSelectedPeriodo(null);
-        setSelectedEmployee(null);
-        setTotalIgss(0);
-        setTotalHorasExtra(0);
-        setSueldoBase(0);
-        setCantidadHorasExtra(0);
-        setSeeNominaDialog(false);
-    };
-
-    const cNomina = () => {
-        setCNominaDialog(true);
-    };
-
-    const hideCNominaDialog = () => {
-        setCNominaDialog(false);
-    };
-
-    const confirmCNomina = () => {
-        setCNominaDialog(false);
-        hideDatosNomina();
-    }
-
-
 
     const hideDeleteNominaDialog = () => {
         setDeleteNominaDialog(false);
@@ -320,15 +256,43 @@ export default function NominaPage() {
         setNomina(emptyNomina);
     };
 
+    //Ver Nomina
+    const seeNomina = (nomina: Nomina) => {
+        setNomina({ ...nomina });
+        setSeeNominaDialog(true);
+    };
+
+    const hideSeeDialog = () => {
+        setSelectedPeriodo(null);
+        setSelectedEmployee(null);
+        setTotalIgss(0);
+        setTotalHorasExtra(0);
+        setSueldoBase(0);
+        setCantidadHorasExtra(0);
+        setSeeNominaDialog(false);
+    };
+
+    //Confirmar Cerrar
+    const cNomina = () => {
+            setCNominaDialog(true);
+    };
+
+    const hideCNominaDialog = () => {
+        setCNominaDialog(false);
+    };
+
+    const confirmCNomina = () => {
+        setCNominaDialog(false);
+        hideDialog();
+    }
+
+    //Nomina Datos
+
     const datosNomina = () => {
-        getBonificaciones(nominaId);
-        // setSelectedTipoBonificacion(null);
         setDatosNominaDialog(true);
     };
 
     const hideDatosNomina = () => {
-        setBonificaciones([]);
-        // setSelectedTipoBonificacion(null);
         setBonificacion(emptyBonificacion);
         setDatosNominaDialog(false);
     };
@@ -342,12 +306,6 @@ export default function NominaPage() {
     const hideBonificacion = () => {
         setSelectedTipoBonificacion(null);
         setBonificacionDialog(false);
-        getBonificaciones(nominaId);
-    };
-
-    const editBonificacion = (bonificacion: Bonificacion) => {
-        setBonificacion({ ...bonificacion });
-        setBonificacionDialog(true);
     };
 
     const hideDeleteBonificacionDialog = () => {
@@ -360,9 +318,18 @@ export default function NominaPage() {
     };
 
     const deleteBonificacionModal = () => {
-        deleteBonificacion(bonificacion.id);
+        deleteBoni(bonificacion.id);
         setDeleteBonificacionDialog(false);
         setBonificacion(emptyBonificacion);
+    };
+
+    const addBonificacion = (bon) => {
+        bon.id = bonificacionesT.length + 1;
+        setBonificacionesT([...bonificacionesT, bon]);
+    };
+
+    const deleteBoni = (index) => {
+        setBonificacionesT(bonificacionesT.filter(bonificacion => bonificacion.id !== index));
     };
 
     //? -------------------- MODAL BUTTONS -------------------
@@ -428,7 +395,6 @@ export default function NominaPage() {
         }
     }, [selectedEmployee]);
 
-
     //? -------------------- RENDER -------------------
     return (
         <div>
@@ -476,12 +442,9 @@ export default function NominaPage() {
             </div>
 
             {/* //? -------------------- MODAL DIALOG (CREATE) ------------------- */}
-            <Dialog visible={nominaDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles de la Nomina" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={true} closeOnEscape={false}
-            >
+            <m.LargeModal visible={nominaDialog} header="Detalles de la Nomina" onHide={hideDialog} footer={null} dismissableMask={false} blockScroll={true} closeOnEscape={true} >
                 <Formik
-                    initialValues={{
-                        sueldo_horas_extra: '' || nomina.sueldo_horas_extra, cantidad_horas_extra: '' || nomina.cantidad_horas_extra, isr: '' || nomina.isr, total_igss: '' || nomina.total_igss, prestamos: '' || nomina.prestamos, anticipo_salario: '' || nomina.anticipo_salario,
-                        periodo: nomina.periodo || '', employee: nomina.employee || ''
+                    initialValues={{ sueldo_horas_extra: '' || nomina.sueldo_horas_extra, cantidad_horas_extra: '' || nomina.cantidad_horas_extra, isr: '' || nomina.isr, total_igss: '' || nomina.total_igss, prestamos: '' || nomina.prestamos, anticipo_salario: '' || nomina.anticipo_salario, periodo: nomina.periodo || '', employee: nomina.employee || '', bonificaciones: bonificacionesT || ''
                     }}
                     validate={values => {
                         const errors = {};
@@ -496,9 +459,6 @@ export default function NominaPage() {
                         if (values.cantidad_horas_extra < 0) {
                             errors.cantidad_horas_extra = 'Las horas extra no pueden ser negativas';
                         }
-                        // else if (totalHorasExtra > selectedEmployee.area.salary ) {
-                        //     errors.cantidad_horas_extra = 'El total de las horas extra no pueden ser mayores al salario base';
-                        // }
 
                         if (values.sueldo_horas_extra < 0) {
                             errors.sueldo_horas_extra = 'Las horas extra no pueden ser negativas';
@@ -523,58 +483,33 @@ export default function NominaPage() {
                         if (values.anticipo_salario < 0) {
                             errors.anticipo_salario = 'El anticipo de salario no puede ser negativo';
                         }
-
-
-                        // if (!nomina.id) {
-                        //     if (!values.country) {
-                        //         errors.country = 'El pais es requerido';
-                        //     }
-                        //     if (!values.identification_type) {
-                        //         errors.identification_type = 'El tipo de identificacion es requerido';
-                        //     }
-                        //     if (!values.gender) {
-                        //         errors.gender = 'El genero es requerido';
-                        //     }
-                        //     if (!values.birthdate) {
-                        //         errors.birthdate = 'La fecha de nacimiento es requerida';
-                        //     }
-                        //     if (!values.hire_date) {
-                        //         errors.hire_date = 'La fecha de contratación es requerida';
-                        //     }
-                        //     if (!values.contract_type) {
-                        //         errors.contract_type = 'El tipo de contrato es requerido';
-                        //     }
-                        //     if (!values.work_day) {
-                        //         errors.work_day = 'Debes de agregar una jornada laboral';
-                        //     }
-                        // }
                         return errors;
                     }}
                     onSubmit={(values, { resetForm }) => {
                         if (values) {
                             values.companyId = 1;
-                            // if (nomina.id) {
-                            //     if (values.periodo !== "") { values.periodoId = values.periodo.id } else { values.periodoId = nomina.periodoId }
-                            //     if (values.employee !== "") { values.employeeId = values.employee.id } else { values.employeeId = nomina.employeeId }
+                            values.periodoId = values.periodo.id;
+                            values.employeeId = values.employee.id;
 
-                            //     updateNomina(nomina.id, values);
-                            //     setNominaDialog(false);
-                            //     setNomina(emptyNomina);
-                            //     resetForm();
-                            // } else {
-                                values.periodoId = values.periodo.id;
-                                values.employeeId = values.employee.id;
+                            if (values.cantidad_horas_extra === "" || values.cantidad_horas_extra === null || values.cantidad_horas_extra === undefined || isNaN(values.cantidad_horas_extra)) {
+                                values.cantidad_horas_extra = 0;} else { values.cantidad_horas_extra = parseFloat(cantidadHorasExtra).toFixed(2); }
 
+                            if (isNaN(values.sueldo_horas_extra)) {values.sueldo_horas_extra = 0;} else { values.sueldo_horas_extra = parseFloat(totalHorasExtra).toFixed(2); }
+                    
+                            if (isNaN(values.total_igss)) {values.total_igss = 0;} else { values.total_igss = parseFloat(totalIgss).toFixed(2);}
 
-                                values.sueldo_horas_extra = parseFloat(totalHorasExtra).toFixed(2);
-                                values.total_igss = parseFloat(totalIgss).toFixed(2);
-                                
-                                createNomina(values);
-                                setNominaDialog(false);
-                                setNomina(emptyNomina);
-                                resetForm();
-                                datosNomina();
-                            // }
+                            if (values.isr === "" || values.isr === null || values.isr === undefined || isNaN(values.isr)) {values.isr = 0;} else { values.isr = parseFloat(values.isr).toFixed(2); }
+
+                            if (values.prestamos === "" || values.prestamos === null || values.prestamos === undefined || isNaN(values.prestamos)) {values.prestamos = 0;} else { values.prestamos = parseFloat(values.prestamos).toFixed(2); }
+
+                            if (values.anticipo_salario === "" || values.anticipo_salario === null || values.anticipo_salario === undefined || isNaN(values.anticipo_salario)) {values.anticipo_salario = 0;} else { values.anticipo_salario = parseFloat(values.anticipo_salario).toFixed(2); }
+
+                            values.bonificaciones = bonificacionesT;
+                            console.log(values);
+                            createNomina(values);
+                            setNominaDialog(false);
+                            setNomina(emptyNomina);
+                            resetForm();
                         } else {
                             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Nomina no registrado', life: 5000 });
                         }
@@ -582,25 +517,6 @@ export default function NominaPage() {
                 >
                     {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                            {nomina.id && (
-                                <>
-                                    <div className="flex flex-row justify-content-center align-items-center gap-2">
-                                        <label htmlFor="" className='capitalize font-bold'>{values.employee.fullName}</label>
-                                    </div>
-                                    <div className="flex flex-row justify-content-center align-items-center gap-2">
-                                        <div className="flex">
-                                            <cdT.ColumnOnlyDateBodyWithClass value={values.periodo.periodo_liquidacion_inicio} className={''} />
-                                        </div>
-                                        <div className="flex">
-                                            <label className="text-md font-bold">al
-                                            </label>
-                                        </div>
-                                        <div className="flex">
-                                            <cdT.ColumnOnlyDateBodyWithClass value={values.periodo.periodo_liquidacion_final} className={''} />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
                             <TabView style={{ flex: 1, overflow: 'auto' }}>
                                 <TabPanel className='w-full' header="Header I" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'EMPLEADO E INGRESOS')}>
                                     <Formulario>
@@ -712,9 +628,7 @@ export default function NominaPage() {
                                                 disabled={true}
                                             />
 
-                                            {/* {nomina.id && ( */}
-                                                <fI.ButtonB label="Modificar o Agregar Bonificaciones" icon="pi pi-plus" type='button' onClick={datosNomina} col={6} color={'warning'} />
-                                            {/* )} */}
+                                            <fI.ButtonB label="Agregar o Eliminar Bonificaciones" icon="pi pi-plus" type='button' onClick={datosNomina} col={6} color={'warning'} />
 
                                         </div>
                                     </Formulario>
@@ -794,7 +708,7 @@ export default function NominaPage() {
 
                             <div className="flex mb-0 pt-3">
                                 <Button label="Cancelar" type='button' icon="pi pi-times" outlined
-                                    onClick={hideDialog} className='mx-1' />
+                                    onClick={cNomina} className='mx-1' />
                                 <Button label="Guardar Nomina" icon="pi pi-check" type='submit' className='mx-1'
                                     disabled={nomina.id ? false : !(isValid && dirty)}
                                 />
@@ -802,11 +716,10 @@ export default function NominaPage() {
                         </Form>
                     )}
                 </Formik>
-            </Dialog>
+            </m.LargeModal>
 
             {/* //? -------------------- MODAL DIALOG (TABLA BONIFICACIONES) ------------------- */}
-            <Dialog visible={datosNominaDialog} style={{ width: '70rem', height: '42rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Bonificaciones" modal className="p-fluid" onHide={cNomina} dismissableMask={false} blockScroll={true} closeOnEscape={false}
-            >
+            <m.MediumModal visible={datosNominaDialog} header={"Bonificaciones"} onHide={hideDatosNomina} footer={null} dismissableMask={true} blockScroll={true} closeOnEscape={true} >
                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <div style={{ flex: 1, overflow: 'auto' }}>
 
@@ -822,7 +735,7 @@ export default function NominaPage() {
                             message="bonificaciones"
                             headerMessage=""
                             refe={dt}
-                            value={bonificaciones}
+                            value={bonificacionesT}
                             loading={loading}
                             filters={''}
                             setFilters={''}
@@ -834,7 +747,7 @@ export default function NominaPage() {
                                 { field: 'descripcion', header: 'Descripción', body: descriptionBodyTemplate, dataType: 'text', filter: false },
                                 { field: 'cantidad', header: 'Cantidad', body: cantidadBodyTemplate, dataType: 'numeric', filter: false },
                             ]}
-                            size='8rem'
+                            size='4rem'
                             actionBodyTemplate={actionBoniBodyTemplate}
                         />
                     </div>
@@ -842,15 +755,14 @@ export default function NominaPage() {
                     <div className="flex mb-0 pt-3 justify-content-end">
                         <div className="">
                             <Button label="Cerrar Ventana" type='button' icon="pi pi-times" outlined
-                                onClick={cNomina} />
+                                onClick={hideDatosNomina} />
                         </div>
                     </div>
                 </div>
-            </Dialog>
+            </m.MediumModal>
 
             {/* //? -------------------- MODAL DIALOG (AGREGAR BONIFICACION) ------------------- */}
-            <Dialog visible={bonificacionDialog} style={{ width: '30rem', height: '42rem', minWidth: '30rem', maxWidth: '90vw', minHeight: '42rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={`Bonificación: ${nominaId}`} modal className="p-fluid" onHide={hideBonificacion} dismissableMask={false} blockScroll={true} closeOnEscape={false}
-            >
+            <m.SmallModal visible={bonificacionDialog} header={`Detalles de la Bonificación`} onHide={hideBonificacion} footer={null} dismissableMask={false} blockScroll={true} closeOnEscape={true} >
                 <Formik
                     initialValues={{ descripcion: '' || bonificacion.descripcion, cantidad: '' || bonificacion.cantidad }}
                     validate={values => {
@@ -858,6 +770,9 @@ export default function NominaPage() {
 
                         if (!values.descripcion) {
                             errors.descripcion = 'La descripción es requerida';
+                        } 
+                        if (bonificacionesT.some(bonificacion => bonificacion.descripcion === values.descripcion)) {
+                            errors.descripcion = 'La descripción ya existe';
                         }
 
                         // if (!values.descripcion) {
@@ -877,19 +792,14 @@ export default function NominaPage() {
                     }}
                     onSubmit={(values, { resetForm }) => {
                         if (values) {
-                            if (bonificacion.id) {
 
-                                if (selectedTipoBonificacion?.code) { values.descripcion = selectedTipoBonificacion.code } else { values.descripcion = bonificacion.descripcion }
+                            values.descripcion = selectedTipoBonificacion.code;
 
-                                // values.nominaId = bonificacion.nominaId;
-                                updateBonificacion(bonificacion.id, values);
-                                setBonificacionDialog(false);
-                                setBonificacion(emptyBonificacion);
-                                resetForm();
-                            } else {
-                                values.descripcion = selectedTipoBonificacion.code;
-                                values.nominaId = nominaId;
-                                createBonificacion(values);
+                            if (bonificacionesT.some(bonificacion => bonificacion.descripcion === values.descripcion)) {
+                                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'La bonificación ya existe', life: 5000 });
+                            }
+                            else {
+                                addBonificacion(values);
                                 setBonificacionDialog(false);
                                 setBonificacion(emptyBonificacion);
                                 resetForm();
@@ -902,7 +812,6 @@ export default function NominaPage() {
                     {({ values, errors, touched, dirty, isValid, handleChange, handleBlur }) => (
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <div style={{ flex: 1, overflow: 'auto' }}>
-
                                 <div className='w-full'>
                                     <Formulario>
                                         {/* <fI.TextArea
@@ -959,19 +868,16 @@ export default function NominaPage() {
                             </div>
 
                             <div className="flex mb-0 pt-3">
-                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined
-                                    onClick={hideBonificacion} className='mx-1' />
-                                <Button label="Guardar Bonificacion" icon="pi pi-check" type='submit' className='mx-1'
-                                    disabled={bonificacion.id ? false : !(isValid && dirty)}
-                                />
+                                <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideBonificacion} className='mx-1' />
+                                <Button label="Guardar Bonificacion" icon="pi pi-check" type='submit' className='mx-1' disabled={!(isValid && dirty)}/>
                             </div>
                         </Form>
                     )}
                 </Formik>
-            </Dialog>
+            </m.SmallModal>
 
             {/* //? -------------------- MODAL DIALOG (ONLY READ) ------------------- */}
-            <Dialog visible={seeNominaDialog} style={{ width: '62rem', minWidth: '60rem', maxWidth: '90vw', minHeight: '30rem', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Todos los datos de la nomina" modal className='p-fluid' footer={seeDialogFooter} onHide={hideSeeDialog}>
+            <m.LargeModal visible={seeNominaDialog}  header="Todos los datos de la nomina" footer={seeDialogFooter} onHide={hideSeeDialog} dismissableMask={false} blockScroll={true} closeOnEscape={true} >
                 <div className="confirmation-content">
                     {nomina && (<>
                         {nomina.id ? (<>
@@ -993,7 +899,7 @@ export default function NominaPage() {
 
                                                         <label className='text-md capitalize'> <b>PUESTO:</b> {nomina.employee.area.name}</label>
 
-                                                        <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> <cdT.ColumnDateBodyText value={nomina.employee.hire_date} className={''}/> </label>
+                                                        <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> <cdT.ColumnDateBodyText value={nomina.employee.hire_date} className={''} /> </label>
 
                                                         <label className='text-md capitalize'> <b>TIPO CONTRATO:</b> {nomina.employee.contract_type}</label>
 
@@ -1013,8 +919,7 @@ export default function NominaPage() {
                                             </div>
                                         </div>
                                     </TabPanel>
-                                    <TabPanel className='w-full' header="Header II" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'DETALLES DE LA NOMINA')
-                                    }>
+                                    <TabPanel className='w-full' header="Header II" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'DETALLES DE LA NOMINA')}>
                                         <div className="field mt-5 mb-3">
                                             <div className="formgrid grid">
                                                 <div className="col-12">
@@ -1038,7 +943,7 @@ export default function NominaPage() {
                                                     </div>
 
                                                     <Divider align="center">
-                                                        <span className="p-tag">PERCEPCIONES</span>
+                                                        <span className="p-tag">INGRESOS</span>
                                                     </Divider>
                                                     <div className="gap-3 justify-content-between">
                                                         <div className="flex flex-column gap-3">
@@ -1052,7 +957,7 @@ export default function NominaPage() {
                                                                 <label className='text-md capitalize'>BONIFICACIONES</label>
                                                                 <div className="flex flex-column gap-2">
                                                                     <label className='text-md capitalize'>{
-                                                                        nomina.bonificacions.map((bonificacion, index) => (
+                                                                        nomina.bonificaciones.map((bonificacion, index) => (
                                                                             <div className="flex justify-content-between mb-1">
                                                                                 <div className="mr-4">
                                                                                     <span key={index}>{bonificacion.descripcion}</span>
@@ -1080,7 +985,7 @@ export default function NominaPage() {
                                                             <Divider align="center" className='-mt-5 -mb-1' />
 
                                                             <div className="flex justify-content-between">
-                                                                <label className='text-md capitalize'><b>TOTAL PERCEPCIONES</b></label>
+                                                                <label className='text-md capitalize'><b>TOTAL INGRESOS</b></label>
                                                                 <label className='text-md capitalize'><b>Q.{parseFloat(nomina.total_percepciones).toFixed(2)}</b></label>
                                                             </div>
                                                         </div>
@@ -1167,7 +1072,7 @@ export default function NominaPage() {
                         </>) : (<></>)}
                     </>)}
                 </div>
-            </Dialog>
+            </m.LargeModal>
 
             {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
             <m.DeleteModal
@@ -1199,9 +1104,9 @@ export default function NominaPage() {
             <m.ComfirmHideModal
                 visible={cNominaDialog}
                 header="Confirmar"
-                message1="¿Estas seguro que deseas ocultar"
-                message1Bold="la ventana de bonificaciones?"
-                message2="Ya no podrás agregar ni eliminar las bonificaciones"
+                message1="¿Estas seguro que deseas cancelar"
+                message1Bold="la creación de la nomina?"
+                message2="Tendrás que volver a ingresar todos los datos"
                 message2Bold="para esta nómina."
                 footer={closeNominaDatosDialogFooter}
                 onHide={hideCNominaDialog}

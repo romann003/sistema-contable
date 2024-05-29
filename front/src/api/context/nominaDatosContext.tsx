@@ -4,8 +4,6 @@ import { Toast } from 'primereact/toast';
 import {
     //periodos
     getPeriodosRequest, getPeriodoRequest, createPeriodoRequest, updatePeriodoRequest, deletePeriodoRequest
-    //bonificaciones
-    , getBonificacionesRequest, createBonificacionRequest, updateBonificacionRequest, deleteBonificacionRequest
 } from "../nominaDatos.js";
 
 const NominaDatosContext = createContext();
@@ -21,7 +19,6 @@ export const useNominaDatos = () => {
 export function NominaDatosProvider({ children }) {
     const [errors, setErrors] = useState([]);
     const [periodos, setPeriodos] = useState([]);
-    const [bonificaciones, setBonificaciones] = useState([]);
     const toast = useRef<Toast>(null);
 
     const handleRequestError = (error) => {
@@ -103,69 +100,13 @@ export function NominaDatosProvider({ children }) {
         }
     }
 
-    //! ------------------------ BONIFICACIONES ------------------------
-
-    //?------------------------ get ------------------------
-    const getBonificaciones = async (nominaId) => {
-        try {
-            const res = await getBonificacionesRequest(nominaId);
-            setBonificaciones(res.data);
-        } catch (error) {
-            handleRequestError(error);
-        }
-    }
-    // const getBonificaciones = async () => {
-    //     try {
-    //         const res = await getBonificacionesRequest();
-    //         setBonificaciones(res.data);
-    //     } catch (error) {
-    //         handleRequestError(error);
-    //     }
-    // }
-
-    //?------------------------ create ------------------------
-    const createBonificacion = async (bonificacion) => {
-        try {
-            const res = await createBonificacionRequest(bonificacion);
-            handleRequestSuccess(res.status, 'Bonificación creada exitosamente');
-            // setBonificaciones(bonificaciones);
-        } catch (error) {
-            handleRequestError(error);
-        }
-    }
-
-    //?------------------------ update ------------------------
-    const updateBonificacion = async (id, bonificacion) => {
-        try {
-            const res = await updateBonificacionRequest(id, bonificacion);
-            handleRequestSuccess(res.status, 'Bonificación actualizada exitosamente');
-            // setBonificaciones(bonificaciones);
-        } catch (error) {
-            handleRequestError(error);
-        }
-    }
-
-    //?------------------------ delete ------------------------
-    const deleteBonificacion = async (id) => {
-        try {
-            const res = await deleteBonificacionRequest(id);
-            handleRequestSuccess(res.status, 'Bonificación eliminada exitosamente');
-            setBonificaciones(bonificaciones.filter(bonificacion => bonificacion.id !== id));
-        } catch (error) {
-            handleRequestError(error);
-        }
-    }
-
     //?------------------------ useEffect (errors) ------------------------
     useEffect(handleErrorsLifeCycle, [errors]);
 
     return (
         <NominaDatosContext.Provider value={{
             //periodos
-            periodos, setPeriodos, getPeriodos, getPeriodo, createPeriodo, updatePeriodo, deletePeriodo,
-            //bonificaciones
-            bonificaciones, setBonificaciones, getBonificaciones, createBonificacion, updateBonificacion, deleteBonificacion,
-            errors
+            periodos, setPeriodos, getPeriodos, getPeriodo, createPeriodo, updatePeriodo, deletePeriodo,errors
         }}>
             <Toast ref={toast} />
             {children}

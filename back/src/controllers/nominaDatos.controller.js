@@ -1,5 +1,4 @@
-import { NominaSchema } from "../models/Nomina.js";
-import { PeriodoSchema, BonificacionSchema } from "../models/NominaDatos.js";
+import { PeriodoSchema } from "../models/NominaDatos.js";
 
 // Nuevo periodo liquidacion
 export const createNuevoPeriodo = async (req, res) => {
@@ -86,75 +85,6 @@ export const deletePeriodoById = async (req, res) => {
             await deletePeriodo.destroy();
             res.status(200).json({ message: "Periodo de liquidación eliminado correctamente" });
         }
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-}
-
-// Bonificaciones
-
-export const createBonificaciones = async (req, res) => {
-    try {
-        const { descripcion, cantidad, nominaId } = req.body;
-
-        const newBonificacion = new BonificacionSchema({
-            descripcion,
-            cantidad,
-            nominaId
-        });
-
-        if (!descripcion || !cantidad || !nominaId) return res.status(400).json({ message: "Todos los campos son requeridos" });
-        if (cantidad <= 0) return res.status(400).json({ message: "La cantidad no puede ser menor o igual a 0" });
-
-        //verifica que el campo descripcion no se repita en la base de datos para la nomina seleccionada
-        const descriptionFound = await BonificacionSchema.findOne({ where: { descripcion: req.body.descripcion, nominaId: req.body.nominaId } });
-        if (descriptionFound) return res.status(400).json({ message: "La bonificacion con esta descripcion ya existe" });
-
-        //verifica que la nomina exista
-        const isNomina = await NominaSchema.findOne({ where: { id: req.body.nominaId } });
-        if (!isNomina) return res.status(404).json({ message: "Nomina no encontrada" });
-
-        const savedBonificacion = await newBonificacion.save();
-
-        res.status(200).json({ savedBonificacion });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-}
-
-export const getBonificaciones = async (req, res) => {
-    try {
-        const bonificaciones = await BonificacionSchema.findAll({ where: { nominaId: req.params.nominaId }, order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] });
-        const isNomina = await NominaSchema.findOne({ where: { id: req.params.nominaId } });
-        if (!isNomina) return res.status(404).json({ message: "Nomina no encontrada" });
-        if (isNomina && bonificaciones.length === 0) return res.status(404).json({ message: "Bonificaciones no encontradas" });
-        res.status(200).json(bonificaciones);
-    } catch (error) {
-        // return res.status(500).json({ message: error.message });
-    }
-}
-
-export const updateBonificacionById = async (req, res) => {
-    try {
-        const bonificacion = await BonificacionSchema.findByPk(req.params.bonificacionId);
-        if (!bonificacion) return res.status(404).json({ message: "Bonificacion no encontrada" });
-
-        bonificacion.set(req.body);
-        await bonificacion.save();
-
-        res.status(200).json(bonificacion);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-}
-
-export const deleteBonificacionById = async (req, res) => {
-    try {
-        const bonificacion = await BonificacionSchema.findByPk(req.params.bonificacionId);
-        if (!bonificacion) return res.status(404).json({ message: "Bonificacion no encontrada" });
-
-        await bonificacion.destroy();
-        res.status(200).json({ message: "Bonificacion eliminada correctamente" });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

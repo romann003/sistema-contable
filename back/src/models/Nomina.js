@@ -2,8 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../database.js";
 import { CompanySchema } from "./Company.js";
 import { EmployeeSchema } from "./Employee.js";
-import { PeriodoSchema, BonificacionSchema } from "./NominaDatos.js";
-import { AreaSchema } from "./Area.js";
+import { PeriodoSchema } from "./NominaDatos.js";
 
 export const NominaSchema = sequelize.define("nomina", {
     id: {
@@ -66,6 +65,11 @@ export const NominaSchema = sequelize.define("nomina", {
         type: DataTypes.DECIMAL,
         required: false,
         allowNull: true // Se calcula automáticamente
+    },
+    bonificaciones: {
+        type: DataTypes.JSON,
+        required: false,
+        allowNull: true
     }
 }, {
     timestamps: true,
@@ -93,9 +97,7 @@ export const NominaSchema = sequelize.define("nomina", {
 
 async function calcularTotales(nomina) {
     try {
-        const bonificaciones = await BonificacionSchema.findAll({
-            where: { nominaId: nomina.id }
-        });
+        const bonificaciones = nomina.bonificaciones || [];
 
         const employee = await EmployeeSchema.findByPk(nomina.employeeId, {
             include: [
@@ -135,43 +137,15 @@ async function calcularTotales(nomina) {
     }
 }
 
+// Relaciones
+NominaSchema.belongsTo(CompanySchema, { foreignKey: "companyId", targetId: "id" })
 
-NominaSchema.belongsTo(CompanySchema, {
-    foreignKey: "companyId",
-    targetId: "id"
-})
+CompanySchema.hasMany(NominaSchema, { foreignKey: "companyId", sourceKey: "id" })
 
-CompanySchema.hasMany(NominaSchema, {
-    foreignKey: "companyId",
-    sourceKey: "id"
-})
+NominaSchema.belongsTo(EmployeeSchema, { foreignKey: "employeeId", targetId: "id" })
 
-NominaSchema.belongsTo(EmployeeSchema, {
-    foreignKey: "employeeId",
-    targetId: "id"
-})
+EmployeeSchema.hasMany(NominaSchema, { foreignKey: "employeeId", sourceKey: "id" })
 
-EmployeeSchema.hasMany(NominaSchema, {
-    foreignKey: "employeeId",
-    sourceKey: "id"
-})
+NominaSchema.belongsTo(PeriodoSchema, { foreignKey: "periodoId", targetId: "id" })
 
-NominaSchema.belongsTo(PeriodoSchema, {
-    foreignKey: "periodoId",
-    targetId: "id"
-})
-
-PeriodoSchema.hasMany(NominaSchema, {
-    foreignKey: "periodoId",
-    sourceKey: "id"
-})
-
-NominaSchema.hasMany(BonificacionSchema, {
-    foreignKey: "nominaId",
-    targetId: "id"
-})
-
-BonificacionSchema.belongsTo(NominaSchema, {
-    foreignKey: "nominaId",
-    sourceKey: "id"
-})
+PeriodoSchema.hasMany(NominaSchema, { foreignKey: "periodoId", sourceKey: "id" })

@@ -1,12 +1,16 @@
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 import { TabPanel, TabPanelHeaderTemplateOptions, TabView } from "primereact/tabview";
-import { Toolbar } from "primereact/toolbar";
+
+const breakpoints = { '960px': '75vw', '641px': '90vw' };
+const largeSyles = { width: '70rem', height:'43rem', minWidth: '60rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' };
+const mediumSyles = { width: '50rem', height:'43rem', minWidth: '50rem', maxWidth: '90vw', minHeight: '40rem', maxHeight: '90vh' };
+const smallStyles = { width: '30rem', height: '42rem', minWidth: '30rem', maxWidth: '70vw', minHeight: '40rem', maxHeight: '90vh' };
 
 export const DeleteModal = ({ visible, header, data, message1, message1Bold, message2, message2Bold, footer, onHide }) => {
 
     return (
-        <Dialog visible={visible} style={{ width: '32rem', minWidth: '32rem', maxWidth: '40rem', minHeight: '16rem', maxHeight: '16rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
+        <Dialog visible={visible} style={{ width: '32rem', minWidth: '32rem', maxWidth: '40rem', minHeight: '16rem', maxHeight: '16rem' }} breakpoints={breakpoints} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
             <div className="confirmation-content flex">
                 <i className="pi pi-exclamation-triangle mr-4 mb-2" style={{ fontSize: '2rem' }} />
                 {data && (
@@ -22,7 +26,7 @@ export const DeleteModal = ({ visible, header, data, message1, message1Bold, mes
 export const ComfirmHideModal = ({ visible, header, message1, message1Bold, message2, message2Bold, footer, onHide }) => {
 
     return (
-        <Dialog visible={visible} style={{ width: '32rem', minWidth: '32rem', maxWidth: '40rem', minHeight: '16rem', maxHeight: '16rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
+        <Dialog visible={visible} style={{ width: '32rem', minWidth: '32rem', maxWidth: '40rem', minHeight: '16rem', maxHeight: '16rem' }} breakpoints={breakpoints} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
             <div className="confirmation-content flex">
                 <i className="pi pi-exclamation-triangle mr-4 mb-2" style={{ fontSize: '2rem' }} />
                     <span>
@@ -33,6 +37,30 @@ export const ComfirmHideModal = ({ visible, header, message1, message1Bold, mess
     );
 };
 
+export const LargeModal = ({ visible, header, footer, onHide, children, closeOnEscape, blockScroll, dismissableMask }) => {
+    return (
+        <Dialog visible={visible} style={largeSyles} breakpoints={breakpoints} header={header} modal className='p-fluid' footer={footer} onHide={onHide} dismissableMask={dismissableMask} blockScroll={blockScroll} closeOnEscape={closeOnEscape}>
+            {children}
+        </Dialog>
+    );
+}
+
+export const MediumModal = ({ visible, header, footer, onHide, children, closeOnEscape, blockScroll, dismissableMask }) => {
+    return (
+        <Dialog visible={visible} style={mediumSyles} breakpoints={breakpoints} header={header} modal className='p-fluid' footer={footer} onHide={onHide} dismissableMask={dismissableMask} blockScroll={blockScroll} closeOnEscape={closeOnEscape}>
+            {children}
+        </Dialog>
+    );
+}
+
+export const SmallModal = ({ visible, header, footer, onHide, children, closeOnEscape, blockScroll, dismissableMask }) => {
+    return (
+        <Dialog visible={visible} style={smallStyles} breakpoints={breakpoints} header={header} modal className='p-fluid' footer={footer} onHide={onHide} dismissableMask={dismissableMask} blockScroll={blockScroll} closeOnEscape={closeOnEscape}>
+            {children}
+        </Dialog>
+    );
+}
+// style={{ width: '62rem', minWidth: '60rem', maxWidth: '90vw', minHeight: '30rem', maxHeight: '90vh' }}
 export const InfoModal = ({ tbHeader1, tbHeader2, tbHeader3, visible, header, footer, onHide, data, tb1, tb2, tb3,
 
     tb1Titulo1, tb1Dato1, tb1Titulo2, tb1Dato2, tb1Titulo3, tb1Dato3, tb1Titulo4, tb1Dato4, tb1Titulo5, tb1Dato5, tb1Titulo6, tb1Dato6, tb1Titulo7, tb1Dato7, tb1Titulo8, tb1Dato8, tb1Divisor1, tb1Titulo9, tb1Dato9, tb1Titulo10, tb1Dato10, tb1Divisor2, tb1Divisor2Text,
@@ -67,7 +95,7 @@ export const InfoModal = ({ tbHeader1, tbHeader2, tbHeader3, visible, header, fo
     };
 
     return (
-        <Dialog visible={visible} style={{ width: '62rem', minWidth: '30rem', minHeight: '30rem', maxWidth: '90vw', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
+        <Dialog visible={visible} style={{ width: '62rem', minWidth: '30rem', minHeight: '30rem', maxWidth: '90vw', maxHeight: '90vh' }} breakpoints={breakpoints} header={header} modal className='p-fluid' footer={footer} onHide={onHide}>
             <div className="confirmation-content">
                 {data && (<>
                     {data.id ? (<>
@@ -191,6 +219,7 @@ export const InfoModal = ({ tbHeader1, tbHeader2, tbHeader3, visible, header, fo
 
 }
 
+// TABS
 export const TabHeaderTemplate = (options: TabPanelHeaderTemplateOptions, detalles) => {
     return (
         <div className="flex align-items-center gap-2 p-3 justify-content-center" style={{ cursor: 'pointer' }} onClick={options.onClick}>
