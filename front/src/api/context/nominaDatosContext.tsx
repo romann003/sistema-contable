@@ -4,6 +4,8 @@ import { Toast } from 'primereact/toast';
 import {
     //periodos
     getPeriodosRequest, getPeriodoRequest, createPeriodoRequest, updatePeriodoRequest, deletePeriodoRequest
+    //Dashboard
+    , getTotalesRequest
 } from "../nominaDatos.js";
 
 const NominaDatosContext = createContext();
@@ -19,6 +21,7 @@ export const useNominaDatos = () => {
 export function NominaDatosProvider({ children }) {
     const [errors, setErrors] = useState([]);
     const [periodos, setPeriodos] = useState([]);
+    const [totales, setTotales] = useState([]);
     const toast = useRef<Toast>(null);
 
     const handleRequestError = (error) => {
@@ -100,13 +103,26 @@ export function NominaDatosProvider({ children }) {
         }
     }
 
+    //! ------------------------ TOTALES ------------------------
+    //?------------------------ get ------------------------
+    const getTotales = async () => {
+        try {
+            const res = await getTotalesRequest();
+            setTotales(res.data);
+        } catch (error) {
+            handleRequestError(error);
+        }
+    }
+
     //?------------------------ useEffect (errors) ------------------------
     useEffect(handleErrorsLifeCycle, [errors]);
 
     return (
         <NominaDatosContext.Provider value={{
             //periodos
-            periodos, setPeriodos, getPeriodos, getPeriodo, createPeriodo, updatePeriodo, deletePeriodo,errors
+            periodos, setPeriodos, getPeriodos, getPeriodo, createPeriodo, updatePeriodo, deletePeriodo, errors
+            //totales
+            , totales, getTotales
         }}>
             <Toast ref={toast} />
             {children}

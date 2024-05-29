@@ -1,4 +1,9 @@
 import { PeriodoSchema } from "../models/NominaDatos.js";
+import { DepartmentSchema } from "../models/Department.js";
+import { AreaSchema } from "../models/Area.js";
+import { EmployeeSchema } from "../models/Employee.js";
+import { NominaSchema } from "../models/Nomina.js";
+import { Op } from "sequelize";
 
 // Nuevo periodo liquidacion
 export const createNuevoPeriodo = async (req, res) => {
@@ -87,5 +92,60 @@ export const deletePeriodoById = async (req, res) => {
         }
     } catch (error) {
         return res.status(500).json({ message: error.message });
+    }
+}
+
+export const calcularTotales = async (req, res) => {
+    try {
+        const totalDepartamentos = await DepartmentSchema.count();
+        const totalAreas = await AreaSchema.count();
+        const totalEmpleados = await EmployeeSchema.count();
+        const totalNomina = await NominaSchema.count();
+
+        const totalDepartamentosActivos = await DepartmentSchema.count({ where: { status: true } });
+        const totalDepartamentosInactivos = await DepartmentSchema.count({ where: { status: false } });
+        const totalAreasActivas = await AreaSchema.count({ where: { status: true } });
+        const totalAreasInactivas = await AreaSchema.count({ where: { status: false } });
+        const totalEmpleadosActivos = await EmployeeSchema.count({ where: { status: true } });
+        const totalEmpleadosInactivos = await EmployeeSchema.count({ where: { status: false } });
+
+        const totalNominasMes = await NominaSchema.count({ where: { createdAt: { [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 30)) } } });
+        const totalNominasSemana = await NominaSchema.count({ where: { createdAt: { [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 7)) } } });
+        const totalNominasHoy = await NominaSchema.count({ where: { createdAt: { [Op.gte]: new Date(new Date().setDate(new Date().getDate())) } } });
+        const totalNominasRangoFechas = await NominaSchema.count(
+            {
+                include: [{
+                    association: 'periodo',
+                    where: {
+                        periodo_liquidacion_inicio: { [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 30)) },
+                        periodo_liquidacion_final: { [Op.lte]: new Date(new Date().setDate(new Date().getDate())) }
+                    }
+                }
+                ]
+
+            }
+        );
+
+        const totales = {
+            totalDepartamentos,
+            totalDepartamentosActivos,
+            totalDepartamentosInactivos,
+            totalAreas,
+            totalAreasActivas,
+            totalAreasInactivas,
+            totalEmpleados,
+            totalEmpleadosActivos,
+            totalEmpleadosInactivos,
+            totalNomina,
+            totalNominasMes,
+            totalNominasSemana,
+            totalNominasHoy,
+            totalNominasRangoFechas
+        }
+
+        return res.status(200).json(totales);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 }

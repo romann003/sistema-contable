@@ -9,4 +9,7 @@ router.get('/periodos', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosC
 router.put('/periodos/:periodoId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.updatePeriodoById);
 router.delete('/periodos/:periodoId', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.deletePeriodoById);
 
+// totales del dashboard
+router.get('/dashboard', [authJwt.verifyToken, authJwt.isValidUser], nominaDatosController.calcularTotales);
+
 export default router;
