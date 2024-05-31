@@ -42,7 +42,7 @@ const ColumnStatusBody = ({ value }) => {
 const ColumnTextBody = ({ value }) => {
     return (
         // <div className="w-full flex align-items-center justify-content-start gap-2">
-            <span className="font-medium">{value}</span>
+        <span className="font-medium">{value}</span>
         // </div>
     )
 }
@@ -50,7 +50,7 @@ const ColumnTextBody = ({ value }) => {
 const ColumnTextBodyWithClass = ({ value, className }) => {
     return (
         // <div className="w-full flex align-items-center justify-content-start gap-2">
-            <span className={`font-bold ${className}`}>{value}</span>
+        <span className={`font-bold ${className}`}>{value}</span>
         // </div>
     )
 }
@@ -125,4 +125,26 @@ const ColumnDateBodyText = ({ value, className }) => {
     )
 }
 
-export { ColumnTextBody, ColumnStatusBody, ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnOnlyDateBodyText, ColumnOnlyDateBodyWithClass, ColumnDateBodyText, ColumnSalaryBody, ColumnTextBodyWithClass }
+export const formatCurrency = (value, locale = 'es-GT', currency = 'GTQ') => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      currencyDisplay: 'symbol', // Ensure the symbol is used
+    }).format(value);
+  };
+
+const SalaryDisplay = ({ salary, className }) => {
+    const formattedSalary = formatCurrency(parseFloat(salary));
+    
+    return (
+        // <div className="w-full flex align-items-center justify-content-start gap-2 ml-3">
+        //     <span className={`font-medium ${className}`}>Q. {value}</span>
+        // </div>
+      <div className="ml-2">
+        <p className={`font-medium ${className}`}>{formattedSalary}</p>
+      </div>
+    );
+  };
+
+
+export { ColumnTextBody, ColumnStatusBody, ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnOnlyDateBodyText, ColumnOnlyDateBodyWithClass, ColumnDateBodyText, ColumnSalaryBody, ColumnTextBodyWithClass, SalaryDisplay }

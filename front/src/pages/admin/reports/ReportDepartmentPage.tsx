@@ -5,13 +5,13 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { useDepartments } from '../../../api/context/DepartmentContext';
 import { Divider } from 'primereact/divider';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
+import { useDepartments } from '../../../api/context/DepartmentContext';
 import { useCompany } from '../../../api/context/CompanyContext';
 
 import * as cdT from '../../../layout/components/ColumnBody.js';
@@ -54,19 +54,11 @@ export default function ReportDepartmentPage() {
 
     //? -------------------- DATATABLE INPUT TEMPLATES -------------------
     const nameBodyTemplate = (rowData: Department) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.name}</span>
-            </div>
-        );
+        return <cdT.ColumnTextBody value={rowData.name} />;
     };
 
     const desBodyTemplate = (rowData: Department) => {
-        return (
-            <div className="flex align-items-center gap-2">
-                <span>{rowData.description}</span>
-            </div>
-        );
+        return <cdT.ColumnTextBody value={rowData.description} />;
     };
 
     const statusBodyTemplate = (rowData: Department) => {
@@ -115,17 +107,17 @@ export default function ReportDepartmentPage() {
         </React.Fragment>
     );
 
-    //? -------------------- DATATABLE actions -------------------
+    //? -------------------- DATATABLE ACTIONS -------------------
     const exportPDF = () => {
         const doc = new jsPDF();
 
-        const headerText = `${companies.business_name.toUpperCase()}\nNIT: ${companies.nit}\nDIRECCION: ${companies.address}\nTELEFONO: ${companies.phone}`;
+        const headerText = `${companies.business_name.toUpperCase()}\nNIT: ${companies.nit}\n${companies.address}\nNO. TEL: ${companies.phone}`;
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
         doc.text(headerText, 105, 10, { align: 'center' });
 
         const marginTop = doc.getTextDimensions(headerText).h + 30;
-        doc.text('Reporte de Areas (Cargos)', 105, marginTop + 10, { align: 'center' });
+        doc.text('Reporte de Departamentos', 105, marginTop + 10, { align: 'center' });
 
         const tableColumn = ["ID", "Nombre", "Descripción", "Estado", "Creado el", "Última Actualización"];
         const tableRows = departments.map((department, index) => [
@@ -249,7 +241,7 @@ export default function ReportDepartmentPage() {
                     columns={[
                         { field: 'name', header: 'Departamento', body: nameBodyTemplate, dataType: 'text', filter: true },
                         { field: 'description', header: 'Descripción', body: desBodyTemplate, dataType: 'text', filter: true },
-                        { field: 'status', header: 'Estado', body: statusBodyTemplate, dataType: 'boolean', filter: true },
+                        { field: 'status', header: 'Estado', body: statusBodyTemplate, dataType: 'boolean', filter: false },
                         { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
                         { field: 'updatedAt', header: 'Ultima Actualización', body: updatedAtBodyTemplate, filter: false, dataType: 'date' },
                     ]}
@@ -258,7 +250,7 @@ export default function ReportDepartmentPage() {
                 />
             </div>
             {/* //? -------------------- MODAL DIALOG (ONLY READ) ------------------- */}
-            <m.LargeModal visible={detailsDialog} header="Detalles del departamento" footer={detailDialogFooter} onHide={hideDetailsDialog} blockScroll={true} closeOnEscape={true} dismissableMask={true}>
+            <m.LargeModal visible={detailsDialog} header="Detalles del Departamento" footer={detailDialogFooter} onHide={hideDetailsDialog} blockScroll={true} closeOnEscape={true} dismissableMask={true}>
                 <div className="confirmation-content">
                     {department && (<>
                         {department.id && (
