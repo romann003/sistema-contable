@@ -57,7 +57,7 @@ const ColumnTextBodyWithClass = ({ value, className }) => {
 
 const ColumnSalaryBody = ({ value, className }) => {
     return (
-        <div className="w-full flex align-items-center justify-content-start gap-2">
+        <div className="w-full flex align-items-center justify-content-start gap-2 ml-3">
             <span className={`font-medium ${className}`}>Q. {value}</span>
         </div>
     )

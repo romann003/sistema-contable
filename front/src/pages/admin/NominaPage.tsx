@@ -157,7 +157,7 @@ export default function NominaPage() {
     };
 
     const salaryBodyTemplate = (rowData: Nomina) => {
-        return <cdT.ColumnSalaryBody value={rowData.employee.area.salary} className={''} />
+        return <cdT.ColumnSalaryBody value={rowData.employee.area.salary} className={'text-green-400'} />
     };
 
     const fechaPagoBodyTemplate = (rowData: Nomina) => {
@@ -401,7 +401,7 @@ export default function NominaPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Nominas</h3>
-                <BreadComp texto="Nominas" />
+                <BreadComp texto="Nominas" pre={''} valid={false}/>
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTableCrud

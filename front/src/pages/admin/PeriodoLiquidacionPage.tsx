@@ -57,6 +57,7 @@ export default function PeriodoLiquidacionPage() {
     const [periodo, setPeriodo] = useState<Periodo>(emptyPeriodo);
     //? -------------------- STATES -------------------
     const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
+    const [selectedDate, setSelectedDate] = useState(null);
     const toast = useRef<Toast>(null);
     //? -------------------- DIALOG STATES -------------------
     const [createDialog, setCreateDialog] = useState<boolean>(false);
@@ -163,6 +164,41 @@ export default function PeriodoLiquidacionPage() {
         </React.Fragment>
     );
 
+
+
+
+
+
+
+    // const [selectedDate, setSelectedDate] = useState('');
+    // const allowedDates = ['2024-06-03', '2024-06-04', '2024-06-05'];
+
+    // const handleDateChange = (event) => {
+    //     const date = event.target.value;
+    //     const dayOfWeek = new Date(date).getUTCDay();
+
+    //     // Check if the date is a weekend (Saturday: 6, Sunday: 0)
+    //     if (dayOfWeek === 6 || dayOfWeek === 0) {
+    //         alert('La fecha seleccionada es un fin de semana. Por favor, elige otra fecha.');
+    //         setSelectedDate('');
+    //     } else if (!allowedDates.includes(date)) {
+    //         // Check if the date is in the allowed dates
+    //         alert('La fecha seleccionada no está permitida. Por favor, elige otra fecha.');
+    //         setSelectedDate('');
+    //     } else {
+    //         setSelectedDate(date);
+    //     }
+    // };
+
+
+
+
+
+
+
+
+
+
     //? -------------------- RENDER -------------------
     return (
         <div>
@@ -204,7 +240,7 @@ export default function PeriodoLiquidacionPage() {
             </div>
 
             {/* //? -------------------- MODAL DIALOG (CREATE AND UPDATE) ------------------- */}
-            <Dialog visible={createDialog} style={{ width: '30rem', minWidth: '30rem', maxWidth: '30vw', height: '40rem', minHeight: '40rem', maxHeight: '40rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Periodo de liquidación" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={false} closeOnEscape={true}
+            <Dialog visible={createDialog} style={{ width: '60rem', minWidth: '30rem', maxWidth: '80vw', height: '40rem', minHeight: '40rem', maxHeight: '40rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Periodo de liquidación" modal className="p-fluid" onHide={hideDialog} dismissableMask={false} blockScroll={false} closeOnEscape={true}
             >
                 <Formik
                     initialValues={{ periodo_liquidacion_inicio: '' || periodo.periodo_liquidacion_inicio, periodo_liquidacion_final: '' || periodo.periodo_liquidacion_final, fecha_pago: '' || periodo.fecha_pago, status: '' || periodo.status }}
@@ -297,6 +333,15 @@ export default function PeriodoLiquidacionPage() {
                         <Form style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <div style={{ flex: 1, overflow: 'auto' }}>
                                 <Formulario>
+                                    {/* <input type="date" name="date" id="date" value={selectedDate} onChange={handleDateChange} /> */}
+                                    {/* <div className="col-6">
+                                        <fI.DatePicker
+                                            selectedDate={selectedDate}
+                                            setSelectedDate={setSelectedDate}
+                                        />
+
+                                    </div> */}
+
                                     <fI.InputT
                                         col={12}
                                         id="periodo_liquidacion_inicio"
@@ -310,6 +355,7 @@ export default function PeriodoLiquidacionPage() {
                                         onBlur={handleBlur}
                                         invalid={!!errors.periodo_liquidacion_inicio && touched.periodo_liquidacion_inicio}
                                         errorText={errors.periodo_liquidacion_inicio}
+                                        disabled={false}
                                     />
                                     <fI.InputT
                                         col={12}
@@ -324,6 +370,7 @@ export default function PeriodoLiquidacionPage() {
                                         onBlur={handleBlur}
                                         invalid={!!errors.periodo_liquidacion_final && touched.periodo_liquidacion_final}
                                         errorText={errors.periodo_liquidacion_final}
+                                        disabled={false}
                                     />
 
                                     <fI.InputT
@@ -339,6 +386,7 @@ export default function PeriodoLiquidacionPage() {
                                         onBlur={handleBlur}
                                         invalid={!!errors.fecha_pago && touched.fecha_pago}
                                         errorText={errors.fecha_pago}
+                                        disabled={false}
                                     />
                                 </Formulario>
                             </div>
@@ -356,7 +404,7 @@ export default function PeriodoLiquidacionPage() {
             <m.InfoModal
                 visible={infoDialog}
                 header={'Información del Periodo de Liquidación'}
-                
+
                 //? -------------------- TB1 -------------------
                 tb1={true}
                 tbHeader1={'Periodo de Liquidación'}
@@ -370,9 +418,9 @@ export default function PeriodoLiquidacionPage() {
                 tb1Divisor2={true}
                 tb1Divisor2Text={'Otros Datos'}
                 tb1Titulo9={'Creado el:'}
-                tb1Dato9={<cdT.ColumnDateBodyText value={periodo.createdAt} className={'text-primary'}/>}
+                tb1Dato9={<cdT.ColumnDateBodyText value={periodo.createdAt} className={'text-primary'} />}
                 tb1Titulo10={'Ultima Actualización'}
-                tb1Dato10={<cdT.ColumnDateBodyText value={periodo.updatedAt} className={'text-orange-500'}/>}
+                tb1Dato10={<cdT.ColumnDateBodyText value={periodo.updatedAt} className={'text-orange-500'} />}
                 //? -------------------- TB2 -------------------
                 tb2={false}
                 tbHeader2={''}
