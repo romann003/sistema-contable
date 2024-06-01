@@ -56,7 +56,7 @@ const AppMenu = () => {
                             { label: 'Departamentos', icon: 'pi pi-chart-pie', to: '/dashboard/reports/departments' },
                             { label: 'Puestos', icon: 'pi pi-chart-pie', to: '/dashboard/reports/puestos' },
                             { label: 'Empleados', icon: 'pi pi-chart-pie', to: '/dashboard/reports/employees' },
-                            { label: 'Usuarios', icon: 'pi pi-chart-pie', to: '/dashboard/reports/users' },
+                            { label: 'Periodos (Meses)', icon: 'pi pi-chart-pie', to: '/dashboard/reports/periodos-liquidacion' },
                             { label: 'Nominas', icon: 'pi pi-chart-pie', to: '/dashboard/reports/nominas' },
                         ]
                 },

@@ -5,12 +5,29 @@ import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 import { useEffect } from "react";
 import { Button } from "primereact/button";
-import { Toolbar } from "primereact/toolbar";
-
 
 export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, message, value, filters, loading, columns, actionBodyTemplate, globalFilterFields, globalFilterValue, size, headerMessage, buscador, dtSize, openNew, btActive, btnSize, btnColor, btnText
+    // ,setGetFecha
     //  ,useEffect1, useEffect2, useEffectLoad
 }) {
+
+
+
+
+    //   const onFilter = (e) => {
+    //     setFilters(e.filters);
+    //     const filtered = refe.current.filteredValue;
+    //     console.log(e)
+    //     // console.log('Filtros aplicados:', e.filters); // Aquí puedes ver los filtros aplicados
+
+    //     // Ejemplo de cómo acceder a valores específicos del filtro
+    //     const fecha_pago = e.filters['periodo.fecha_pago']?.value;
+    //     setGetFecha(fecha_pago);
+    //     // const departmentNameFilterValue = e.filters['employee.department.name']?.value;
+    //     // console.log('Filtro employee.fullName:', fecha_pago);
+    //     // console.log('Filtro employee.department.name:', departmentNameFilterValue);
+    // };
+
 
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -40,6 +57,7 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
                         <IconField iconPosition="left">
                             <InputIcon className="pi pi-search" />
                             <InputText type="text" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar..." />
+                            
                         </IconField>
 
                     </div>
@@ -61,7 +79,6 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
     // };
 
     const footer = `En total hay ${value ? value.length : 0} ${message}.`;
-
     return (
         <DataTable
             size={dtSize}
@@ -75,6 +92,7 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
             ref={refe}
             value={value}
             filters={filters}
+            // onFilter={onFilter}
             loading={loading}
             header={header}
             globalFilterFields={globalFilterFields}
@@ -84,6 +102,7 @@ export default function DataTableCrud({ setFilters, setGlobalFilterValue, refe, 
             currentPageReportTemplate={`Mostrando {first} - {last} de {totalRecords} ${message}`}
         // rowsPerPageOptions={[5, 10, 25]}
         >
+            
             <Column header="ID" body={(rowData) => <span>{value.indexOf(rowData) + 1}</span>} />
             {columns.map((col, index) => {
                 return (

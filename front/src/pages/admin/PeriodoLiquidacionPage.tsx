@@ -21,6 +21,7 @@ import DataTableCrud from '../../layout/components/DataTableCrud.js';
 
 //? -------------------- API -------------------
 import { useNominaDatos } from '../../api/context/nominaDatosContext';
+import { Divider } from 'primereact/divider';
 
 //? -------------------- DEFINICION DE CAMPOS -------------------
 interface Periodo {
@@ -36,7 +37,7 @@ interface Periodo {
 const defaultFilters: DataTableFilterMeta = {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     periodo_liquidacion_inicio: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    periodo_liquidacion_final: { value: null, matchMode: FilterMatchMode.EQUALS },
+    periodo_liquidacion_final: { value: null, matchMode: FilterMatchMode.CONTAINS },
     fecha_pago: { value: null, matchMode: FilterMatchMode.CONTAINS },
 }
 
@@ -205,7 +206,7 @@ export default function PeriodoLiquidacionPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Periodo de Liquidación</h3>
-                <BreadComp texto="Periodos de Liquidación" />
+                <BreadComp pre={""} texto="Periodos de Liquidación" valid={false} />
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTableCrud
@@ -268,10 +269,9 @@ export default function PeriodoLiquidacionPage() {
                             errors.periodo_liquidacion_inicio = 'Las fechas no pueden ser iguales';
                         } else if (values.periodo_liquidacion_final < values.periodo_liquidacion_inicio) {
                             errors.periodo_liquidacion_final = 'La fecha final no puede ser menor a la fecha de inicio';
+                        } else if (values.periodo_liquidacion_final > values.fecha_pago) {
+                            errors.periodo_liquidacion_final = 'La fecha final no puede ser mayor a la fecha de pago';
                         }
-                        // else if (values.periodo_liquidacion_final > values.fecha_pago) {
-                        //     errors.periodo_liquidacion_final = 'La fecha final no puede ser mayor a la fecha de pago';
-                        // } 
                         // else if (values.periodo_liquidacion_final < dayjs().format()) {
                         //     errors.periodo_liquidacion_final = 'La fecha final no puede ser menor a la fecha actual';
                         // }
@@ -286,7 +286,12 @@ export default function PeriodoLiquidacionPage() {
                             errors.fecha_pago = 'La fecha de pago no puede ser igual a la fecha final';
                         } else if (values.fecha_pago < values.periodo_liquidacion_inicio) {
                             errors.fecha_pago = 'La fecha de pago no puede ser menor a la fecha de inicio';
+                        } else if (values.fecha_pago < values.periodo_liquidacion_final) {
+                            errors.fecha_pago = 'La fecha de pago no puede ser menor a la fecha final';
                         }
+                        // else if (values.fecha_pago < dayjs().format()) {
+                        //     errors.fecha_pago = 'La fecha de pago no puede ser menor a la fecha actual';
+                        // } 
                         // else if (values.fecha_pago < values.periodo_liquidacion_final) {
                         //     errors.fecha_pago = 'La fecha de pago no puede ser menor a la fecha final';
                         // } 
@@ -400,41 +405,43 @@ export default function PeriodoLiquidacionPage() {
                 </Formik>
             </Dialog>
 
+
             {/* //? -------------------- MODAL DIALOG (ONLY READ) ------------------- */}
-            <m.InfoModal
-                visible={infoDialog}
-                header={'Información del Periodo de Liquidación'}
+            <m.LargeModal visible={infoDialog} header="Detalles del Periodo de Liquidacion" footer={infoDialogFooter} onHide={hideInfoDialog} blockScroll={true} closeOnEscape={true} dismissableMask={true}>
+                <div className="confirmation-content">
+                    {periodo && (<>
+                        {periodo.id && (
+                            <div className="card">
+                                <div className="field mt-5 mb-3">
+                                    <div className="formgrid grid">
+                                        <div className="col-12">
+                                            <div className="flex flex-wrap gap-3 justify-content-between">
+                                                <label className='text-md capitalize'> <b>FECHA DE INICIO:</b> <cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_inicio} className={'text-primary'} /></label>
+                                                <label className='text-md capitalize'> <b>FECHA FINAL:</b> <cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_final} className={'text-primary'} /></label>
+                                                <label className='text-md capitalize'> <b>FECHA DE PAGO:</b> <cdT.ColumnOnlyDateBodyText value={periodo.fecha_pago} className={'text-primary'} /></label>
+                                            </div>
 
-                //? -------------------- TB1 -------------------
-                tb1={true}
-                tbHeader1={'Periodo de Liquidación'}
-                tb1Titulo1={'Fecha de Inicio'}
-                tb1Dato1={<cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_inicio} className={'text-primary'} />}
-                tb1Titulo4={'Fecha de Finalización'}
-                tb1Dato4={<cdT.ColumnOnlyDateBodyText value={periodo.periodo_liquidacion_final} className={'text-primary'} />}
-                tb1Titulo8={'Fecha de Pago'}
-                tb1Dato8={<cdT.ColumnOnlyDateBodyText value={periodo.fecha_pago} className={'text-primary'} />}
-                tb1Divisor1={false}
-                tb1Divisor2={true}
-                tb1Divisor2Text={'Otros Datos'}
-                tb1Titulo9={'Creado el:'}
-                tb1Dato9={<cdT.ColumnDateBodyText value={periodo.createdAt} className={'text-primary'} />}
-                tb1Titulo10={'Ultima Actualización'}
-                tb1Dato10={<cdT.ColumnDateBodyText value={periodo.updatedAt} className={'text-orange-500'} />}
-                //? -------------------- TB2 -------------------
-                tb2={false}
-                tbHeader2={''}
+                                            <Divider align="center" className='my-5'>
+                                                <span className="p-tag">Otros Datos</span>
+                                            </Divider>
+                                            <div className="flex flex-wrap gap-3 justify-content-between">
 
-                //? -------------------- TB3 -------------------
-                tb3={false}
-                tbHeader3={''}
+                                                <label className='text-md capitalize'><b>Fecha de Creación: </b>
+                                                    <cdT.ColumnDateBodyText value={periodo.createdAt} className={"text-primary"} />
+                                                </label>
 
-                footer={infoDialogFooter}
-                onHide={hideInfoDialog}
-                data={periodo}
-            >
-
-            </m.InfoModal>
+                                                <label className='text-md capitalize'><b>última Actualización: </b>
+                                                    <cdT.ColumnDateBodyText value={periodo.updatedAt} className={"text-primary"} />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>)}
+                </div>
+            </m.LargeModal>
 
 
             {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}

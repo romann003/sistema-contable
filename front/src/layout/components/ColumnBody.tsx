@@ -1,11 +1,10 @@
 import { Tag } from "primereact/tag";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
-
 dayjs.extend(utc);
 
-
-const ColumnStatusBody = ({ value }) => {
+//? ------------------------ ESTADOS ------------------------
+export const ColumnStatusBody = ({ value }) => {
     const getDatoStatus = (value) => {
         switch (value.status) {
             case true:
@@ -39,7 +38,8 @@ const ColumnStatusBody = ({ value }) => {
     )
 }
 
-const ColumnTextBody = ({ value }) => {
+//? ------------------------ TEXTOS ------------------------
+export const ColumnTextBody = ({ value }) => {
     return (
         // <div className="w-full flex align-items-center justify-content-start gap-2">
         <span className="font-medium">{value}</span>
@@ -47,7 +47,7 @@ const ColumnTextBody = ({ value }) => {
     )
 }
 
-const ColumnTextBodyWithClass = ({ value, className }) => {
+export const ColumnTextBodyWithClass = ({ value, className }) => {
     return (
         // <div className="w-full flex align-items-center justify-content-start gap-2">
         <span className={`font-bold ${className}`}>{value}</span>
@@ -55,15 +55,8 @@ const ColumnTextBodyWithClass = ({ value, className }) => {
     )
 }
 
-const ColumnSalaryBody = ({ value, className }) => {
-    return (
-        <div className="w-full flex align-items-center justify-content-start gap-2 ml-3">
-            <span className={`font-medium ${className}`}>Q. {value}</span>
-        </div>
-    )
-}
-
-const ColumnChipBody = ({ value }) => {
+//? ------------------------ CON FONDO REDONDEADO (CHIP) ------------------------
+export const ColumnChipBody = ({ value }) => {
     return (
         <div className="w-full flex align-items-center justify-content-start gap-2">
             <span className='bg-gray-200 border-round-3xl px-3 py-2 uppercase font-bold text-center'>{value}</span>
@@ -71,7 +64,19 @@ const ColumnChipBody = ({ value }) => {
     )
 }
 
-const ColumnDateBody = ({ value }) => {
+//? ------------------------ FECHAS ------------------------
+export const ColumnDateBodyText = ({ value, className }) => {
+    return (
+        <span className={`${className}`}>
+            {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
+            {`${new Date(value).toLocaleDateString()} - ${new Date(value).toLocaleTimeString()}`}
+
+            {/* {dayjs.utc(value).format('DD/MM/YYYY')} */}
+        </span>
+    )
+}
+
+export const ColumnDateBody = ({ value }) => {
     return (
         <div className="w-full flex align-items-center justify-content-start gap-2">
             <span className='bg-gray-200 border-round-2xl px-2 py-2 uppercase font-bold text-center'>
@@ -83,7 +88,18 @@ const ColumnDateBody = ({ value }) => {
     )
 }
 
-const ColumnOnlyDateBody = ({ value }) => {
+export const ColumnOnlyDateBodyText = ({ value, className }) => {
+    return (
+        <span className={`${className}`}>
+            {/* {`${new Date(value).toLocaleDateString()}`} */}
+
+            {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
+            {dayjs.utc(value).format('DD/MM/YYYY')}
+        </span>
+    )
+}
+
+export const ColumnOnlyDateBody = ({ value }) => {
     return (
         <div className="w-full flex align-items-center justify-content-start gap-2">
             <span className='bg-gray-200 border-round-2xl px-2 py-2 uppercase font-bold text-center'>
@@ -94,10 +110,10 @@ const ColumnOnlyDateBody = ({ value }) => {
     )
 }
 
-const ColumnOnlyDateBodyWithClass = ({ value, className }) => {
+export const ColumnOnlyDateBodyWithClass = ({ value, className }) => {
     return (
         <div className="w-full flex align-items-center justify-content-start gap-2">
-            <span className={`uppercase font-bold text-center px-2 py-2 ${className}`}>
+            <span className={`font-bold text-center px-2 py-2 ${className}`}>
                 {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
                 {dayjs.utc(value).format('DD/MM/YYYY')}
             </span>
@@ -105,46 +121,29 @@ const ColumnOnlyDateBodyWithClass = ({ value, className }) => {
     )
 }
 
-const ColumnOnlyDateBodyText = ({ value, className }) => {
-    return (
-        <span className={`${className}`}>
-            {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
-            {dayjs.utc(value).format('DD/MM/YYYY')}
-        </span>
-    )
-}
-
-const ColumnDateBodyText = ({ value, className }) => {
-    return (
-        <span className={`${className}`}>
-            {/* {`${new Date(value).toUTCString().trimEnd().slice(0, 16)}`} */}
-            {`${new Date(value).toLocaleDateString()} - ${new Date(value).toLocaleTimeString()}`}
-
-            {/* {dayjs.utc(value).format('DD/MM/YYYY')} */}
-        </span>
-    )
-}
-
+//? ------------------------ SALARIOS ------------------------
 export const formatCurrency = (value, locale = 'es-GT', currency = 'GTQ') => {
     return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currency,
-      currencyDisplay: 'symbol', // Ensure the symbol is used
+        style: 'currency',
+        currency: currency,
+        currencyDisplay: 'symbol', // Ensure the symbol is used
     }).format(value);
-  };
+};
 
-const SalaryDisplay = ({ salary, className }) => {
+export const SalaryDisplay = ({ salary, className }) => {
     const formattedSalary = formatCurrency(parseFloat(salary));
-    
+
     return (
-        // <div className="w-full flex align-items-center justify-content-start gap-2 ml-3">
-        //     <span className={`font-medium ${className}`}>Q. {value}</span>
-        // </div>
-      <div className="ml-2">
-        <p className={`font-medium ${className}`}>{formattedSalary}</p>
-      </div>
+        <div className="ml-2">
+            <p className={`font-medium ${className}`}>{formattedSalary}</p>
+        </div>
     );
-  };
+};
 
-
-export { ColumnTextBody, ColumnStatusBody, ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnOnlyDateBodyText, ColumnOnlyDateBodyWithClass, ColumnDateBodyText, ColumnSalaryBody, ColumnTextBodyWithClass, SalaryDisplay }
+export const ColumnSalaryBody = ({ value, className }) => {
+    return (
+        <div className="w-full flex align-items-center justify-content-start gap-2 ml-3">
+            <span className={`font-medium ${className}`}>Q. {value}</span>
+        </div>
+    )
+}

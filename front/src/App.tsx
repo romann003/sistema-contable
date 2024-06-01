@@ -5,7 +5,7 @@ import LandingPage from "./pages/LandingPage";
 import Error404Page from "./pages/errors/Error404Page";
 
 import LoginPage from "./pages/auth/LoginPage";
-import ProtectedRoute from "./ProtectedRoute";
+import { ProtectedRoute, ProtectedRouteOnlySuperAdmin, ProtectedRouteOnlyAdmins, ProtectedRouteUsers } from "./ProtectedRoute";
 import LayoutDashboard from "./layout/LayoutDashboard";
 import Dashboard from "./pages/admin/DashboardPage";
 import DepartmentsPage from "./pages/admin/DepartmentsPage";
@@ -19,6 +19,9 @@ import { GeneralProvider } from "./api/context/GeneralContext";
 import ReportDepartmentPage from "./pages/admin/reports/ReportDepartmentPage";
 import ReportAreasPage from "./pages/admin/reports/ReportAreasPage";
 import PeriodoLiquidacionPage from "./pages/admin/PeriodoLiquidacionPage";
+import ReporteEmployeesPage from "./pages/admin/reports/ReporteEmployeesPage";
+import ReportePeriodosPage from "./pages/admin/reports/ReportePeriodosPage";
+import ReporteNominasPage from "./pages/admin/reports/ReporteNominasPage";
 
 
 export default function App() {
@@ -32,21 +35,34 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<LayoutDashboard />} >
               <Route index element={<Dashboard />} />
-              <Route path="departments" element={<DepartmentsPage />} />
-              <Route path="puestos" element={<AreasPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="company" element={<CompanyPage />} />
-              <Route path="employees" element={<EmployeesPage />} />
 
-              <Route path="rc/periodo-liquidacion" element={<PeriodoLiquidacionPage />} />
-              <Route path="rc/nomina" element={<NominaPage />} />
 
-              <Route path="reports/departments" element={<ReportDepartmentPage />} />
-              <Route path="reports/puestos" element={<ReportAreasPage />} />
-              <Route path="reports/users" element={<UsersPage />} />
-              <Route path="reports/company" element={<CompanyPage />} />
-              <Route path="reports/employees" element={<EmployeesPage />} />
-              <Route path="reports/nominas" element={<NominaPage />} />
+              //? ----------- isSuperAdmin
+              <Route element={<ProtectedRouteOnlySuperAdmin />}>
+                <Route path="users" element={<UsersPage />} />
+                <Route path="company" element={<CompanyPage />} />
+              </Route>
+
+                //? ----------- isAdmins
+              <Route element={<ProtectedRouteOnlyAdmins />}>
+                <Route path="departments" element={<DepartmentsPage />} />
+                <Route path="puestos" element={<AreasPage />} />
+                <Route path="employees" element={<EmployeesPage />} />
+              </Route>
+
+                //? ----------- isUsers
+              <Route element={<ProtectedRouteUsers />}>
+                <Route path="rc/periodo-liquidacion" element={<PeriodoLiquidacionPage />} />
+                <Route path="rc/nomina" element={<NominaPage />} />
+                //? ----------- Reports
+                <Route path="reports/departments" element={<ReportDepartmentPage />} />
+                <Route path="reports/puestos" element={<ReportAreasPage />} />
+                <Route path="reports/employees" element={<ReporteEmployeesPage />} />
+                <Route path="reports/periodos-liquidacion" element={<ReportePeriodosPage />} />
+                <Route path="reports/nominas" element={<ReporteNominasPage />} />
+              </Route>
+
+
             </Route>
           </Route>
           <Route path="/access-denied" element={<ErrorAccessPage />} />

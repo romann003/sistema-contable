@@ -64,7 +64,7 @@ const defaultFilters: DataTableFilterMeta = {
     'employee.identification': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'employee.department.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'employee.area.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'employee.area.salary': { value: null, matchMode: FilterMatchMode.EQUALS },
+    'employee.area.salary': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'periodo.fecha_pago': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'periodo.periodo_liquidacion_inicio': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'periodo.periodo_liquidacion_final': { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -274,7 +274,7 @@ export default function NominaPage() {
 
     //Confirmar Cerrar
     const cNomina = () => {
-            setCNominaDialog(true);
+        setCNominaDialog(true);
     };
 
     const hideCNominaDialog = () => {
@@ -401,7 +401,7 @@ export default function NominaPage() {
             <Toast ref={toast} />
             <div className="card">
                 <h3>Nominas</h3>
-                <BreadComp texto="Nominas" pre={''} valid={false}/>
+                <BreadComp texto="Nominas" pre={''} valid={false} />
 
                 {/* //? -------------------- DATATABLE ------------------- */}
                 <DataTableCrud
@@ -444,7 +444,8 @@ export default function NominaPage() {
             {/* //? -------------------- MODAL DIALOG (CREATE) ------------------- */}
             <m.LargeModal visible={nominaDialog} header="Detalles de la Nomina" onHide={hideDialog} footer={null} dismissableMask={false} blockScroll={true} closeOnEscape={true} >
                 <Formik
-                    initialValues={{ sueldo_horas_extra: '' || nomina.sueldo_horas_extra, cantidad_horas_extra: '' || nomina.cantidad_horas_extra, isr: '' || nomina.isr, total_igss: '' || nomina.total_igss, prestamos: '' || nomina.prestamos, anticipo_salario: '' || nomina.anticipo_salario, periodo: nomina.periodo || '', employee: nomina.employee || '', bonificaciones: bonificacionesT || ''
+                    initialValues={{
+                        sueldo_horas_extra: '' || nomina.sueldo_horas_extra, cantidad_horas_extra: '' || nomina.cantidad_horas_extra, isr: '' || nomina.isr, total_igss: '' || nomina.total_igss, prestamos: '' || nomina.prestamos, anticipo_salario: '' || nomina.anticipo_salario, periodo: nomina.periodo || '', employee: nomina.employee || '', bonificaciones: bonificacionesT || ''
                     }}
                     validate={values => {
                         const errors = {};
@@ -492,17 +493,18 @@ export default function NominaPage() {
                             values.employeeId = values.employee.id;
 
                             if (values.cantidad_horas_extra === "" || values.cantidad_horas_extra === null || values.cantidad_horas_extra === undefined || isNaN(values.cantidad_horas_extra)) {
-                                values.cantidad_horas_extra = 0;} else { values.cantidad_horas_extra = parseFloat(cantidadHorasExtra).toFixed(2); }
+                                values.cantidad_horas_extra = 0;
+                            } else { values.cantidad_horas_extra = parseFloat(cantidadHorasExtra).toFixed(2); }
 
-                            if (isNaN(values.sueldo_horas_extra)) {values.sueldo_horas_extra = 0;} else { values.sueldo_horas_extra = parseFloat(totalHorasExtra).toFixed(2); }
-                    
-                            if (isNaN(values.total_igss)) {values.total_igss = 0;} else { values.total_igss = parseFloat(totalIgss).toFixed(2);}
+                            if (isNaN(values.sueldo_horas_extra)) { values.sueldo_horas_extra = 0; } else { values.sueldo_horas_extra = parseFloat(totalHorasExtra).toFixed(2); }
 
-                            if (values.isr === "" || values.isr === null || values.isr === undefined || isNaN(values.isr)) {values.isr = 0;} else { values.isr = parseFloat(values.isr).toFixed(2); }
+                            if (isNaN(values.total_igss)) { values.total_igss = 0; } else { values.total_igss = parseFloat(totalIgss).toFixed(2); }
 
-                            if (values.prestamos === "" || values.prestamos === null || values.prestamos === undefined || isNaN(values.prestamos)) {values.prestamos = 0;} else { values.prestamos = parseFloat(values.prestamos).toFixed(2); }
+                            if (values.isr === "" || values.isr === null || values.isr === undefined || isNaN(values.isr)) { values.isr = 0; } else { values.isr = parseFloat(values.isr).toFixed(2); }
 
-                            if (values.anticipo_salario === "" || values.anticipo_salario === null || values.anticipo_salario === undefined || isNaN(values.anticipo_salario)) {values.anticipo_salario = 0;} else { values.anticipo_salario = parseFloat(values.anticipo_salario).toFixed(2); }
+                            if (values.prestamos === "" || values.prestamos === null || values.prestamos === undefined || isNaN(values.prestamos)) { values.prestamos = 0; } else { values.prestamos = parseFloat(values.prestamos).toFixed(2); }
+
+                            if (values.anticipo_salario === "" || values.anticipo_salario === null || values.anticipo_salario === undefined || isNaN(values.anticipo_salario)) { values.anticipo_salario = 0; } else { values.anticipo_salario = parseFloat(values.anticipo_salario).toFixed(2); }
 
                             values.bonificaciones = bonificacionesT;
                             console.log(values);
@@ -770,7 +772,7 @@ export default function NominaPage() {
 
                         if (!values.descripcion) {
                             errors.descripcion = 'La descripción es requerida';
-                        } 
+                        }
                         if (bonificacionesT.some(bonificacion => bonificacion.descripcion === values.descripcion)) {
                             errors.descripcion = 'La descripción ya existe';
                         }
@@ -869,7 +871,7 @@ export default function NominaPage() {
 
                             <div className="flex mb-0 pt-3">
                                 <Button label="Cancelar" type='button' icon="pi pi-times" outlined onClick={hideBonificacion} className='mx-1' />
-                                <Button label="Guardar Bonificacion" icon="pi pi-check" type='submit' className='mx-1' disabled={!(isValid && dirty)}/>
+                                <Button label="Guardar Bonificacion" icon="pi pi-check" type='submit' className='mx-1' disabled={!(isValid && dirty)} />
                             </div>
                         </Form>
                     )}
@@ -877,7 +879,7 @@ export default function NominaPage() {
             </m.SmallModal>
 
             {/* //? -------------------- MODAL DIALOG (ONLY READ) ------------------- */}
-            <m.LargeModal visible={seeNominaDialog}  header="Todos los datos de la nomina" footer={seeDialogFooter} onHide={hideSeeDialog} dismissableMask={false} blockScroll={true} closeOnEscape={true} >
+            <m.LargeModal visible={seeNominaDialog} header="Todos los datos de la nomina" footer={seeDialogFooter} onHide={hideSeeDialog} dismissableMask={false} blockScroll={true} closeOnEscape={true} >
                 <div className="confirmation-content">
                     {nomina && (<>
                         {nomina.id ? (<>
@@ -899,7 +901,7 @@ export default function NominaPage() {
 
                                                         <label className='text-md capitalize'> <b>PUESTO:</b> {nomina.employee.area.name}</label>
 
-                                                        <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> <cdT.ColumnDateBodyText value={nomina.employee.hire_date} className={''} /> </label>
+                                                        <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> <cdT.ColumnOnlyDateBodyText value={nomina.employee.hire_date} className={''} /> </label>
 
                                                         <label className='text-md capitalize'> <b>TIPO CONTRATO:</b> {nomina.employee.contract_type}</label>
 
@@ -950,7 +952,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'> SALARIO BASE</label>
-                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.employee.area.salary).toFixed(2)}</label>
+                                                                <label className='text-md capitalize'><cdT.SalaryDisplay salary={nomina.employee.area.salary} className="" /></label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
@@ -963,14 +965,14 @@ export default function NominaPage() {
                                                                                     <span key={index}>{bonificacion.descripcion}</span>
                                                                                 </div>
                                                                                 <div className="">
-                                                                                    <span key={index}>Q.{parseFloat(bonificacion.cantidad).toFixed(2)}</span>
+                                                                                    <span key={index}><cdT.SalaryDisplay salary={bonificacion.cantidad} className="" /></span>
                                                                                 </div>
                                                                             </div>
                                                                         ))
                                                                     }</label>
                                                                     <Divider align="center" className='-mt-1 -mb-1' />
                                                                     <div className="flex justify-content-end">
-                                                                        <label className='text-md capitalize font-bold'>Q.{parseFloat(nomina.total_bonificaciones).toFixed(2)}</label>
+                                                                        <label className='text-md capitalize font-bold'><cdT.SalaryDisplay salary={nomina.total_bonificaciones} className="font-bold" /></label>
                                                                     </div>
                                                                 </div>
 
@@ -978,7 +980,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'> NO. HORAS EXTRA: <b> {nomina.cantidad_horas_extra}</b></label>
-                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.sueldo_horas_extra).toFixed(2)}</label>
+                                                                <label className='text-md capitalize'><cdT.SalaryDisplay salary={nomina.sueldo_horas_extra} className="" /></label>
                                                             </div>
 
                                                             <Divider align="center" className='-mt-1' />
@@ -986,7 +988,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'><b>TOTAL INGRESOS</b></label>
-                                                                <label className='text-md capitalize'><b>Q.{parseFloat(nomina.total_percepciones).toFixed(2)}</b></label>
+                                                                <label className='text-md capitalize'><b><cdT.SalaryDisplay salary={nomina.total_percepciones} className="font-bold" /></b></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -998,22 +1000,22 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'>ISR</label>
-                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.isr).toFixed(2)}</label>
+                                                                <label className='text-md capitalize'><cdT.SalaryDisplay salary={nomina.isr} className="" /></label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'>IGSS</label>
-                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.total_igss).toFixed(2)}</label>
+                                                                <label className='text-md capitalize'><cdT.SalaryDisplay salary={nomina.total_igss} className="" /></label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'>PRESTAMOS</label>
-                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.prestamos).toFixed(2)}</label>
+                                                                <label className='text-md capitalize'><cdT.SalaryDisplay salary={nomina.prestamos} className="" /></label>
                                                             </div>
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'>SALARIO ANTICIPADO</label>
-                                                                <label className='text-md capitalize'>Q.{parseFloat(nomina.anticipo_salario).toFixed(2)}</label>
+                                                                <label className='text-md capitalize'><cdT.SalaryDisplay salary={nomina.anticipo_salario} className="" /></label>
                                                             </div>
 
                                                             <Divider align="center" className='-mt-1' />
@@ -1021,7 +1023,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-md capitalize'><b>TOTAL DEDUCCIONES</b></label>
-                                                                <label className='text-md capitalize'><b>Q.{parseFloat(nomina.total_deducciones).toFixed(2)}</b></label>
+                                                                <label className='text-md capitalize'><b><cdT.SalaryDisplay salary={nomina.total_deducciones} className="font-bold" /></b></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1034,7 +1036,7 @@ export default function NominaPage() {
 
                                                             <div className="flex justify-content-between">
                                                                 <label className='text-lg capitalize text-primary'><b>LIQUIDO TOTAL A RECIBIR</b></label>
-                                                                <label className='text-lg capitalize text-primary'><b>Q.{parseFloat(nomina.liquido_percibir).toFixed(2)}</b></label>
+                                                                <label className='text-lg capitalize text-primary'><b><cdT.SalaryDisplay salary={nomina.liquido_percibir} className="font-bold" /></b></label>
                                                             </div>
                                                         </div>
                                                     </div>

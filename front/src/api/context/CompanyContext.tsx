@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { getCompanyRequest, updateCompanyRequest, getCompaniesRequest } from "../company.js";
+import { getCompanyRequest, updateCompanyRequest, getCompaniesRequest, getCompanyReportesRequest } from "../company.js";
 import { Toast } from 'primereact/toast';
 
 
@@ -65,6 +65,16 @@ export function CompanyProvider({ children }) {
         }
     }
 
+    const getCompanyReportes = async (id) => {
+        try {
+            const res = await getCompanyReportesRequest(id);
+            setCompanies(res.data);
+        } catch (error) {
+            handleRequestError(error);
+
+        }
+    }
+
     //?------------------------ update ------------------------
     const updateCompany = async (id, company) => {
         try {
@@ -80,7 +90,7 @@ export function CompanyProvider({ children }) {
     useEffect(handleErrorsLifeCycle, [errors]);
 
     return <CompanyContext.Provider value={{
-        companies, setCompanies, getCompanies, getCompany, updateCompany, errors
+        companies, setCompanies, getCompanies, getCompanyReportes, getCompany, updateCompany, errors
     }}>
         <Toast ref={toast} />
         {children}

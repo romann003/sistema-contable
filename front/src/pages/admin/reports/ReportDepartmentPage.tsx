@@ -40,7 +40,7 @@ export default function ReportDepartmentPage() {
 
     //? -------------------- CONTEXT API -------------------
     const { departments, getDepartments } = useDepartments();
-    const { companies, getCompany } = useCompany();
+    const { companies, getCompanyReportes } = useCompany();
     //? -------------------- STATES -------------------
     const toast = useRef<Toast>(null);
     //? -------------------- DIALOGS STATES -------------------
@@ -86,7 +86,7 @@ export default function ReportDepartmentPage() {
     //? -------------------- LOADING DATA -------------------
     useEffect(() => {
         getDepartments()
-        getCompany(1);
+        getCompanyReportes(1);
         setLoading(false);
     }, [department]);
 
@@ -245,7 +245,7 @@ export default function ReportDepartmentPage() {
                         { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
                         { field: 'updatedAt', header: 'Ultima Actualización', body: updatedAtBodyTemplate, filter: false, dataType: 'date' },
                     ]}
-                    size='8rem'
+                    size='5rem'
                     actionBodyTemplate={actionBodyTemplate}
                 />
             </div>

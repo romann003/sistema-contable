@@ -25,16 +25,17 @@ import {
     emptyEmployee, typeStatus, typeGender, typeCountry, typeIdentification, typeContract, typeWorkDay,
     Status, Country, Gender, Identification_type, Contract_type, Work_day, Employee
 } from '../../layout/elements/InitialData';
-import { ColumnChipBody, ColumnDateBody, ColumnOnlyDateBody, ColumnStatusBody, ColumnTextBody } from '../../layout/components/ColumnBody.js';
-import DataTableCrud from '../../layout/components/DataTableCrud.js';
 import * as fI from '../../layout/components/FormComponent.js';
-import { DeleteModal } from '../../layout/components/Modals.js';
+import * as cdT from '../../layout/components/ColumnBody.js';
+import * as m from '../../layout/components/Modals.js';
+import { BreadComp } from '../../layout/components/BreadComp.js';
+import DataTableCrud from '../../layout/components/DataTableCrud.js';
 
 
 const defaultFilters: DataTableFilterMeta = {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     fullName: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    phone: { value: null, matchMode: FilterMatchMode.EQUALS },
+    phone: { value: null, matchMode: FilterMatchMode.CONTAINS },
     identification: { value: null, matchMode: FilterMatchMode.CONTAINS },
     nit: { value: null, matchMode: FilterMatchMode.CONTAINS },
     igss: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -80,47 +81,47 @@ export default function EmployeesPage() {
 
     //? -------------------- DATATABLE COLUMN TEMPLATES -------------------
     const fullNameBodyTemplate = (rowData: Employee) => {
-        return <ColumnTextBody value={rowData.fullName} />
+        return <cdT.ColumnTextBody value={rowData.fullName} />
     };
 
     const phoneBodyTemplate = (rowData: Employee) => {
-        return <ColumnTextBody value={rowData.phone} />
+        return <cdT.ColumnTextBody value={rowData.phone} />
     };
 
     const identificationBodyTemplate = (rowData: Employee) => {
-        return <ColumnTextBody value={rowData.identification} />
+        return <cdT.ColumnTextBody value={rowData.identification} />
     };
 
     const nitBodyTemplate = (rowData: Employee) => {
-        return <ColumnTextBody value={rowData.nit} />
+        return <cdT.ColumnTextBody value={rowData.nit} />
     };
 
     const igssBodyTemplate = (rowData: Employee) => {
-        return <ColumnTextBody value={rowData.igss} />
+        return <cdT.ColumnTextBody value={rowData.igss} />
     };
 
     const departmentBodyTemplate = (rowData: Employee) => {
-        return <ColumnChipBody value={rowData.department.name} />
+        return <cdT.ColumnChipBody value={rowData.department.name} />
     };
 
     const areaBodyTemplate = (rowData: Employee) => {
-        return <ColumnChipBody value={rowData.area.name} />
+        return <cdT.ColumnChipBody value={rowData.area.name} />
     };
 
     const birthdateBodyTemplate = (rowData: Employee) => {
-        return <ColumnOnlyDateBody value={rowData.birthdate} />
+        return <cdT.ColumnOnlyDateBody value={rowData.birthdate} />
     }
 
     const statusBodyTemplate = (rowData: Employee) => {
-        return <ColumnStatusBody value={rowData} />
+        return <cdT.ColumnStatusBody value={rowData} />
     };
 
     const createdAtBodyTemplate = (rowData: Employee) => {
-        return <ColumnDateBody value={rowData.createdAt} />
+        return <cdT.ColumnDateBody value={rowData.createdAt} />
     };
 
     const updatedAtBodyTemplate = (rowData: Employee) => {
-        return <ColumnDateBody value={rowData.updatedAt} />
+        return <cdT.ColumnDateBody value={rowData.updatedAt} />
     };
 
     const actionBodyTemplate = (rowData: Employee) => {
@@ -197,7 +198,7 @@ export default function EmployeesPage() {
 
     const hideDialog = () => {
         setEstados([]);
-        setDepartments([]);
+        // setDepartments([]);
         setSelectedStatus(null);
         setSelectedCountry(null);
         setSelectedGender(null);
@@ -794,7 +795,7 @@ export default function EmployeesPage() {
                                                 <div className="formgrid grid">
                                                     <div className="col-12">
                                                         <div className="card flex flex-wrap gap-2 justify-content-evenly">
-                                                            <ColumnStatusBody value={employee} />
+                                                            <cdT.ColumnStatusBody value={employee} />
                                                             <Chip label={`Creado el: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-md font-bold' />
                                                             <Chip label={`Ultima Actualización: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-md font-bold' />
                                                         </div>
@@ -817,79 +818,78 @@ export default function EmployeesPage() {
             </Dialog>
 
             {/* //? -------------------- MODAL DIALOG (ONLY READ) ------------------- */}
-            <Dialog visible={seeEmployeeDialog} style={{ width: '62rem', minWidth: '30rem', minHeight: '30rem', maxWidth: '90vw', maxHeight: '90vh' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Todos los datos del empleado" modal className='p-fluid' footer={seeDialogFooter} onHide={hideSeeDialog}>
-                <div className="confirmation-content">
-                    {employee && (<>
-                        {employee.id ? (<>
-                            <div className="card">
-                                <TabView>
-                                    <TabPanel className='w-full' header="Header I" headerTemplate={tab1HeaderTemplate}>
-                                        <div className="field mt-5 mb-3">
-                                            <div className="formgrid grid">
-                                                <div className="col-12">
-                                                    <div className="flex flex-wrap gap-3 justify-content-evenly">
-                                                        <Chip label={`EMPLEADO: ${employee.name} ${employee.last_name}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`No. Telefono: ${employee.phone}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`Tipo Identificacion: ${employee.identification_type}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`No. Identificacion: ${employee.identification}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`No. NIT: ${employee.nit}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`No. IGSS: ${employee.igss}`} className='text-lg font-bold uppercase' />
+            <m.LargeModal visible={seeEmployeeDialog} header="Detalles del Empleado" footer={seeDialogFooter} onHide={hideSeeDialog} blockScroll={true} closeOnEscape={true} dismissableMask={true}>
+                {employee && (<>
+                    {employee.id && (
+                        <div className="card">
+                            <TabView>
+                                <TabPanel className='w-full' header="Header I" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'DATOS DEL EMPLEADO')}>
+                                    <div className="field mt-5 mb-3">
+                                        <div className="formgrid grid">
+                                            <div className="col-12">
+                                                <div className="flex flex-wrap gap-3 justify-content-between">
+                                                    <label className='text-md capitalize'> <b>EMPLEADO:</b> {employee.fullName}</label>
+                                                    <label className='text-md capitalize'> <b>NO TELEFONO:</b> {employee.phone}</label>
+                                                    <label className='text-md capitalize'> <b>NO {employee.identification_type}:</b> {employee.identification}</label>
+                                                    <label className='text-md capitalize'> <b>NO NIT:</b> {employee.nit}</label>
+                                                    <label className='text-md capitalize'> <b>NO IGSS:</b> {employee.igss}</label>
+                                                    <Divider align="center" />
+                                                    <label className='text-md capitalize'> <b>PAIS:</b> {employee.country}</label>
+                                                    <label className='text-md capitalize'> <b>GENERO:</b> {employee.gender}</label>
+                                                    <label className='text-md capitalize'> <b>FECHA NACIMIENTO: </b>
+                                                        <cdT.ColumnOnlyDateBodyText value={employee.birthdate} className={''} />
+                                                    </label>
+                                                    <label className='text-md capitalize'> <b>DIRECCION:</b> {employee.address}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabPanel>
+                                <TabPanel className='w-full' header="Header II" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'LUGAR DE TRABAJO')}>
+                                    <div className="field mt-5 mb-3">
+                                        <div className="formgrid grid">
+                                            <div className="col-12">
+                                                <div className="flex flex-wrap gap-3 justify-content-between">
+                                                    <label className='text-md capitalize'> <b>FECHA CONTRATACION:</b> <cdT.ColumnOnlyDateBodyText value={employee.hire_date} className={''} /> </label>
+                                                    <label className='text-md capitalize'> <b>TIPO CONTRATO:</b> {employee.contract_type}</label>
+                                                    <label className='text-md capitalize'> <b>JORNADA LABORAL:</b> {employee.work_day}</label>
+                                                    <label className='text-md capitalize'> <b>DEPARTAMENTO:</b> {employee.department.name}</label>
+                                                    <label className='text-md capitalize'> <b>PUESTO:</b> {employee.area.name}</label>
+                                                    <div className="flex align-items-center">
+                                                        <label className='text-md capitalize'> <b>SALARIO BASE:</b></label>
+                                                        <cdT.SalaryDisplay salary={employee.area.salary} className="text-green-500" />
                                                     </div>
-                                                    <Divider align="center" className='my-5'>
-                                                        <span className="p-tag">Otros Datos</span>
-                                                    </Divider>
-                                                    <div className="flex flex-wrap gap-3 justify-content-evenly">
-                                                        <Chip label={`Pais: ${employee.country}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`Genero: ${employee.gender}`} className='text-lg font-semibold uppercase' />
-                                                        <Chip label={`Fecha Cumpleaños: 
-                                                        ${dayjs(employee.birthdate).utc().format("DD/MM/YYYY")}`} className='text-lg font-semibold uppercase' />
-                                                        <Chip label={`DIRECCIÓN: ${employee.address}`} className='text-lg font-semibold' />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabPanel>
+                                <TabPanel className='w-full' header="Header III" headerTemplate={(options: TabPanelHeaderTemplateOptions) => m.TabHeaderTemplate(options, 'OTROS DATOS')}>
+                                    <div className="field mt-5 mb-3">
+                                        <div className="formgrid grid">
+                                            <div className="col-12">
+                                                <div className="flex flex-wrap gap-3 justify-content-between">
+                                                    <Divider align="center" />
+                                                    <label className='text-md'> <b>CREADO EL: </b>
+                                                        <cdT.ColumnDateBodyText value={employee.createdAt} className={'text-primary'} />
+                                                    </label>
+                                                    <label className='text-md'> <b>ULTIMA ACTUALIZACION: </b>
+                                                        <cdT.ColumnDateBodyText value={employee.createdAt} className={'text-primary'} />
+                                                    </label>
 
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </TabPanel>
-                                    <TabPanel className='w-full' header="Header II" headerTemplate={tab2HeaderTemplate}>
-                                        <div className="field mt-5 mb-3">
-                                            <div className="formgrid grid">
-                                                <div className="col-12">
-                                                    <div className=" flex flex-wrap gap-3 justify-content-evenly">
-                                                        <Chip label={`Fecha Contratación: ${dayjs(employee.hire_date).utc().format("DD/MM/YYYY")}`} className='text-lg font-bold uppercase' />
-                                                        {/* <Chip label={`Fecha Contratación: ${new Date(employee.hire_date).toLocaleDateString()}`} className='text-lg font-bold uppercase' /> */}
-
-                                                        <Chip label={`Tipo Contrato: ${employee.contract_type}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`Jornada laboral ordinaria: ${employee.work_day}`} className='text-lg font-bold uppercase' />
-                                                        <Chip label={`Salario Base: ${employee.area?.salary}`} className='text-lg font-bold uppercase' />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </TabPanel>
-                                    <TabPanel className='w-full' header="Header III" headerTemplate={tab3HeaderTemplate}>
-                                        <div className="field mt-5 mb-3">
-                                            <div className="formgrid grid">
-                                                <div className="col-12">
-                                                    <div className=" flex flex-wrap gap-3 justify-content-evenly">
-                                                        <Chip label={`DEPARTAMENTO - ${employee.department?.name}`} className="text-lg font-bold uppercase" />
-                                                        <Chip label={`CARGO(PUESTO) - ${employee.area?.name}`} className="text-lg font-bold uppercase" />
-                                                        <Chip label={`CREADO EL: ${new Date(employee.createdAt).toLocaleDateString()} - ${new Date(employee.createdAt).toLocaleTimeString()}`} className='text-lg font-bold' />
-                                                        <Chip label={`ULTIMA ACTUALIZACION: ${new Date(employee.updatedAt).toLocaleDateString()} - ${new Date(employee.updatedAt).toLocaleTimeString()}`} className='text-lg font-bold' />
-                                                        <ColumnStatusBody value={employee} />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </TabPanel>
-                                </TabView>
-                            </div>
-                        </>) : (<></>)}
-                    </>)}
-                </div>
-            </Dialog>
+                                    </div>
+                                </TabPanel>
+                            </TabView>
+                        </div>
+                    )}
+                </>)}
+            </m.LargeModal>
 
             {/* //? -------------------- MODAL DIALOG (DELETE) ------------------- */}
-            <DeleteModal
+            <m.DeleteModal
                 visible={deleteEmployeeDialog}
                 header="Confirmar"
                 data={employee}
@@ -899,7 +899,7 @@ export default function EmployeesPage() {
                 message2Bold={employee.identification}
                 footer={deleteEmployeeDialogFooter}
                 onHide={hideDeleteEmployeeDialog}
-            ></DeleteModal>
+            ></m.DeleteModal>
         </div>
     );
 }

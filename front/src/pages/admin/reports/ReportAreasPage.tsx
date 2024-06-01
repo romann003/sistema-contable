@@ -12,7 +12,6 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 import { useAreas } from '../../../api/context/AreaContext';
-import { useDepartments } from '../../../api/context/DepartmentContext';
 import { useCompany } from '../../../api/context/CompanyContext';
 
 import * as cdT from '../../../layout/components/ColumnBody.js';
@@ -43,9 +42,8 @@ const defaultFilters: DataTableFilterMeta = {
 export default function ReportAreasPage() {
 
     //? -------------------- CONTEXT API -------------------
-    const { departments, getDepartments } = useDepartments();
     const { areas, getAreas } = useAreas();
-    const { companies, getCompany } = useCompany();
+    const { companies, getCompanyReportes } = useCompany();
     //? -------------------- STATES -------------------
     const toast = useRef<Toast>(null);
     //? -------------------- DIALOGS STATES -------------------
@@ -98,9 +96,8 @@ export default function ReportAreasPage() {
 
     //? -------------------- LOADING DATA -------------------
     useEffect(() => {
-        getDepartments()
         getAreas();
-        getCompany(1);
+        getCompanyReportes(1);
         setLoading(false);
     }, [area]);
 
@@ -124,8 +121,6 @@ export default function ReportAreasPage() {
     //? -------------------- DATATABLE ACTIONS -------------------
     const exportPDF = () => {
         const doc = new jsPDF();
-
-
         const headerText = `${companies.business_name.toUpperCase()}\nNIT: ${companies.nit}\n${companies.address}\nNO. TEL: ${companies.phone}`;
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
@@ -155,7 +150,6 @@ export default function ReportAreasPage() {
         });
 
         doc.save('reporte_puestos.pdf');
-
     }
 
     const exportToExcel = async () => {
@@ -269,7 +263,7 @@ export default function ReportAreasPage() {
                         { field: 'createdAt', header: 'Creado el', body: createdAtBodyTemplate, dataType: 'date', filter: false },
                         { field: 'updatedAt', header: 'Ultima Actualización', body: updatedAtBodyTemplate, filter: false, dataType: 'date' },
                     ]}
-                    size='8rem'
+                    size='5rem'
                     actionBodyTemplate={actionBodyTemplate}
                 />
             </div>
