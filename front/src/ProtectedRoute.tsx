@@ -11,7 +11,7 @@ export function ProtectedRoute() {
 //? ----------- isSuperAdmin
 export function ProtectedRouteOnlySuperAdmin() {
   const { loading, isAuthenticated, user } = useAuth();
-  if (!loading && !isAuthenticated) return <Navigate to="/access-denied" replace/>;
+  // if (!loading && !isAuthenticated) return <Navigate to="/access-denied" replace/>;
   if (user?.rol !== 'root') return <Navigate to="/access-denied" replace/>;
   return <Outlet />;
 }
@@ -19,7 +19,7 @@ export function ProtectedRouteOnlySuperAdmin() {
 //? ----------- isAdmins
 export function ProtectedRouteOnlyAdmins() {
   const { loading, isAuthenticated, user } = useAuth();
-  if (!loading && !isAuthenticated) return <Navigate to="/access-denied" replace/>;
+  // if (!loading && !isAuthenticated) return <Navigate to="/access-denied" replace/>;
   if (user?.rol !== 'root' && user?.rol !== 'administrador') return <Navigate to="/access-denied" replace/>;
   return <Outlet />;
 }
@@ -27,7 +27,7 @@ export function ProtectedRouteOnlyAdmins() {
 //? ----------- isUsers
 export function ProtectedRouteUsers() {
   const { loading, isAuthenticated, user } = useAuth();
-  if (!loading && !isAuthenticated) return <Navigate to="/access-denied" replace/>;
+  // if (!loading && !isAuthenticated) return <Navigate to="/access-denied" replace/>;
   if (user?.rol !== 'root' && user?.rol !== 'administrador' && user?.rol !== 'moderador') return <Navigate to="/access-denied" replace/>;
   return <Outlet />;
 }
