@@ -3,20 +3,11 @@ import { MenuProvider } from './context/menucontext.tsx';
 import { AppMenuItem } from '../types';
 import { useCompany } from '../api/context/CompanyContext.tsx';
 import { useEffect } from 'react';
+import { useAuth } from '../api/context/AuthContext.tsx';
 
 
 const AppMenu = () => {
-    // const {getUsers, getCompany, companies} = useCompany();
-
-    // useEffect(() => {
-    //     getUsers();
-    // }, []);
-
-    // companies.map((company) => {
-    //     // getCompany(company.id);
-    //     console.log(company.id);
-    // })
-    // console.log(companies[1]);
+    const { isAuthenticated, user } = useAuth();
 
     const model: AppMenuItem[] = [
         {
@@ -24,26 +15,37 @@ const AppMenu = () => {
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }]
         },
         {
-            label: 'Mi Empresa',
-            items: [
-                { label: 'Departamentos', icon: 'pi pi-fw pi-clone', to: '/dashboard/departments' },
-                { label: 'Puestos', icon: 'pi pi-fw pi-table', to: '/dashboard/puestos' },
-                { label: 'Usuarios', icon: 'pi pi-verified pi-fw', to: '/dashboard/users' },
-                { label: 'Mi empresa', icon: 'pi pi-fw pi-cog', to: '/dashboard/company' },
-            ]
+            label: user?.rol !== 'moderador' ? 'Mi Empresa' : '', // Establecer el label principal condicionalmente
+            items: (() => {
+                const items = [];
+                if (user?.rol === 'root' || user?.rol === 'administrador') {
+                    items.splice(0, 0, { label: 'Departamentos', icon: 'pi pi-fw pi-clone', to: '/dashboard/departments' });
+                    items.splice(1, 0, { label: 'Puestos', icon: 'pi pi-fw pi-table', to: '/dashboard/puestos' });
+                }
+                if (user?.rol === 'root') {
+                    items.splice(3, 0, { label: 'Usuarios', icon: 'pi pi-verified pi-fw', to: '/dashboard/users' });
+                    items.splice(4, 0, { label: 'Mi empresa', icon: 'pi pi-fw pi-cog', to: '/dashboard/company' });
+                }
+                return items;
+            })()
         },
         {
             label: 'Otras Acciones',
-            items: [
-                { label: 'Empleados', icon: 'pi pi-fw pi-user', to: '/dashboard/employees' },
-                {
+            items: (() => {
+                const items = [];
+                if (user?.rol === 'root' || user?.rol === 'administrador') {
+                    items.splice(2, 0, { label: 'Empleados', icon: 'pi pi-fw pi-user', to: '/dashboard/employees' });
+                }
+                items.push({
                     label: 'Registros Contables',
                     items: [
                         { label: 'Periodo Liquidación', icon: 'pi pi-calendar', to: '/dashboard/rc/periodo-liquidacion' },
-                        { label: 'Nomina', icon: 'pi pi-inbox', to: '/dashboard/rc/nomina' },
+                        { label: 'Nomina', icon: 'pi pi-inbox', to: '/dashboard/rc/nomina' }
                     ]
-                }
-            ]
+                });
+
+                return items;
+            })()
         },
         {
             label: 'Reportes',

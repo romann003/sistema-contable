@@ -5,7 +5,7 @@ import LandingPage from "./pages/LandingPage";
 import Error404Page from "./pages/errors/Error404Page";
 
 import LoginPage from "./pages/auth/LoginPage";
-import { ProtectedRoute, ProtectedRouteOnlySuperAdmin, ProtectedRouteOnlyAdmins, ProtectedRouteUsers } from "./ProtectedRoute";
+import { ProtectedRoute, ProtectedRouteOnlySuperAdmin, ProtectedRouteOnlyAdmins } from "./ProtectedRoute";
 import LayoutDashboard from "./layout/LayoutDashboard";
 import Dashboard from "./pages/admin/DashboardPage";
 import DepartmentsPage from "./pages/admin/DepartmentsPage";
@@ -51,7 +51,7 @@ export default function App() {
               </Route>
 
                 //? ----------- isUsers
-              <Route element={<ProtectedRouteUsers />}>
+              {/* <Route element={<ProtectedRouteUsers />}> */}
                 <Route path="rc/periodo-liquidacion" element={<PeriodoLiquidacionPage />} />
                 <Route path="rc/nomina" element={<NominaPage />} />
                 //? ----------- Reports
@@ -60,7 +60,7 @@ export default function App() {
                 <Route path="reports/employees" element={<ReporteEmployeesPage />} />
                 <Route path="reports/periodos-liquidacion" element={<ReportePeriodosPage />} />
                 <Route path="reports/nominas" element={<ReporteNominasPage />} />
-              </Route>
+              {/* </Route> */}
 
 
             </Route>

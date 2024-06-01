@@ -64,10 +64,11 @@ export const updateDepartmentById = async (req, res) => {
         if (!updatedDepartment) return res.status(404).json({ message: "Departamento no encontrado" });
         updatedDepartment.set(req.body);
         if (req.body.status === false) {
-            await AreaSchema.update({ status: false }, { where: { departmentId: req.params.departmentId } });
+            res.status(400).json({ message: "No se puede desactivar el departamento porque tiene puestos asociados." });
+        } else {
+            await updatedDepartment.save();
+            res.status(200).json(updatedDepartment);
         }
-        await updatedDepartment.save();
-        res.status(200).json(updatedDepartment);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
